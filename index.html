@@ -16,7 +16,7 @@
     messagingSenderId:"513075711876",
     appId:"1:513075711876:web:3a577b54daca07f17a17d1"
   });
-  var db = firebase.firestore();
+  var db = firebase.database().ref();
 </script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -992,7 +992,7 @@ function toggleTask(i, ti, checked) {
 
   function cloudSave() {
     if (!currentUser) return;
-    db.collection("passit_users").doc(currentUser.uid).set({
+    db.child("passit_users").child(currentUser.uid).set({
       quests: quests,
       megaQuests: megaQuests,
       updated: Date.now()
@@ -1000,7 +1000,9 @@ function toggleTask(i, ti, checked) {
   }
 
   function cloudLoad(uid) {
-    db.collection("passit_users").doc(uid).get().then(function(doc) {
+    db.child("passit_users").child(uid).once("value").then(function(snapshot) {
+      if (snapshot.exists()) {
+        var data = snapshot.val();
       if (doc.exists) {
         var data = doc.data();
         quests = data.quests || [];
