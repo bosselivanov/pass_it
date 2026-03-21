@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YOUR DAILY PASS</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey:"AIzaSyBd0j9J78QI9AFLFS3TPaWwgFdoUMxTsqE",
+    authDomain:"pass-it-auth.firebaseapp.com",
+    projectId:"pass-it-auth",
+    storageBucket:"pass-it-auth.firebasestorage.app",
+    messagingSenderId:"513075711876",
+    appId:"1:513075711876:web:3a577b54daca07f17a17d1"
+  });
+  var db = firebase.firestore();
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #F8EAFA;
+  --surface: #EEDDFF;
+  --accent: #96A0E2;
+  --accent2: #F9DABB;
+  --text: #2a1a4a;
+  --text2: #7a5ab0;
+  --border: rgba(150,160,226,0.35);
+  --bar-bg: rgba(150,160,226,0.18);
+  --card-bg: rgba(255,255,255,0.55);
+  --overlay: rgba(200,180,255,0.25);
+  --blur-bg: rgba(238,221,255,0.92);
+}
+body.dark {
+  --bg: #090107;
+  --surface: #1a1330;
+  --accent: #C90060;
+  --accent2: #554EA7;
+  --text: #F6E3C2;
+  --text2: #b89a70;
+  --border: rgba(201,0,96,0.3);
+  --bar-bg: rgba(201,0,96,0.12);
+  --card-bg: rgba(85,78,167,0.22);
+  --overlay: rgba(9,1,7,0.75);
+  --blur-bg: rgba(26,19,48,0.95);
+}
+body {
+  height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: var(--bg); font-family: 'Segoe UI', sans-serif;
+  color: var(--text); transition: background 0.3s, color 0.3s;
+}
+
+/* HEADER */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: var(--surface);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.header-title { font-size: 14px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
+.header-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; color: var(--text2); padding: 4px 8px;
+  border-radius: 8px; transition: background 0.2s;
+}
+.header-btn:hover { background: var(--bar-bg); }
+
+/* PASS */
+.pass-wrapper { margin: 12px 24px 0; flex-shrink: 0; }
+.pass-container {
+  border: 1.5px solid var(--border); border-radius: 16px;
+  background: var(--card-bg); backdrop-filter: blur(12px);
+  padding: 14px 24px; display: flex; flex-direction: column; gap: 12px;
+}
+.pass-title { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--text2); text-transform: uppercase; }
+.pass-levels { display: flex; align-items: center; justify-content: space-between; position: relative; }
+.pass-line { position: absolute; top: 50%; left: 19px; right: 19px; height: 5px; background: var(--bar-bg); border-radius: 2px; transform: translateY(-50%); z-index: 0; }
+.pass-line-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s ease; width: 0%; }
+.pass-level { width: 38px; height: 38px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text2); position: relative; z-index: 1; transition: all 0.3s; flex-shrink: 0; }
+.pass-level.filled { background: var(--accent); border-color: transparent; color: white; }
+
+/* MAIN */
+.main-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin: 8px 24px 12px; flex: 1; overflow: hidden; min-height: 0; }
+
+/* MEGA QUESTS */
+.flangs-section { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.section-header { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; padding-left: 2px; flex-shrink: 0; }
+.flangs-header-row { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.add-mega-btn { font-size: 10px; font-weight: 700; color: white; background: var(--accent2); border: none; border-radius: 8px; padding: 4px 10px; cursor: pointer; transition: opacity 0.2s; color: var(--text); }
+.add-mega-btn:hover { opacity: 0.8; }
+.add-mega-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.flangs-slider { position: relative; flex: 1; min-height: 0; }
+.flang-card {
+  background: var(--card-bg); backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border); border-radius: 16px;
+  padding: 14px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  display: none; flex-direction: column;
+  height: 100%; overflow: hidden; position: relative;
+}
+.flang-card.active { display: flex; }
+
+/* Mega quest layout: emoji top half, desc quarter, bar quarter */
+.flang-emoji-area {
+  flex: 2; display: flex; align-items: center; justify-content: center;
+  font-size: 52px;
+}
+.flang-desc-area {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  gap: 2px; align-items: center; text-align: center;
+}
+.flang-title { font-size: 16px; font-weight: 800; color: var(--text); text-align: center; }
+.flang-subtitle { font-size: 12px; color: var(--text2); text-align: center; }
+.flang-bar-area {
+  flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 5px;
+}
+.flang-metric-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--text); }
+.progress-bar-bg { height: 8px; background: var(--bar-bg); border-radius: 6px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--accent); border-radius: 6px; transition: width 0.4s ease; }
+
+.flang-nav { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; padding-top: 8px; }
+.flang-nav button { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 13px; color: var(--text2); transition: all 0.2s; }
+.flang-nav button:hover { background: var(--accent); color: white; }
+.flang-dots { display: flex; gap: 5px; }
+.flang-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--bar-bg); cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); }
+.flang-dot.active { background: var(--accent); transform: scale(1.3); }
+
+.flang-empty { display: flex; align-items: center; justify-content: center; height: 100%; border: 2px dashed var(--border); border-radius: 16px; color: var(--text2); font-size: 12px; opacity: 0.5; }
+
+.editable { min-width: 20px; outline: none; border-bottom: 1.5px dashed var(--border); text-align: center; cursor: text; padding: 0 2px; border-radius: 2px; transition: background 0.2s; }
+.editable:focus { background: var(--bar-bg); }
+
+/* QUESTS */
+.quests-section { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.quests-header-row { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.add-quest-btn { font-size: 10px; font-weight: 700; color: white; background: var(--accent); border: none; border-radius: 8px; padding: 5px 12px; cursor: pointer; transition: opacity 0.2s; }
+.add-quest-btn:hover { opacity: 0.85; }
+.add-quest-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.quests-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px; flex: 1; min-height: 0; }
+.quest-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; transition: transform 0.2s, box-shadow 0.2s; overflow: hidden; min-height: 0; }
+.quest-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.quest-card.done { border-color: rgba(80,200,120,0.55); }
+.quest-card-top { display: flex; align-items: center; gap: 6px; }
+.quest-emoji { font-size: 17px; flex-shrink: 0; }
+.quest-name { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.quest-sub { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest-xp-badge { font-size: 10px; font-weight: 700; background: var(--bar-bg); color: var(--accent); padding: 2px 6px; border-radius: 6px; flex-shrink: 0; }
+.quest-bottom { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
+.quest-metric { font-size: 13px; font-weight: 700; color: var(--text); display: flex; gap: 2px; align-items: center; }
+.quest-empty { border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 11px; opacity: 0.5; }
+
+/* LEFT MENU */
+.left-menu-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-start; }
+.left-menu-overlay.open { display: flex; }
+.left-menu { width: 240px; min-height: 100vh; background: var(--blur-bg); backdrop-filter: blur(20px); border-right: 1px solid var(--border); padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; animation: slideIn 0.25s ease; }
+@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.menu-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; margin-bottom: 8px; }
+.menu-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--text); cursor: pointer; text-align: left; transition: all 0.2s; }
+.menu-btn:hover { background: var(--accent); color: white; border-color: transparent; }
+
+/* POPUP */
+.popup-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(5px); z-index: 200; display: none; align-items: center; justify-content: center; }
+.popup-overlay.open { display: flex; }
+.popup { background: var(--blur-bg); backdrop-filter: blur(20px); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px 28px; width: 340px; max-width: 90vw; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: popIn 0.2s ease; }
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.popup-title { font-size: 14px; font-weight: 800; color: var(--text); }
+.popup-field { display: flex; flex-direction: column; gap: 5px; }
+.popup-label { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+.popup-input { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 13px; color: var(--text); outline: none; width: 100%; transition: border-color 0.2s; }
+.popup-input:focus { border-color: var(--accent); }
+.popup-input::placeholder { color: var(--text2); opacity: 0.6; }
+.emoji-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.emoji-opt { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; background: var(--bar-bg); border: 2px solid transparent; transition: all 0.15s; }
+.emoji-opt:hover { background: var(--surface); }
+.emoji-opt.selected { border-color: var(--accent); background: var(--surface); }
+.xp-options { display: flex; gap: 8px; }
+.xp-opt { flex: 1; padding: 8px; border-radius: 10px; border: 2px solid var(--border); background: var(--bar-bg); cursor: pointer; text-align: center; font-size: 11px; font-weight: 700; color: var(--text2); transition: all 0.15s; }
+.xp-opt:hover { border-color: var(--accent); }
+.xp-opt.selected { border-color: var(--accent); background: var(--accent); color: white; }
+.xp-opt .xp-label { font-size: 9px; font-weight: 400; opacity: 0.8; }
+.popup-actions { display: flex; gap: 8px; }
+.popup-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; transition: opacity 0.2s; }
+.popup-btn.primary { background: var(--accent); color: white; }
+.popup-btn.primary:hover { opacity: 0.85; }
+.popup-btn.secondary { background: var(--bar-bg); color: var(--text2); border: 1.5px solid var(--border); }
+.popup-btn.secondary:hover { background: var(--surface); }
+
+.quest-delete {
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; color: var(--text2); opacity: 0.4;
+  padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.quest-delete:hover { opacity: 1; color: #e04040; }
+
+.mega-delete {
+  position: absolute; top: 10px; right: 12px;
+  background: none; border: none; cursor: pointer;
+  font-size: 14px; color: var(--text2); opacity: 0.35;
+  transition: opacity 0.2s, color 0.2s; z-index: 5;
+}
+.mega-delete:hover { opacity: 1; color: #e04040; }
+
+.quest-edit {
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; color: var(--text2); opacity: 0.4;
+  padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.quest-edit:hover { opacity: 1; color: var(--accent); }
+
+/* MEGA TASKS */
+.mega-tasks-toggle {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; color: var(--text2); opacity: 0.7;
+  padding: 2px 0; transition: opacity 0.2s;
+  text-align: left; display: flex; align-items: center; gap: 4px;
+}
+.mega-tasks-toggle:hover { opacity: 1; }
+.mega-tasks-panel {
+  display: none; flex-direction: column; gap: 6px;
+  max-height: 120px; overflow-y: auto; padding-right: 4px;
+}
+.mega-tasks-panel.open { display: flex; }
+.mega-task-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text); line-height: 1.3;
+}
+.mega-task-item input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+.mega-task-item span { flex: 1; }
+.mega-task-item span.done-task { text-decoration: line-through; opacity: 0.5; }
+.mega-task-add { display: flex; gap: 6px; margin-top: 2px; }
+.mega-task-input {
+  flex: 1; background: var(--bar-bg); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 5px 8px; font-size: 11px; color: var(--text);
+  outline: none;
+}
+.mega-task-input:focus { border-color: var(--accent); }
+.mega-task-input::placeholder { color: var(--text2); opacity: 0.6; }
+.mega-task-add-btn {
+  background: var(--accent); border: none; border-radius: 8px;
+  color: white; font-size: 13px; font-weight: 700;
+  padding: 0 10px; cursor: pointer; transition: opacity 0.2s;
+}
+.mega-task-add-btn:hover { opacity: 0.8; }
+.mega-edit {
+  position: absolute; top: 10px; right: 36px;
+  background: none; border: none; cursor: pointer;
+  font-size: 14px; color: var(--text2); opacity: 0.35;
+  transition: opacity 0.2s, color 0.2s; z-index: 5;
+}
+.mega-edit:hover { opacity: 1; color: var(--accent); }
+
+.mega-task-clear-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; color: var(--text2); opacity: 0.7;
+  padding: 0; margin-left: auto;
+}
+.mega-task-clear-btn:hover { opacity: 1; color: #e04040; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="header-btn" onclick="toggleMenu()">☰</button>
+  <div class="header-title">Your Daily Pass</div>
+  <button class="header-btn" onclick="openFeedback()">❓</button>
+  <button class="header-btn" id="authBtn" onclick="handleAuthClick()">👤</button><button class="header-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+</div>
+
+<div class="pass-wrapper">
+  <div class="pass-container">
+    <div class="pass-title">Battle Pass</div>
+    <div class="pass-levels" id="passLevels">
+      <div class="pass-line"><div class="pass-line-fill" id="passLineFill"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+  <div class="flangs-section">
+    <div class="flangs-header-row">
+      <div class="section-header">✦ Mega Quests</div>
+      <button class="add-mega-btn" id="addMegaBtn" onclick="openMegaPopup()">+ Добавить</button>
+    </div>
+    <div class="flangs-slider" id="flangsSlider">
+      <div class="flang-empty" id="megaEmpty">Нет мегаквестов</div>
+    </div>
+  </div>
+
+  <div class="quests-section">
+    <div class="quests-header-row">
+      <div class="section-header">⚡ Quests</div>
+      <button class="add-quest-btn" id="addQuestBtn" onclick="openQuestPopup()">+ Добавить квест</button>
+    </div>
+    <div class="quests-grid" id="questsGrid"></div>
+  </div>
+</div>
+
+<!-- LEFT MENU -->
+<div class="left-menu-overlay" id="menuOverlay" onclick="closeMenuOutside(event)">
+  <div class="left-menu">
+    <div class="menu-title">Меню</div>
+    <button class="menu-btn" onclick="newDay()">🌅 Начать новый день</button>
+    <button class="menu-btn" onclick="exportJSON()">📤 Экспорт данных (JSON)</button>
+    <button class="menu-btn" onclick="importJSON()">📥 Импорт данных (JSON)</button>
+    <button class="menu-btn" onclick="fullReset()" style="color:#e04040;">🗑️ Полный сброс всего</button>
+    <button class="menu-btn" onclick="saveAndClose()">💾 Выйти</button>
+  </div>
+</div>
+
+<!-- ADD QUEST POPUP -->
+<div class="popup-overlay" id="questPopupOverlay" onclick="closePopupOutside(event,'questPopupOverlay')">
+  <div class="popup">
+    <div class="popup-title">Новый квест</div>
+    <div class="popup-field">
+      <div class="popup-label">Смайл</div>
+      <div class="emoji-grid" id="questEmojiGrid"></div>
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Название</div>
+      <input class="popup-input" id="questName" type="text" placeholder="Название квеста..." maxlength="20">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Подзаголовок</div>
+      <input class="popup-input" id="questSub" type="text" placeholder="Подзаголовок..." maxlength="30">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Метрика (максимум)</div>
+      <input class="popup-input" id="questMetric" type="number" placeholder="Например: 17" min="1" max="9999">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Опыт за квест</div>
+      <div class="xp-options">
+        <div class="xp-opt selected" data-xp="100" onclick="selectXP(this)">100 XP<br><span class="xp-label">Лёгкий</span></div>
+        <div class="xp-opt" data-xp="250" onclick="selectXP(this)">250 XP<br><span class="xp-label">Средний</span></div>
+        <div class="xp-opt" data-xp="500" onclick="selectXP(this)">500 XP<br><span class="xp-label">Сложный</span></div>
+      </div>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('questPopupOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="addQuest()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEGA QUEST POPUP -->
+<div class="popup-overlay" id="megaPopupOverlay" onclick="closePopupOutside(event,'megaPopupOverlay')">
+  <div class="popup">
+    <div class="popup-title">Новый мегаквест</div>
+    <div class="popup-field">
+      <div class="popup-label">Смайл</div>
+      <div class="emoji-grid" id="megaEmojiGrid"></div>
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Название</div>
+      <input class="popup-input" id="megaName" type="text" placeholder="Название мегаквеста..." maxlength="20">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Описание</div>
+      <input class="popup-input" id="megaSub" type="text" placeholder="Краткое описание..." maxlength="40">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Метрика (максимум)</div>
+      <input class="popup-input" id="megaMetric" type="number" placeholder="Например: 100" min="1" max="99999">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Единица измерения</div>
+      <input class="popup-input" id="megaUnit" type="text" placeholder="Страницы, дни, задачи..." maxlength="15">
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('megaPopupOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="addMega()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const EMOJIS = ['💻','📚','🏃','🧠','🎯','✏️','📋','💪','🔵','⚡','🌐','🏋️','🎮','💰','🔥','📖','🎨','🏆','⭐','🚀'];
+let selectedQuestEmoji = EMOJIS[0];
+let selectedMegaEmoji = EMOJIS[0];
+
+function renderEmojiGrid(gridId, current, onPick) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = EMOJIS.map(e => `
+    <div class="emoji-opt ${e === current ? 'selected' : ''}" onclick="(${onPick.toString()})(this,'${e}')">${e}</div>
+  `).join('');
+}
+
+function pickQuestEmoji(el, emoji) {
+  selectedQuestEmoji = emoji;
+  document.querySelectorAll('#questEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function pickMegaEmoji(el, emoji) {
+  selectedMegaEmoji = emoji;
+  document.querySelectorAll('#megaEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectXP(el) {
+  document.querySelectorAll('.xp-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// STORAGE
+function save(k, v) { localStorage.setItem('passit3_' + k, JSON.stringify(v)); }
+function load(k, def) { const v = localStorage.getItem('passit3_' + k); return v !== null ? JSON.parse(v) : def; }
+
+let quests = load('quests', []);
+let megaQuests = load('megaQuests', []);
+let currentFlang = 0;
+
+// PASS UPDATE
+function updatePass() {
+  const totalMaxXP = quests.reduce((s, q) => s + q.xp, 0);
+  const totalEarnedXP = quests.reduce((s, q) => s + (Math.min(q.current || 0, q.max) / q.max) * q.xp, 0);
+  const pct = totalMaxXP > 0 ? Math.min((totalEarnedXP / totalMaxXP) * 100, 100) : 0;
+
+  const container = document.getElementById('passLevels');
+  container.innerHTML = '';
+  const line = document.createElement('div');
+  line.className = 'pass-line';
+  line.innerHTML = `<div class="pass-line-fill" style="width:${pct}%"></div>`;
+  container.appendChild(line);
+
+  const n = quests.length;
+  const circles = n + 1;
+  for (let i = 0; i < circles; i++) {
+    const threshold = i === 0 ? 0 : (i / n) * 100;
+    const filled = i === 0 || pct >= threshold;
+    const div = document.createElement('div');
+    div.className = 'pass-level' + (filled ? ' filled' : '');
+    div.textContent = i;
+    container.appendChild(div);
+  }
+}
+
+// RENDER QUESTS
+function renderQuests() {
+  const grid = document.getElementById('questsGrid');
+  grid.innerHTML = '';
+  quests.forEach((q, i) => {
+    const cur = q.current || 0;
+    const pct = Math.min((cur / q.max) * 100, 100).toFixed(1);
+    const done = cur >= q.max;
+    grid.innerHTML += `
+      <div class="quest-card ${done ? 'done' : ''}">
+        <div class="quest-card-top">
+          <span class="quest-emoji">${q.emoji}</span>
+          <div style="flex:1;min-width:0;">
+            <div class="quest-name">${q.name}</div>
+            <div class="quest-sub">${q.sub}</div>
+          </div>
+          <span class="quest-xp-badge">${q.xp}XP</span>
+          <button class="quest-edit" onclick="openEditQuest(${i})" title="Редактировать">✏️</button>
+          <button class="quest-delete" onclick="deleteQuest(${i})" title="Удалить квест">✕</button>
+        </div>
+        <div class="quest-bottom">
+          <div class="quest-metric">
+            <span class="editable" contenteditable="true" data-quest="${i}">${cur}</span>
+            <span>/${q.max}</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" id="qbar-${i}" style="width:${pct}%"></div></div>
+        </div>
+      </div>`;
+  });
+  for (let i = quests.length; i < 9; i++) {
+    grid.innerHTML += `<div class="quest-empty">—</div>`;
+  }
+  document.getElementById('addQuestBtn').disabled = quests.length >= 9;
+  bindQuestEditables();
+  updatePass();
+}
+
+function deleteQuest(i) {
+  if (!confirm(`Удалить квест "${quests[i].name}"?`)) return;
+  quests.splice(i, 1);
+  save('quests', quests);
+  renderQuests();
+}
+
+function bindQuestEditables() {
+  document.querySelectorAll('.editable[data-quest]').forEach(el => {
+    el.addEventListener('blur', function() {
+      const i = parseInt(this.dataset.quest);
+      const val = Math.min(Math.max(parseInt(this.innerText) || 0, 0), quests[i].max);
+      this.innerText = val;
+      quests[i].current = val;
+      save('quests', quests);
+      const bar = document.getElementById('qbar-' + i);
+      if (bar) bar.style.width = ((val / quests[i].max) * 100) + '%';
+      this.closest('.quest-card').classList.toggle('done', val >= quests[i].max);
+      updatePass();
+    });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  });
+}
+
+// RENDER MEGA QUESTS
+function deleteMega(i) {
+  if (!confirm(`Удалить мегаквест "${megaQuests[i].name}"?`)) return;
+  megaQuests.splice(i, 1);
+  save('megaQuests', megaQuests);
+  currentFlang = Math.min(currentFlang, Math.max(megaQuests.length - 1, 0));
+  renderMega();
+}
+
+function renderMega() {
+  const slider = document.getElementById('flangsSlider');
+  const emptyEl = document.getElementById('megaEmpty');
+
+  // Remove old flang cards
+  slider.querySelectorAll('.flang-card').forEach(c => c.remove());
+
+  if (megaQuests.length === 0) {
+    if (emptyEl) emptyEl.style.display = 'flex';
+    document.getElementById('addMegaBtn').disabled = false;
+    return;
+  }
+  if (emptyEl) emptyEl.style.display = 'none';
+
+  megaQuests.forEach((mq, i) => {
+    const cur = mq.current || 0;
+    const pct = Math.min((cur / mq.max) * 100, 100).toFixed(1);
+    const card = document.createElement('div');
+    card.className = 'flang-card' + (i === currentFlang ? ' active' : '');
+    card.dataset.index = i;
+    const tasks = mq.tasks || [];
+    const taskItems = tasks.map((t, ti) => `
+      <div class="mega-task-item">
+        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i}, ${ti}, this.checked)">
+        <span class="${t.done ? 'done-task' : ''}">${t.text}</span>
+      </div>`).join('');
+
+    card.innerHTML = `
+      <button class="mega-edit" onclick="openEditMega(${i})" title="Редактировать">✏️</button>
+      <button class="mega-delete" onclick="deleteMega(${i})" title="Удалить мегаквест">✕</button>
+      <div class="flang-emoji-area" style="font-size:40px; flex:1.2;">${mq.emoji}</div>
+      <div class="flang-desc-area">
+        <div class="flang-title">${mq.name}</div>
+        <div class="flang-subtitle">${mq.sub}</div>
+      </div>
+      <div style="flex-shrink:0;">
+        <div style="display:flex; align-items:center; gap:6px; justify-content:space-between;">
+          <button class="mega-tasks-toggle" onclick="toggleTasksPanel(${i})">
+            📋 Задачи <span id="task-count-${i}">(${tasks.length})</span> ▾
+          </button>
+          <button class="mega-task-clear-btn" onclick="clearTasks(${i})" title="Очистить список задач">Очистить</button>
+        </div>
+        <div class="mega-tasks-panel" id="tasks-panel-${i}">
+          ${taskItems}
+          <div class="mega-task-add">
+            <input class="mega-task-input" id="task-input-${i}" placeholder="Новая задача..." maxlength="50"
+              onkeydown="if(event.key==='Enter') addTask(${i})">
+            <button class="mega-task-add-btn" onclick="addTask(${i})">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="flang-bar-area">
+        <div class="flang-metric-row">
+          <span>${mq.unit || 'ед.'}</span>
+          <div style="display:flex;gap:2px;align-items:center;">
+            <span class="editable" contenteditable="true" data-mega="${i}">${cur}</span>
+            <span>/${mq.max}</span>
+          </div>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="mbar-${i}" style="width:${pct}%"></div></div>
+      </div>
+      <div class="flang-nav">
+        <button onclick="changeFlang(-1)">←</button>
+        <div class="flang-dots">${megaQuests.map((_,j) => `<div class="flang-dot ${j===currentFlang?'active':''}" onclick="goFlang(${j})"></div>`).join('')}</div>
+        <button onclick="changeFlang(1)">→</button>
+      </div>`;
+    slider.appendChild(card);
+  });
+
+  document.getElementById('addMegaBtn').disabled = megaQuests.length >= 4;
+  bindMegaEditables();
+}
+
+function bindMegaEditables() {
+  document.querySelectorAll('.editable[data-mega]').forEach(el => {
+    el.addEventListener('blur', function() {
+      const i = parseInt(this.dataset.mega);
+      const val = Math.min(Math.max(parseInt(this.innerText) || 0, 0), megaQuests[i].max);
+      this.innerText = val;
+      megaQuests[i].current = val;
+      save('megaQuests', megaQuests);
+      const bar = document.getElementById('mbar-' + i);
+      if (bar) bar.style.width = ((val / megaQuests[i].max) * 100) + '%';
+    });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  });
+}
+
+function goFlang(index) {
+  currentFlang = index;
+  document.querySelectorAll('.flang-card').forEach((c, i) => c.classList.toggle('active', i === index));
+  renderMega();
+}
+function changeFlang(dir) {
+  if (megaQuests.length === 0) return;
+  goFlang((currentFlang + dir + megaQuests.length) % megaQuests.length);
+}
+
+// POPUPS
+function openQuestPopup() {
+  selectedQuestEmoji = EMOJIS[0];
+  renderEmojiGrid('questEmojiGrid', selectedQuestEmoji, pickQuestEmoji);
+  document.getElementById('questName').value = '';
+  document.getElementById('questSub').value = '';
+  document.getElementById('questMetric').value = '';
+  document.querySelectorAll('.xp-opt').forEach((o,i) => o.classList.toggle('selected', i === 0));
+  document.getElementById('questPopupOverlay').classList.add('open');
+}
+function openMegaPopup() {
+  selectedMegaEmoji = EMOJIS[0];
+  renderEmojiGrid('megaEmojiGrid', selectedMegaEmoji, pickMegaEmoji);
+  document.getElementById('megaName').value = '';
+  document.getElementById('megaSub').value = '';
+  document.getElementById('megaMetric').value = '';
+  document.getElementById('megaUnit').value = '';
+  document.getElementById('megaPopupOverlay').classList.add('open');
+}
+function closePopup(id) { document.getElementById(id).classList.remove('open'); }
+function closePopupOutside(e, id) { if (e.target === document.getElementById(id)) closePopup(id); }
+
+function addQuest() {
+  const name = document.getElementById('questName').value.trim();
+  const sub = document.getElementById('questSub').value.trim();
+  const metric = parseInt(document.getElementById('questMetric').value);
+  const xpEl = document.querySelector('.xp-opt.selected');
+  const xp = xpEl ? parseInt(xpEl.dataset.xp) : 100;
+  if (!name || !metric || metric < 1) { alert('Заполни название и метрику!'); return; }
+  if (quests.length >= 9) return;
+  quests.push({ emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0 });
+  save('quests', quests);
+  closePopup('questPopupOverlay');
+  renderQuests();
+}
+
+function addMega() {
+  const name = document.getElementById('megaName').value.trim();
+  const sub = document.getElementById('megaSub').value.trim();
+  const metric = parseInt(document.getElementById('megaMetric').value);
+  const unit = document.getElementById('megaUnit').value.trim();
+  if (!name || !metric || metric < 1) { alert('Заполни название и метрику!'); return; }
+  if (megaQuests.length >= 4) return;
+  megaQuests.push({ emoji: selectedMegaEmoji, name, sub: sub || '', max: metric, unit: unit || 'ед.', current: 0 });
+  save('megaQuests', megaQuests);
+  closePopup('megaPopupOverlay');
+  currentFlang = megaQuests.length - 1;
+  renderMega();
+}
+
+// MENU
+function toggleMenu() { document.getElementById('menuOverlay').classList.toggle('open'); }
+function closeMenuOutside(e) { if (e.target === document.getElementById('menuOverlay')) document.getElementById('menuOverlay').classList.remove('open'); }
+
+function newDay() {
+  quests.forEach(q => q.current = 0);
+  save('quests', quests);
+  document.getElementById('menuOverlay').classList.remove('open');
+  renderQuests();
+}
+function exportJSON() {
+  const data = { quests, megaQuests, exportedAt: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const filename = `passit_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}.json`;
+  const blob = new Blob([json], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+function importJSON() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.quests) { quests = data.quests; save('quests', quests); }
+        if (data.megaQuests) { megaQuests = data.megaQuests; save('megaQuests', megaQuests); }
+        document.getElementById('menuOverlay').classList.remove('open');
+        renderMega(); renderQuests();
+        alert('Данные загружены!');
+      } catch { alert('Ошибка чтения файла!'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function fullReset() {
+  if (!confirm('Удалить ВСЕ квесты и мегаквесты? Это нельзя отменить!')) return;
+  quests = []; megaQuests = [];
+  save('quests', quests); save('megaQuests', megaQuests);
+  currentFlang = 0;
+  document.getElementById('menuOverlay').classList.remove('open');
+  renderMega(); renderQuests();
+}
+
+function saveAndClose() {
+  save('quests', quests);
+  save('megaQuests', megaQuests);
+  document.getElementById('menuOverlay').classList.remove('open');
+  alert('Прогресс сохранён в браузере!');
+}
+
+// THEME
+let dark = load('darkMode', false);
+function applyTheme() {
+  document.body.classList.toggle('dark', dark);
+  document.getElementById('themeBtn').textContent = dark ? '☀️' : '🌙';
+}
+function toggleTheme() { dark = !dark; save('darkMode', dark); applyTheme(); }
+applyTheme();
+
+// INIT
+renderMega();
+renderQuests();
+
+// ========== FEEDBACK ==========
+function openFeedback() {
+  document.getElementById('feedbackOverlay').classList.add('open');
+}
+
+
+// ===== EDIT QUEST =====
+let editQuestIndex = -1;
+let editQuestEmoji = EMOJIS[0];
+
+function openEditQuest(i) {
+  editQuestIndex = i;
+  const q = quests[i];
+  editQuestEmoji = q.emoji;
+  renderEmojiGrid('editQuestEmojiGrid', editQuestEmoji, pickEditQuestEmoji);
+  document.getElementById('editQuestName').value = q.name;
+  document.getElementById('editQuestSub').value = q.sub;
+  document.getElementById('editQuestMetric').value = q.max;
+  document.querySelectorAll('#editXpOptions .xp-opt').forEach(o => {
+    o.classList.toggle('selected', parseInt(o.dataset.xp) === q.xp);
+  });
+  document.getElementById('editQuestOverlay').classList.add('open');
+}
+
+function pickEditQuestEmoji(el, emoji) {
+  editQuestEmoji = emoji;
+  document.querySelectorAll('#editQuestEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectEditXP(el) {
+  document.querySelectorAll('#editXpOptions .xp-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function saveEditQuest() {
+  const name = document.getElementById('editQuestName').value.trim();
+  const sub = document.getElementById('editQuestSub').value.trim();
+  const metric = parseInt(document.getElementById('editQuestMetric').value);
+  const xpEl = document.querySelector('#editXpOptions .xp-opt.selected');
+  const xp = xpEl ? parseInt(xpEl.dataset.xp) : quests[editQuestIndex].xp;
+  if (!name || !metric || metric < 1) { alert('Заполни название и метрику!'); return; }
+  quests[editQuestIndex] = { ...quests[editQuestIndex], emoji: editQuestEmoji, name, sub, max: metric, xp };
+  save('quests', quests);
+  closePopup('editQuestOverlay');
+  renderQuests();
+}
+
+// ===== EDIT MEGA =====
+let editMegaIndex = -1;
+let editMegaEmoji = EMOJIS[0];
+
+function openEditMega(i) {
+  editMegaIndex = i;
+  const mq = megaQuests[i];
+  editMegaEmoji = mq.emoji;
+  renderEmojiGrid('editMegaEmojiGrid', editMegaEmoji, pickEditMegaEmoji);
+  document.getElementById('editMegaName').value = mq.name;
+  document.getElementById('editMegaSub').value = mq.sub;
+  document.getElementById('editMegaMetric').value = mq.max;
+  document.getElementById('editMegaUnit').value = mq.unit || '';
+  document.getElementById('editMegaOverlay').classList.add('open');
+}
+
+function pickEditMegaEmoji(el, emoji) {
+  editMegaEmoji = emoji;
+  document.querySelectorAll('#editMegaEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function saveEditMega() {
+  const name = document.getElementById('editMegaName').value.trim();
+  const sub = document.getElementById('editMegaSub').value.trim();
+  const metric = parseInt(document.getElementById('editMegaMetric').value);
+  const unit = document.getElementById('editMegaUnit').value.trim();
+  if (!name || !metric || metric < 1) { alert('Заполни название и метрику!'); return; }
+  megaQuests[editMegaIndex] = { ...megaQuests[editMegaIndex], emoji: editMegaEmoji, name, sub, max: metric, unit };
+  save('megaQuests', megaQuests);
+  closePopup('editMegaOverlay');
+  renderMega();
+}
+
+// ===== MEGA TASKS =====
+function toggleTasksPanel(i) {
+  const panel = document.getElementById('tasks-panel-' + i);
+  if (panel) panel.classList.toggle('open');
+}
+
+function addTask(i) {
+  const input = document.getElementById('task-input-' + i);
+  const text = input.value.trim();
+  if (!text) return;
+  if (!megaQuests[i].tasks) megaQuests[i].tasks = [];
+  megaQuests[i].tasks.push({ text, done: false });
+  save('megaQuests', megaQuests);
+  input.value = '';
+  renderMega();
+  // reopen panel after re-render
+  setTimeout(() => {
+    const panel = document.getElementById('tasks-panel-' + i);
+    if (panel) panel.classList.add('open');
+  }, 10);
+}
+
+function clearTasks(i) {
+  if (!megaQuests[i].tasks || megaQuests[i].tasks.length === 0) return;
+  if (!confirm('Удалить все задачи этого мегаквеста?')) return;
+  megaQuests[i].tasks = [];
+  save('megaQuests', megaQuests);
+  renderMega();
+  setTimeout(() => {
+    const panel = document.getElementById('tasks-panel-' + i);
+    if (panel) panel.classList.add('open');
+  }, 10);
+}
+
+function toggleTask(i, ti, checked) {
+  if (!megaQuests[i].tasks) return;
+  megaQuests[i].tasks[ti].done = checked;
+  save('megaQuests', megaQuests);
+  const span = document.querySelector(`#tasks-panel-${i} .mega-task-item:nth-child(${ti+1}) span`);
+  if (span) span.classList.toggle('done-task', checked);
+}
+
+</script>
+
+<!-- FEEDBACK POPUP -->
+<div class="popup-overlay" id="feedbackOverlay" onclick="closePopupOutside(event,'feedbackOverlay')">
+  <div class="popup" style="width:480px; max-width:95vw;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="popup-title">💬 Обратная связь</div>
+      <button class="popup-btn secondary" onclick="closePopup('feedbackOverlay')" style="flex:0; padding:6px 12px; font-size:12px;">✕ Закрыть</button>
+    </div>
+    <div style="text-align:center; padding:20px 0 10px; color:var(--text2); font-size:13px;">
+      Нажми кнопку ниже — форма откроется в новой вкладке 👇
+    </div>
+    <a href="https://forms.gle/NbW9mXyg4ydUsbtD7" target="_blank" 
+       style="display:block; text-align:center; background:var(--accent); color:white; 
+              padding:14px; border-radius:12px; font-size:14px; font-weight:700; 
+              text-decoration:none; transition:opacity 0.2s;"
+       onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
+      📝 Открыть форму обратной связи
+    </a>
+    <div style="font-size:11px; color:var(--text2); text-align:center; margin-top:8px;">
+      Форма откроется в новой вкладке — можно вернуться обратно после отправки
+    </div>
+  </div>
+</div>
+
+
+<!-- EDIT QUEST POPUP -->
+<div class="popup-overlay" id="editQuestOverlay" onclick="closePopupOutside(event,'editQuestOverlay')">
+  <div class="popup">
+    <div class="popup-title">✏️ Редактировать квест</div>
+    <div class="popup-field">
+      <div class="popup-label">Смайл</div>
+      <div class="emoji-grid" id="editQuestEmojiGrid"></div>
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Название</div>
+      <input class="popup-input" id="editQuestName" type="text" maxlength="20">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Подзаголовок</div>
+      <input class="popup-input" id="editQuestSub" type="text" maxlength="30">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Метрика (максимум)</div>
+      <input class="popup-input" id="editQuestMetric" type="number" min="1" max="9999">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Опыт за квест</div>
+      <div class="xp-options" id="editXpOptions">
+        <div class="xp-opt" data-xp="100" onclick="selectEditXP(this)">100 XP<br><span class="xp-label">Лёгкий</span></div>
+        <div class="xp-opt" data-xp="250" onclick="selectEditXP(this)">250 XP<br><span class="xp-label">Средний</span></div>
+        <div class="xp-opt" data-xp="500" onclick="selectEditXP(this)">500 XP<br><span class="xp-label">Сложный</span></div>
+      </div>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('editQuestOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="saveEditQuest()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MEGA POPUP -->
+<div class="popup-overlay" id="editMegaOverlay" onclick="closePopupOutside(event,'editMegaOverlay')">
+  <div class="popup">
+    <div class="popup-title">✏️ Редактировать мегаквест</div>
+    <div class="popup-field">
+      <div class="popup-label">Смайл</div>
+      <div class="emoji-grid" id="editMegaEmojiGrid"></div>
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Название</div>
+      <input class="popup-input" id="editMegaName" type="text" maxlength="20">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Описание</div>
+      <input class="popup-input" id="editMegaSub" type="text" maxlength="40">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Метрика (максимум)</div>
+      <input class="popup-input" id="editMegaMetric" type="number" min="1" max="99999">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Единица измерения</div>
+      <input class="popup-input" id="editMegaUnit" type="text" maxlength="15">
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('editMegaOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="saveEditMega()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;justify-content:center;align-items:center">
+  <div style="background:var(--card);border-radius:20px;padding:2rem;max-width:380px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4)">
+    <h2 style="margin:0 0 0.5rem;color:var(--text)">👤 Войти</h2>
+    <p style="color:var(--text2);margin:0 0 1.5rem;font-size:0.9rem">Квесты сохраняются в облаке</p>
+    <button id="googleSignInBtn" style="width:100%;padding:1rem;background:#4285f4;color:white;border:none;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 15px rgba(66,133,244,0.4)">🌐 Войти через Google</button>
+    <button onclick="closeAuthModal()" style="width:100%;padding:0.8rem;margin-top:0.75rem;background:transparent;color:var(--text2);border:1px solid var(--text2);border-radius:12px;font-size:0.9rem;cursor:pointer">Отмена</button>
+  </div>
+</div>
+
+<script>
+  var currentUser = null;
+
+  function openAuthModal()  { document.getElementById("authModal").style.display = "flex"; }
+  function closeAuthModal() { document.getElementById("authModal").style.display = "none"; }
+
+  function handleAuthClick() {
+    if (currentUser) {
+      if (confirm("Выйти из аккаунта?")) firebase.auth().signOut();
+    } else {
+      openAuthModal();
+    }
+  }
+
+  document.getElementById("googleSignInBtn").onclick = function() {
+    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      .then(function() { closeAuthModal(); })
+      .catch(function(e) { alert("Ошибка: " + e.message); });
+  };
+
+  firebase.auth().onAuthStateChanged(function(user) {
+    currentUser = user;
+    var btn = document.getElementById("authBtn");
+    if (user) {
+      btn.textContent = "☁️";
+      btn.title = user.email + " (нажми чтобы выйти)";
+      cloudLoad(user.uid);
+    } else {
+      btn.textContent = "👤";
+      btn.title = "Войти в аккаунт";
+    }
+  });
+
+  function cloudSave() {
+    if (!currentUser) return;
+    db.collection("passit_users").doc(currentUser.uid).set({
+      quests: quests,
+      megaQuests: megaQuests,
+      updated: Date.now()
+    }).catch(function(e){ console.error("Save:", e); });
+  }
+
+  function cloudLoad(uid) {
+    db.collection("passit_users").doc(uid).get().then(function(doc) {
+      if (doc.exists) {
+        var data = doc.data();
+        quests = data.quests || [];
+        megaQuests = data.megaQuests || [];
+        render();
+        showToast("☁️ Данные из облака загружены!");
+      }
+    }).catch(function(e){ console.error("Load:", e); });
+  }
+
+  // Автосохранение каждую минуту
+  setInterval(cloudSave, 60000);
+</script>
+</body>
+</html>
