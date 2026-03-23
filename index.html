@@ -444,7 +444,7 @@ body {
   <div style="font-size:20px;">🎉</div>
   <div class="update-banner-text">
     Новое обновление!
-    <div class="update-banner-sub" id="updateBannerText">Квесты теперь можно перетаскивать между пассами — просто потяни на меню слева</div>
+    <div class="update-banner-sub" id="updateBannerText">🗑️ — удалить квест, ✕ — закрыть мегаквест. Плюс заморозка квестов — кнопка ❄️</div>
   </div>
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
@@ -1213,7 +1213,7 @@ function getRepeatFromPopup(tabsId) {
   return type === 'weekly' ? { type, days } : { type };
 }
 
-const CURRENT_VERSION = 'v1.5';
+const CURRENT_VERSION = 'v1.6';
 function checkUpdateBanner() {
   const seen = load('lastSeenVersion', null);
   if (seen !== CURRENT_VERSION) {
@@ -1390,7 +1390,7 @@ function renderQuests() {
               <span class="quest-xp-badge">${q.xp}XP</span>
               <button class="quest-freeze-btn" onclick="toggleFreezeQuest(${globalSnakeIdx})" title="${frozen ? 'Разморозить' : 'Заморозить'}" ondragstart="event.stopPropagation()">${frozen ? '🔥' : '❄️'}</button>
               <button class="quest-edit" onclick="openEditQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✏️</button>
-              <button class="quest-delete" onclick="deleteQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✕</button>
+              <button class="quest-delete" onclick="deleteQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">🗑️</button>
             </div>
             <div class="quest-bottom">
               ${frozen ? `<div class="quest-frozen-label">❄️ заморожен</div>` :
@@ -1659,10 +1659,10 @@ function renderMqFocus(i) {
 
   document.getElementById('mqFocusCard').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-      <button class="mq-back-btn" onclick="mqGoBack()" title="Назад к списку">← назад</button>
+      <button class="mq-back-btn" onclick="mqGoBack()" title="Закрыть">✕</button>
       <div style="display:flex;gap:6px;">
         <button class="mega-edit" onclick="openEditMega(${i})" title="Редактировать">✏️</button>
-        <button class="mega-delete" onclick="deleteMega(${i})" title="Удалить мегаквест">✕</button>
+        <button class="mega-delete" onclick="deleteMega(${i})" title="Удалить мегаквест">🗑️</button>
       </div>
     </div>
     <div class="flang-emoji-area">${mq.emoji}</div>
