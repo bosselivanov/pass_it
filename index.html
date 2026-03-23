@@ -247,6 +247,11 @@ body {
 .quest-card.dragging { opacity: 0.4; cursor: grabbing; transform: scale(0.97); }
 .quest-card.drag-over { border-color: var(--accent); border-width: 2px; box-shadow: 0 0 0 3px rgba(150,160,226,0.2); transform: scale(1.02); }
 .quest-card.done { border-color: rgba(80,200,120,0.55); }
+.quest-card.frozen { border-color: rgba(100,160,220,0.5); background: rgba(100,160,220,0.08); cursor: default; }
+.quest-card.frozen:hover { transform: none; box-shadow: none; }
+.quest-frozen-label { font-size: 10px; font-weight: 700; color: #5a9fd4; margin-top: auto; display: flex; align-items: center; gap: 4px; }
+.quest-freeze-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text2); opacity: 0.4; padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
+.quest-freeze-btn:hover { opacity: 1; color: #5a9fd4; }
 .quest-card-top { display: flex; align-items: center; gap: 6px; }
 .quest-emoji { font-size: 17px; flex-shrink: 0; }
 .quest-name { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.2; }
@@ -1266,7 +1271,8 @@ function selectXP(el) { document.querySelectorAll('.xp-opt').forEach(o => o.clas
 
 // ====== PASS LEVELS (horizontal scroll) ======
 function updatePass() {
-  const quests = getCurrentPass()?.quests || [];
+  const allQuests = getCurrentPass()?.quests || [];
+  const quests = allQuests.filter(q => q !== null);
   const totalMaxXP = quests.reduce((s, q) => s + q.xp, 0);
   const totalEarnedXP = quests.reduce((s, q) => s + (Math.min(q.current || 0, q.max) / q.max) * q.xp, 0);
   const pct = totalMaxXP > 0 ? Math.min((totalEarnedXP / totalMaxXP) * 100, 100) : 0;
@@ -1324,13 +1330,12 @@ function renderQuests() {
   const maxQ = userIsPro ? 18 : 9;
   const COLS = 3;
   const ROWS = 3;
-  const BLOCK = COLS * ROWS; // 9 квестов на блок
+  const BLOCK = COLS * ROWS;
 
-  // Сколько блоков показываем: текущие квесты + 1 пустой блок если не заполнен
+  // Сколько блоков: смотрим на длину массива (с null'ами)
   const filledBlocks = Math.ceil(Math.max(1, quests.length) / BLOCK);
   const totalBlocks = (quests.length % BLOCK === 0 && quests.length < maxQ) ? filledBlocks + 1 : filledBlocks;
   const cappedBlocks = Math.min(totalBlocks, Math.ceil(maxQ / BLOCK));
-  const totalCols = cappedBlocks * COLS; // с разрывом между блоками
 
   grid.style.gridAutoColumns = `calc((100% - ${(COLS - 1) * 8}px) / ${COLS})`;
   grid.innerHTML = '';
@@ -1338,28 +1343,27 @@ function renderQuests() {
   for (let blockIdx = 0; blockIdx < cappedBlocks; blockIdx++) {
     for (let col = 0; col < COLS; col++) {
       for (let row = 0; row < ROWS; row++) {
-        // Змейка внутри блока
         const posInRow = col;
         const snakeCol = (row % 2 === 0) ? posInRow : (COLS - 1 - posInRow);
         const snakeIdxInBlock = row * COLS + snakeCol;
         const globalSnakeIdx = blockIdx * BLOCK + snakeIdxInBlock;
 
         const div = document.createElement('div');
-        const q = quests[globalSnakeIdx];
+        const q = quests[globalSnakeIdx]; // может быть null или undefined
 
         if (q) {
           const cur = q.current || 0;
           const pct = Math.min((cur / q.max) * 100, 100).toFixed(1);
           const done = cur >= q.max;
-          const active = isQuestActiveToday(q);
-          // compute effective deadline
+          const frozen = !!q.frozen;
+          const active = !frozen && isQuestActiveToday(q);
+
           let effectiveDeadline = q.deadline;
           if (q.deadlineActiveDay && q.repeat?.type === 'weekly' && (q.repeat.days || []).length > 0) {
-            // find nearest upcoming active day
-            const today = todayDowIndex();
+            const todayDow = todayDowIndex();
             const days = q.repeat.days;
             for (let i = 1; i <= 7; i++) {
-              const d = (today + i) % 7;
+              const d = (todayDow + i) % 7;
               if (days.includes(d)) {
                 const dt = new Date();
                 dt.setDate(dt.getDate() + i);
@@ -1371,21 +1375,24 @@ function renderQuests() {
           const deadlineDays = daysUntilDeadline(effectiveDeadline);
           const deadlineHtml = deadlineDays !== null
             ? `<span class="quest-deadline ${deadlineDays <= 2 ? 'urgent' : ''}">${deadlineDays < 0 ? 'просрочен' : deadlineDays === 0 ? 'сегодня' : `ещё ${deadlineDays}д`}</span>`
-            : (q.repeat?.type === 'weekly' ? `<span class="quest-deadline" style="opacity:0.6;">активен сегодня</span>` : '');
-          const nextDay = !active ? nextActiveDay(q) : null;
-          div.className = 'quest-card' + (done ? ' done' : '') + (!active ? ' inactive' : '');
-          div.draggable = active;
+            : (q.repeat?.type === 'weekly' && active ? `<span class="quest-deadline" style="opacity:0.6;">активен сегодня</span>` : '');
+          const nextDay = !active && !frozen ? nextActiveDay(q) : null;
+
+          div.className = 'quest-card' + (done ? ' done' : '') + (!active && !frozen ? ' inactive' : '') + (frozen ? ' frozen' : '');
+          div.draggable = !frozen;
           div.dataset.snakeIdx = globalSnakeIdx;
           div.innerHTML = `
             <div class="quest-card-top">
-              <span class="quest-emoji">${q.emoji}</span>
+              <span class="quest-emoji">${q.emoji}${frozen ? '❄️' : ''}</span>
               <div style="flex:1;min-width:0;"><div class="quest-name">${q.name}</div><div class="quest-sub">${q.sub}</div></div>
               <span class="quest-xp-badge">${q.xp}XP</span>
+              <button class="quest-freeze-btn" onclick="toggleFreezeQuest(${globalSnakeIdx})" title="${frozen ? 'Разморозить' : 'Заморозить'}" ondragstart="event.stopPropagation()">${frozen ? '🔥' : '❄️'}</button>
               <button class="quest-edit" onclick="openEditQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✏️</button>
               <button class="quest-delete" onclick="deleteQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✕</button>
             </div>
             <div class="quest-bottom">
-              ${active ? `
+              ${frozen ? `<div class="quest-frozen-label">❄️ заморожен</div>` :
+                active ? `
               <div style="display:flex;justify-content:space-between;align-items:center;">
                 <div class="quest-metric"><span class="editable" contenteditable="true" data-quest="${globalSnakeIdx}">${cur}</span><span>/${q.max}</span></div>
                 <div style="display:flex;gap:6px;align-items:center;">${deadlineHtml}<button class="change-metric-btn" onclick="openChangeMetric('quest',${globalSnakeIdx})">изменить</button></div>
@@ -1405,11 +1412,14 @@ function renderQuests() {
           });
           div.addEventListener('dragend', () => {
             div.classList.remove('dragging');
-            document.querySelectorAll('.quest-card').forEach(c => c.classList.remove('drag-over'));
+            document.querySelectorAll('.quest-card, .quest-empty').forEach(c => {
+              c.classList.remove('drag-over');
+              c.style.borderColor = '';
+            });
           });
           div.addEventListener('dragover', (e) => {
             e.preventDefault();
-            document.querySelectorAll('.quest-card').forEach(c => c.classList.remove('drag-over'));
+            document.querySelectorAll('.quest-card, .quest-empty').forEach(c => c.classList.remove('drag-over'));
             div.classList.add('drag-over');
           });
           div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
@@ -1419,8 +1429,10 @@ function renderQuests() {
             const targetIdx = parseInt(div.dataset.snakeIdx);
             if (dragSrcIndex === null || dragSrcIndex === targetIdx) return;
             const p = getCurrentPass();
-            const moved = p.quests.splice(dragSrcIndex, 1)[0];
-            p.quests.splice(targetIdx, 0, moved);
+            // SWAP позиций — квест занимает конкретный слот
+            const tmp = p.quests[dragSrcIndex];
+            p.quests[dragSrcIndex] = p.quests[targetIdx];
+            p.quests[targetIdx] = tmp;
             dragSrcIndex = null;
             savePasses();
             renderQuests();
@@ -1428,8 +1440,10 @@ function renderQuests() {
           setupTouchDrag(div, globalSnakeIdx);
 
         } else if (globalSnakeIdx < maxQ) {
+          // Пустой слот — принимает drop
           div.className = 'quest-empty';
           div.textContent = '—';
+          div.dataset.snakeIdx = globalSnakeIdx;
           div.addEventListener('dragover', (e) => { e.preventDefault(); div.style.borderColor = 'var(--accent)'; });
           div.addEventListener('dragleave', () => { div.style.borderColor = ''; });
           div.addEventListener('drop', (e) => {
@@ -1437,19 +1451,21 @@ function renderQuests() {
             div.style.borderColor = '';
             if (dragSrcIndex === null) return;
             const p = getCurrentPass();
-            const moved = p.quests.splice(dragSrcIndex, 1)[0];
-            p.quests.splice(globalSnakeIdx, 0, moved);
+            // перемещаем квест в пустой слот, старый слот становится null
+            const targetIdx = parseInt(div.dataset.snakeIdx);
+            // расширяем массив если нужно
+            while (p.quests.length <= targetIdx) p.quests.push(null);
+            p.quests[targetIdx] = p.quests[dragSrcIndex];
+            p.quests[dragSrcIndex] = null;
+            // trim trailing nulls
+            while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
             dragSrcIndex = null;
             savePasses();
             renderQuests();
           });
         }
 
-        // Добавляем gap между блоками — первая колонка нового блока получает margin
-        if (col === 0 && blockIdx > 0) {
-          div.style.marginLeft = '16px';
-        }
-
+        if (col === 0 && blockIdx > 0) div.style.marginLeft = '16px';
         grid.appendChild(div);
       }
     }
@@ -1457,6 +1473,73 @@ function renderQuests() {
   bindQuestEditables();
   updatePass();
 }
+
+          const cur = q.current || 0;
+          const pct = Math.min((cur / q.max) * 100, 100).toFixed(1);
+          const done = cur >= q.max;
+          const frozen = !!q.frozen;
+          const active = !frozen && isQuestActiveToday(q);
+
+          // effective deadline
+          let effectiveDeadline = q.deadline;
+          if (q.deadlineActiveDay && q.repeat?.type === 'weekly' && (q.repeat.days || []).length > 0) {
+            const today = todayDowIndex();
+            const days = q.repeat.days;
+            for (let i = 1; i <= 7; i++) {
+              const d = (today + i) % 7;
+              if (days.includes(d)) {
+                const dt = new Date();
+                dt.setDate(dt.getDate() + i);
+                effectiveDeadline = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+                break;
+              }
+            }
+          }
+          const deadlineDays = daysUntilDeadline(effectiveDeadline);
+          const deadlineHtml = deadlineDays !== null
+            ? `<span class="quest-deadline ${deadlineDays <= 2 ? 'urgent' : ''}">${deadlineDays < 0 ? 'просрочен' : deadlineDays === 0 ? 'сегодня' : `ещё ${deadlineDays}д`}</span>`
+            : (q.repeat?.type === 'weekly' && active ? `<span class="quest-deadline" style="opacity:0.6;">активен сегодня</span>` : '');
+          const nextDay = !active && !frozen ? nextActiveDay(q) : null;
+
+          div.className = 'quest-card' + (done ? ' done' : '') + (!active && !frozen ? ' inactive' : '') + (frozen ? ' frozen' : '');
+          div.draggable = !frozen;
+          div.dataset.snakeIdx = globalSnakeIdx;
+          div.innerHTML = `
+            <div class="quest-card-top">
+              <span class="quest-emoji">${q.emoji}${frozen ? '❄️' : ''}</span>
+              <div style="flex:1;min-width:0;"><div class="quest-name">${q.name}</div><div class="quest-sub">${q.sub}</div></div>
+              <span class="quest-xp-badge">${q.xp}XP</span>
+              <button class="quest-freeze-btn" onclick="toggleFreezeQuest(${globalSnakeIdx})" title="${frozen ? 'Разморозить' : 'Заморозить'}" ondragstart="event.stopPropagation()">${frozen ? '🔥' : '❄️'}</button>
+              <button class="quest-edit" onclick="openEditQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✏️</button>
+              <button class="quest-delete" onclick="deleteQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✕</button>
+            </div>
+            <div class="quest-bottom">
+              ${frozen ? `<div class="quest-frozen-label">❄️ заморожен</div>` :
+                active ? `
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="quest-metric"><span class="editable" contenteditable="true" data-quest="${globalSnakeIdx}">${cur}</span><span>/${q.max}</span></div>
+                <div style="display:flex;gap:6px;align-items:center;">${deadlineHtml}<button class="change-metric-btn" onclick="openChangeMetric('quest',${globalSnakeIdx})">изменить</button></div>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="qbar-${globalSnakeIdx}" style="width:${pct}%"></div></div>
+              ` : `<div class="quest-inactive-label">${
+                nextDay ? `активен в ${nextDay}` :
+                q.repeat?.type === 'once' && q.deadline ? new Date(q.deadline + 'T00:00:00').toLocaleDateString('ru',{day:'numeric',month:'short'}) :
+                'не активен сегодня'
+              }</div>`}
+            </div>`;
+
+          div.addEventListener('dragstart', (e) => {
+            dragSrcIndex = globalSnakeIdx;
+            div.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+          });
+          div.addEventListener('dragend', () => {
+            div.classList.remove('dragging');
+            document.querySelectorAll('.quest-card, .quest-empty').forEach(c => {
+              c.classList.remove('drag-over');
+              c.style.borderColor = '';
+            });
+          });
 
 function setupTouchDrag(el, snakeIdx) {
   let touchStartX, touchStartY, clone, startScrollLeft;
@@ -1499,8 +1582,12 @@ function setupTouchDrag(el, snakeIdx) {
       const targetIdx = parseInt(target.dataset.snakeIdx);
       if (dragSrcIndex !== targetIdx) {
         const p = getCurrentPass();
-        const moved = p.quests.splice(dragSrcIndex, 1)[0];
-        p.quests.splice(targetIdx, 0, moved);
+        // swap positions
+        while (p.quests.length <= targetIdx) p.quests.push(null);
+        const tmp = p.quests[dragSrcIndex];
+        p.quests[dragSrcIndex] = p.quests[targetIdx];
+        p.quests[targetIdx] = tmp;
+        while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
         savePasses();
         renderQuests();
       }
@@ -1509,17 +1596,30 @@ function setupTouchDrag(el, snakeIdx) {
   });
 }
 
+function toggleFreezeQuest(i) {
+  const p = getCurrentPass();
+  p.quests[i].frozen = !p.quests[i].frozen;
+  if (p.quests[i].frozen) {
+    showToast('❄️ Квест заморожен');
+  } else {
+    showToast('🔥 Квест разморожен');
+  }
+  savePasses();
+  renderQuests();
+}
+
 function deleteQuest(i) {
   const p = getCurrentPass();
   const q = p.quests[i];
+  if (!q) return;
   if (q.repeat?.type === 'once') {
-    // special popup for one-time quests
     const choice = confirm(`«${q.name}» удалится сам в полночь.\n\nНажмите OK чтобы удалить вручную сейчас, или Отмена чтобы подождать.`);
     if (!choice) return;
   } else {
     if (!confirm(`Удалить квест «${q.name}»?`)) return;
   }
-  p.quests.splice(i, 1);
+  p.quests[i] = null;
+  while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
   savePasses();
   renderQuests();
 }
@@ -1746,7 +1846,14 @@ function addQuest() {
   const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('questDeadlineActiveDay').checked;
   const deadline = deadlineActiveDay ? null : (document.getElementById('questDeadline').value || null);
   if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
-  p.quests.push({ emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay });
+  const newQuest = { emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay };
+  // найти первый свободный слот
+  const firstNull = p.quests.indexOf(null);
+  if (firstNull !== -1) {
+    p.quests[firstNull] = newQuest;
+  } else {
+    p.quests.push(newQuest);
+  }
   savePasses();
   closePopup('questPopupOverlay');
   renderQuests();
@@ -1779,7 +1886,8 @@ function onAddMega() {
 function onAddQuest() {
   const p = getCurrentPass();
   const limit = userIsPro ? 18 : 9;
-  if ((p?.quests || []).length >= limit) { openSubPopup(); return; }
+  const filled = (p?.quests || []).filter(q => q !== null).length;
+  if (filled >= limit) { openSubPopup(); return; }
   openQuestPopup();
 }
 
@@ -2033,7 +2141,8 @@ function newDay() {
   const p = getCurrentPass();
   const today = todayStr();
   p.quests.forEach(q => {
-    if (!isQuestActiveToday(q)) return; // не сбрасываем неактивные
+    if (!q || q.frozen) return;
+    if (!isQuestActiveToday(q)) return;
     // one-time квест с прошедшим дедлайном — не трогаем
     if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return;
     q.current = 0;
@@ -2175,10 +2284,14 @@ function cleanupExpiredQuests() {
   let changed = false;
   passes.forEach(p => {
     const before = p.quests.length;
-    p.quests = p.quests.filter(q => {
-      if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return false;
-      return true;
+    p.quests = p.quests.map(q => {
+      if (!q) return null;
+      if (q.frozen) return q;
+      if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return null;
+      return q;
     });
+    // trim trailing nulls
+    while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
     if (p.quests.length !== before) changed = true;
   });
   if (changed) { savePasses(); renderQuests(); showToast('🗑 Одноразовые квесты удалены'); }
@@ -2195,6 +2308,7 @@ function scheduleMidnightCleanup() {
     // также сбрасываем ежедневные квесты
     const p = getCurrentPass();
     p.quests.forEach(q => {
+      if (!q || q.frozen) return;
       if (isQuestActiveToday(q)) q.current = 0;
     });
     savePasses();
@@ -2289,7 +2403,7 @@ firebase.auth().onAuthStateChanged(function(user) {
       }
 
       var localHasData = passes.some(p => (p.quests||[]).length > 0 || (p.megaQuests||[]).length > 0);
-      var cloudHasData = cloudPasses && cloudPasses.some(p => p.quests.length > 0 || p.megaQuests.length > 0);
+      var cloudHasData = cloudPasses && cloudPasses.some(p => (p.quests||[]).filter(q=>q).length > 0 || (p.megaQuests||[]).length > 0);
 
       if (localHasData && !cloudHasData) {
         cloudSave(); render(); showToast('☁️ Локальные данные сохранены в облако!');
