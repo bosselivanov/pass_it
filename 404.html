@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Daily Pass — обновление</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: #F8EAFA; font-family: 'Segoe UI', sans-serif;
+  color: #2a1a4a;
+}
+.card {
+  background: rgba(255,255,255,0.55); backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(150,160,226,0.35); border-radius: 24px;
+  padding: 40px 48px; max-width: 420px; width: 90%;
+  text-align: center; display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 20px 60px rgba(150,160,226,0.15);
+}
+.emoji { font-size: 52px; }
+.title {
+  font-size: 18px; font-weight: 800; color: #2a1a4a;
+  letter-spacing: 1px;
+}
+.subtitle {
+  font-size: 14px; color: #7a5ab0; line-height: 1.6;
+}
+.chance {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: #96A0E2;
+  background: rgba(150,160,226,0.12); border-radius: 8px;
+  padding: 6px 12px; display: inline-block; margin: 0 auto;
+}
+.bar-bg {
+  height: 6px; background: rgba(150,160,226,0.18);
+  border-radius: 6px; overflow: hidden;
+}
+.bar-fill {
+  height: 100%; background: #96A0E2; border-radius: 6px;
+  width: 0%; animation: loading 90s linear forwards;
+}
+@keyframes loading { from { width: 0%; } to { width: 100%; } }
+.btn {
+  background: #96A0E2; color: white; border: none;
+  border-radius: 12px; padding: 12px 24px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.2s; text-decoration: none;
+  display: inline-block; margin-top: 4px;
+}
+.btn:hover { opacity: 0.85; }
+.note { font-size: 11px; color: #7a5ab0; opacity: 0.6; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="emoji">🎲</div>
+  <div class="title">Попасть сюда — шанс 1 из 360</div>
+  <div class="subtitle">
+    Приложение обновляется прямо сейчас.<br>
+    Буквально пару минут — и всё заработает.
+  </div>
+  <div class="chance">⚡ идёт деплой</div>
+  <div class="bar-bg"><div class="bar-fill"></div></div>
+  <a class="btn" href="/">← Попробовать снова</a>
+  <div class="note">Если не открывается через 2 минуты — просто обнови страницу</div>
+</div>
+<script>
+  // Auto-reload after 90 seconds
+  setTimeout(() => window.location.reload(), 90000);
+</script>
+</body>
+</html>
