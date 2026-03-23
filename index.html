@@ -391,8 +391,41 @@ body {
 .theme-swatch.selected { border-color: var(--accent); border-width: 3px; }
 .theme-close-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text2); cursor: pointer; transition: background 0.2s; text-align: center; }
 .theme-close-btn:hover { background: var(--surface); }
+/* TOOLTIPS */
+.header-btn { position: relative; }
+.header-btn[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute; top: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 11px; font-weight: 700; color: var(--text);
+  white-space: nowrap; z-index: 500;
+  pointer-events: none;
+}
+
+/* AUTHOR PASS */
+.author-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; }
+.author-overlay.open { display: flex; }
+.author-popup { background: var(--blur-bg); backdrop-filter: blur(24px); border: 1.5px solid var(--border); border-radius: 24px; padding: 28px; width: 680px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease; overflow-y: auto; }
+.author-header { display: flex; align-items: center; justify-content: space-between; }
+.author-title { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: 2px; text-transform: uppercase; }
+.author-badge { font-size: 10px; font-weight: 800; letter-spacing: 1px; background: var(--bar-bg); color: var(--text2); padding: 4px 10px; border-radius: 8px; text-transform: uppercase; }
+.author-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.author-col { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 280px; }
+.author-col-title { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); text-align: center; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.author-task { background: var(--bar-bg); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; opacity: 0.45; }
+.author-task-name { font-size: 12px; font-weight: 700; color: var(--text); }
+.author-task-bar { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.author-task-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; }
+.author-task-meta { font-size: 10px; color: var(--text2); }
+.author-coming-soon { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; opacity: 0.3; }
+.author-coming-soon-icon { font-size: 28px; }
+.author-coming-soon-text { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+.author-soon-banner { background: var(--bar-bg); border: 1.5px dashed var(--border); border-radius: 12px; padding: 14px; text-align: center; font-size: 12px; color: var(--text2); font-weight: 700; opacity: 0.6; }
+.author-close-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text2); cursor: pointer; transition: background 0.2s; text-align: center; }
+.author-close-btn:hover { background: var(--surface); }
 </style>
-</head>
 <body>
 
 <div class="toast" id="toast"></div>
@@ -406,13 +439,14 @@ body {
 </div>
 
 <div class="header">
-  <button class="header-btn" onclick="toggleMenu()">☰</button>
+  <button class="header-btn" onclick="toggleMenu()" data-tooltip="Меню">☰</button>
   <div class="header-title">Your Daily Pass</div>
-  <button class="header-btn" onclick="openFeedback()">❓</button>
-  <button class="header-btn" id="subBtn" onclick="openSubPopup()" title="Подписка">⭐</button>
-  <button class="header-btn" id="authBtn" title="Войти" onclick="authClick()">👤</button>
-  <button class="header-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
-  <button class="header-btn" onclick="openThemePicker()" title="Выбор темы">🎨</button>
+  <button class="header-btn" onclick="openAuthorPass()" data-tooltip="Авторский пасс" id="authorPassBtn">🏆</button>
+  <button class="header-btn" onclick="openFeedback()" data-tooltip="Обратная связь">❓</button>
+  <button class="header-btn" id="subBtn" onclick="openSubPopup()" data-tooltip="Подписка">⭐</button>
+  <button class="header-btn" id="authBtn" onclick="authClick()" data-tooltip="Аккаунт">👤</button>
+  <button class="header-btn" onclick="toggleTheme()" id="themeBtn" data-tooltip="Сменить тему">🌙</button>
+  <button class="header-btn" onclick="openThemePicker()" data-tooltip="Выбор оформления">🎨</button>
 </div>
 
 <!-- PASS AREA -->
@@ -473,10 +507,7 @@ body {
   <div class="left-menu">
     <div class="menu-title">Меню</div>
     <button class="menu-btn" onclick="newDay()">🌅 Начать новый день</button>
-    <button class="menu-btn" onclick="exportJSON()">📤 Экспорт данных (JSON)</button>
-    <button class="menu-btn" onclick="importJSON()">📥 Импорт данных (JSON)</button>
     <button class="menu-btn" onclick="fullReset()" style="color:#e04040;">🗑️ Полный сброс всего</button>
-    <button class="menu-btn" onclick="saveAndClose()">💾 Выйти</button>
   </div>
 </div>
 
@@ -637,6 +668,72 @@ body {
       <button class="popup-btn secondary" onclick="closePopup('changeMetricOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="saveMetricChange()">Сохранить</button>
     </div>
+  </div>
+</div>
+
+<!-- AUTHOR PASS POPUP -->
+<div class="author-overlay" id="authorOverlay" onclick="closeAuthorOutside(event)">
+  <div class="author-popup">
+    <div class="author-header">
+      <div class="author-title">🏆 Авторский пасс</div>
+      <div class="author-badge">Скоро</div>
+    </div>
+    <div class="author-soon-banner">
+      Эта функция в разработке — совсем скоро здесь появятся ежедневные и еженедельные задания с наградами
+    </div>
+    <div class="author-columns">
+
+      <!-- ЕЖЕДНЕВНЫЕ -->
+      <div class="author-col">
+        <div class="author-col-title">☀️ Ежедневные</div>
+        <div class="author-task">
+          <div class="author-task-name">Выполни 2 квеста</div>
+          <div class="author-task-bar"><div class="author-task-fill"></div></div>
+          <div class="author-task-meta">0 / 2 · +200 XP</div>
+        </div>
+        <div class="author-task">
+          <div class="author-task-name">Выполни 4 квеста</div>
+          <div class="author-task-bar"><div class="author-task-fill"></div></div>
+          <div class="author-task-meta">0 / 4 · +200 XP</div>
+        </div>
+        <div class="author-task">
+          <div class="author-task-name">Выполни 6 квестов</div>
+          <div class="author-task-bar"><div class="author-task-fill"></div></div>
+          <div class="author-task-meta">0 / 6 · +200 XP</div>
+        </div>
+      </div>
+
+      <!-- ЕЖЕНЕДЕЛЬНЫЕ -->
+      <div class="author-col">
+        <div class="author-col-title">📅 Еженедельные</div>
+        <div class="author-task">
+          <div class="author-task-name">Набери 1400 XP за неделю</div>
+          <div class="author-task-bar"><div class="author-task-fill"></div></div>
+          <div class="author-task-meta">0 / 1400 XP · +500 XP</div>
+        </div>
+        <div class="author-task">
+          <div class="author-task-name">Квест недели</div>
+          <div class="author-task-bar"><div class="author-task-fill"></div></div>
+          <div class="author-task-meta">Скоро · +500 XP</div>
+        </div>
+        <div class="author-task">
+          <div class="author-task-name">Продли стрик 3 раза</div>
+          <div class="author-task-bar"><div class="author-task-fill"></div></div>
+          <div class="author-task-meta">0 / 3 · +500 XP</div>
+        </div>
+      </div>
+
+      <!-- СЕЗОННЫЕ -->
+      <div class="author-col">
+        <div class="author-col-title">🌟 Сезонные</div>
+        <div class="author-coming-soon">
+          <div class="author-coming-soon-icon">🔒</div>
+          <div class="author-coming-soon-text">Скоро</div>
+        </div>
+      </div>
+
+    </div>
+    <button class="author-close-btn" onclick="closeAuthorPass()">Закрыть</button>
   </div>
 </div>
 
@@ -2056,6 +2153,17 @@ function closeThemePicker() { document.getElementById('themePickerOverlay').clas
 function closeThemePickerOutside(e) { if (e.target === document.getElementById('themePickerOverlay')) closeThemePicker(); }
 function selectTheme(name) { currentTheme = name; save('currentTheme', name); applyTheme(); updateSwatchSelected(); }
 function updateSwatchSelected() { document.getElementById('swatchHuntrx').classList.toggle('selected', currentTheme === 'huntrx'); document.getElementById('swatchBasic').classList.toggle('selected', currentTheme === 'basic'); }
+
+// ====== AUTHOR PASS ======
+function openAuthorPass() {
+  document.getElementById('authorOverlay').classList.add('open');
+}
+function closeAuthorPass() {
+  document.getElementById('authorOverlay').classList.remove('open');
+}
+function closeAuthorOutside(e) {
+  if (e.target === document.getElementById('authorOverlay')) closeAuthorPass();
+}
 
 // ====== FEEDBACK ======
 function openFeedback() { document.getElementById('feedbackOverlay').classList.add('open'); }
