@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>YOUR DAILY PASS</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBd0j9J78QI9AFLFS3TPaWwgFdoUMxTsqE",
+    authDomain: "pass-it-auth.firebaseapp.com",
+    databaseURL: "https://pass-it-auth-default-rtdb.firebaseio.com",
+    projectId: "pass-it-auth",
+    storageBucket: "pass-it-auth.firebasestorage.app",
+    messagingSenderId: "513075711876",
+    appId: "1:513075711876:web:3a577b54daca07f17a17d1"
+  });
+  var fbdb = firebase.database();
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #F8EAFA; --surface: #EEDDFF; --accent: #96A0E2;
+  --accent2: #F9DABB; --text: #2a1a4a; --text2: #7a5ab0;
+  --border: rgba(150,160,226,0.35); --bar-bg: rgba(150,160,226,0.18);
+  --card-bg: rgba(255,255,255,0.55); --overlay: rgba(200,180,255,0.25);
+  --blur-bg: rgba(238,221,255,0.92);
+}
+body.dark { color-scheme: dark; }
+body {
+  height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: var(--bg); font-family: 'Segoe UI', sans-serif;
+  color: var(--text); transition: background 0.3s, color 0.3s;
+}
+
+/* HEADER */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; background: var(--surface);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.header-title { font-size: 14px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
+.header-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; color: var(--text2); padding: 4px 8px;
+  border-radius: 8px; transition: background 0.2s;
+}
+.header-btn:hover { background: var(--bar-bg); }
+
+/* PASS AREA */
+.pass-area {
+  flex-shrink: 0; display: flex; align-items: stretch;
+  margin: 12px 24px 0; gap: 10px;
+}
+
+/* PASS MENU (left side — same width as flangs-section) */
+.pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
+.pass-menu-trigger {
+  width: 100%; min-height: 76px;
+  background: var(--card-bg); backdrop-filter: blur(12px);
+  border: 1.5px solid var(--border); border-radius: 16px;
+  padding: 10px 14px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color 0.2s;
+}
+.pass-menu-trigger:hover { border-color: var(--accent); }
+.pass-menu-arrow { font-size: 11px; color: var(--text2); flex-shrink: 0; transition: transform 0.2s; }
+.pass-menu-arrow.open { transform: rotate(180deg); }
+.pass-menu-name { font-size: 13px; font-weight: 800; color: var(--text); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pass-menu-emoji { font-size: 20px; flex-shrink: 0; }
+.pass-menu-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--blur-bg); backdrop-filter: blur(20px);
+  border: 1.5px solid var(--border); border-radius: 14px;
+  padding: 8px; z-index: 150;
+  display: none; flex-direction: column; gap: 4px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  animation: popIn 0.18s ease;
+}
+.pass-menu-dropdown.open { display: flex; }
+.pass-menu-item { padding: 9px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text); transition: background 0.15s; }
+.pass-menu-item:hover { background: var(--bar-bg); }
+.pass-menu-item.active { background: var(--accent); color: white; }
+.pass-menu-item-emoji { font-size: 16px; flex-shrink: 0; }
+.pass-menu-divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
+.pass-menu-action { padding: 8px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--text2); transition: background 0.15s; background: none; border: none; text-align: left; width: 100%; }
+.pass-menu-action:hover { background: var(--bar-bg); color: var(--text); }
+.pass-menu-action.danger:hover { background: rgba(224,64,64,0.1); color: #e04040; }
+
+/* PASS CONTAINER — horizontal scroll */
+.pass-container-wrap { flex: 1; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.pass-container-wrap::-webkit-scrollbar { display: none; }
+.pass-container {
+  border: 1.5px solid var(--border); border-radius: 16px;
+  background: var(--card-bg); backdrop-filter: blur(12px);
+  padding: 14px 24px; display: flex; flex-direction: column; gap: 12px;
+  width: 100%; min-height: 76px;
+}
+.pass-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--text2); text-transform: uppercase; }
+.pass-levels-wrap { display: flex; align-items: center; position: relative; min-height: 38px; }
+.pass-level {
+  width: 38px; height: 38px; border-radius: 50%; background: var(--surface);
+  border: 2px solid var(--border); display: flex; align-items: center;
+  justify-content: center; font-size: 11px; font-weight: 700; color: var(--text2);
+  position: relative; z-index: 1; transition: all 0.3s; flex-shrink: 0;
+}
+.pass-level.filled { background: var(--accent); border-color: transparent; color: white; }
+
+/* MAIN LAYOUT — restore original proportions */
+.main-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin: 8px 24px 12px; flex: 1; overflow: hidden; min-height: 0; }
+
+/* MEGA QUESTS */
+.flangs-section { display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow: hidden; }
+.section-header { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; padding-left: 2px; flex-shrink: 0; }
+.flangs-header-row { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.add-mega-btn { font-size: 10px; font-weight: 700; background: var(--accent2); border: none; border-radius: 8px; padding: 4px 10px; cursor: pointer; transition: opacity 0.2s; color: var(--text); }
+.add-mega-btn:hover { opacity: 0.8; }
+.mq-list { display: flex; flex-direction: column; gap: 6px; flex: 1; overflow-y: auto; min-height: 0; }
+.mq-list.hidden { display: none; }
+.mq-row {
+  background: var(--card-bg); backdrop-filter: blur(12px);
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 10px 12px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color 0.2s, transform 0.15s; flex-shrink: 0;
+}
+.mq-row:hover { border-color: var(--accent); transform: translateX(2px); }
+.mq-row-emoji { font-size: 20px; width: 28px; text-align: center; flex-shrink: 0; }
+.mq-row-info { flex: 1; min-width: 0; }
+.mq-row-name { font-size: 13px; font-weight: 800; color: var(--text); }
+.mq-row-pct { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.mq-row-bar { height: 3px; background: var(--bar-bg); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+.mq-row-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+.mq-row-arrow { font-size: 14px; color: var(--text2); flex-shrink: 0; opacity: 0.5; }
+.mq-empty { display: flex; align-items: center; justify-content: center; flex: 1; border: 2px dashed var(--border); border-radius: 16px; color: var(--text2); font-size: 12px; opacity: 0.5; }
+.mq-focus { display: none; flex-direction: column; gap: 7px; flex: 1; min-height: 0; overflow: hidden; }
+.mq-focus.active { display: flex; }
+.mq-back-btn {
+  background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 4px 10px; font-size: 10px; font-weight: 700; color: var(--text2);
+  cursor: pointer; transition: all 0.2s; align-self: flex-start; flex-shrink: 0;
+}
+.mq-back-btn:hover { background: var(--accent); color: white; border-color: transparent; }
+.flang-card {
+  background: var(--card-bg); backdrop-filter: blur(16px);
+  border: 1.5px solid var(--border); border-radius: 16px;
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+  position: relative; flex: 1;
+  animation: focusIn 0.22s ease;
+}
+@keyframes focusIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.flang-emoji-area { display: flex; align-items: center; justify-content: center; font-size: 40px; flex-shrink: 0; }
+.flang-desc-area { display: flex; flex-direction: column; gap: 2px; align-items: center; text-align: center; flex-shrink: 0; }
+.flang-title { font-size: 15px; font-weight: 800; color: var(--text); text-align: center; }
+.flang-subtitle { font-size: 11px; color: var(--text2); text-align: center; }
+.flang-bar-area { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.flang-metric-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; color: var(--text); }
+.progress-bar-bg { height: 8px; background: var(--bar-bg); border-radius: 6px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--accent); border-radius: 6px; transition: width 0.4s ease; }
+.mq-stacked-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; flex-shrink: 0; }
+.mq-stacked { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.mq-stacked-row {
+  background: var(--card-bg); backdrop-filter: blur(8px);
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 7px 11px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: border-color 0.2s;
+  animation: stackIn 0.18s ease;
+}
+@keyframes stackIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.mq-stacked-row:hover { border-color: var(--accent); }
+.mq-stacked-emoji { font-size: 15px; width: 20px; text-align: center; }
+.mq-stacked-name { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; }
+.mq-stacked-pct { font-size: 11px; color: var(--text2); }
+
+/* MEGA TASKS */
+.mega-tasks-toggle {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; color: var(--text2); opacity: 0.7;
+  padding: 2px 0; transition: opacity 0.2s;
+  text-align: left; display: flex; align-items: center; gap: 4px;
+}
+.mega-tasks-toggle:hover { opacity: 1; }
+.mega-tasks-panel { display: none; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; padding-right: 4px; }
+.mega-tasks-panel.open { display: flex; }
+.mega-task-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); line-height: 1.3; }
+.mega-task-item input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+.mega-task-item span { flex: 1; }
+.mega-task-item span.done-task { text-decoration: line-through; opacity: 0.5; }
+.task-edit-btn, .task-delete-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; opacity: 0; padding: 0 2px;
+  transition: opacity 0.15s; flex-shrink: 0; line-height: 1;
+}
+.mega-task-item:hover .task-edit-btn,
+.mega-task-item:hover .task-delete-btn { opacity: 0.5; }
+.task-edit-btn:hover { opacity: 1 !important; color: var(--accent); }
+.task-delete-btn:hover { opacity: 1 !important; color: #e04040; }
+.task-inline-input {
+  flex: 1; background: var(--bar-bg); border: 1.5px solid var(--accent);
+  border-radius: 6px; padding: 2px 6px; font-size: 13px; color: var(--text);
+  outline: none;
+}
+.mega-task-add { display: flex; gap: 6px; margin-top: 2px; }
+.mega-task-input { flex: 1; background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 5px 8px; font-size: 11px; color: var(--text); outline: none; }
+.mega-task-input:focus { border-color: var(--accent); }
+.mega-task-input::placeholder { color: var(--text2); opacity: 0.6; }
+.mega-task-add-btn { background: var(--accent); border: none; border-radius: 8px; color: white; font-size: 13px; font-weight: 700; padding: 0 10px; cursor: pointer; transition: opacity 0.2s; }
+.mega-task-add-btn:hover { opacity: 0.8; }
+.mega-task-clear-btn { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--text2); opacity: 0.7; padding: 0; margin-left: auto; }
+.mega-task-clear-btn:hover { opacity: 1; color: #e04040; }
+.mega-delete { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text2); opacity: 0.35; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; padding: 0; }
+.mega-delete:hover { opacity: 1; color: #e04040; }
+.mega-edit { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text2); opacity: 0.35; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; padding: 0; }
+.mega-edit:hover { opacity: 1; color: var(--accent); }
+
+/* QUESTS */
+.quests-section { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.quests-header-row { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.add-quest-btn { font-size: 10px; font-weight: 700; color: white; background: var(--accent); border: none; border-radius: 8px; padding: 5px 12px; cursor: pointer; transition: opacity 0.2s; }
+.add-quest-btn:hover { opacity: 0.85; }
+.quests-scroll-wrap { flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.quests-scroll-wrap::-webkit-scrollbar { display: none; }
+.quests-grid { display: grid; grid-template-rows: repeat(3, 1fr); grid-auto-flow: column; grid-auto-columns: calc((100% - 16px) / 3); gap: 8px; height: 100%; min-width: 100%; }
+.quest-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; min-height: 0; cursor: grab; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s, border-color 0.15s; user-select: none; }
+.quest-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.quest-card.dragging { opacity: 0.4; cursor: grabbing; transform: scale(0.97); }
+.quest-card.drag-over { border-color: var(--accent); border-width: 2px; box-shadow: 0 0 0 3px rgba(150,160,226,0.2); transform: scale(1.02); }
+.quest-card.done { border-color: rgba(80,200,120,0.55); }
+.quest-card-top { display: flex; align-items: center; gap: 6px; }
+.quest-emoji { font-size: 17px; flex-shrink: 0; }
+.quest-name { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.quest-sub { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.quest-xp-badge { font-size: 10px; font-weight: 700; background: var(--bar-bg); color: var(--accent); padding: 2px 6px; border-radius: 6px; flex-shrink: 0; }
+.quest-bottom { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
+.quest-metric { font-size: 13px; font-weight: 700; color: var(--text); display: flex; gap: 2px; align-items: center; }
+.quest-empty { border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 11px; opacity: 0.5; }
+.quest-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text2); opacity: 0.4; padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
+.quest-delete:hover { opacity: 1; color: #e04040; }
+.quest-edit { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text2); opacity: 0.4; padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
+.quest-edit:hover { opacity: 1; color: var(--accent); }
+.editable { min-width: 20px; outline: none; border-bottom: 1.5px dashed var(--border); text-align: center; cursor: text; padding: 0 2px; border-radius: 2px; transition: background 0.2s; }
+.editable:focus { background: var(--bar-bg); }
+.change-metric-btn { background: none; border: none; cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text2); opacity: 0.6; padding: 0; letter-spacing: 0.5px; text-decoration: underline; text-underline-offset: 2px; transition: opacity 0.2s; }
+.change-metric-btn:hover { opacity: 1; color: var(--accent); }
+
+/* REPEAT TABS */
+.repeat-tabs { display: flex; gap: 6px; }
+.repeat-tab { flex: 1; padding: 7px 4px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--bar-bg); cursor: pointer; text-align: center; font-size: 11px; font-weight: 700; color: var(--text2); transition: all 0.15s; }
+.repeat-tab:hover { border-color: var(--accent); }
+.repeat-tab.active { border-color: var(--accent); background: var(--accent); color: white; }
+.days-grid { display: flex; gap: 5px; }
+.day-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--bar-bg); cursor: pointer; font-size: 10px; font-weight: 700; color: var(--text2); transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.day-btn:hover { border-color: var(--accent); }
+.day-btn.active { border-color: var(--accent); background: var(--accent); color: white; }
+
+/* GREY QUEST (inactive day) */
+.quest-card.inactive { opacity: 0.45; }
+.quest-card.inactive .quest-name { text-decoration: none; }
+.quest-inactive-label { font-size: 10px; color: var(--text2); font-weight: 700; margin-top: auto; }
+
+/* DEADLINE badge */
+.quest-deadline { font-size: 10px; color: var(--text2); font-weight: 700; }
+.quest-deadline.urgent { color: #e04040; }
+
+/* UPDATE NOTIFICATION */
+.update-banner {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--surface); border: 1.5px solid var(--accent);
+  border-radius: 16px; padding: 14px 20px; z-index: 500;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  animation: slideUpBanner 0.4s ease; max-width: 420px; width: 90%;
+}
+@keyframes slideUpBanner { from { transform: translateX(-50%) translateY(80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+.update-banner-text { flex: 1; font-size: 13px; color: var(--text); font-weight: 700; }
+.update-banner-sub { font-size: 11px; color: var(--text2); font-weight: 400; margin-top: 2px; }
+.update-banner-close { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text2); padding: 0; transition: opacity 0.2s; }
+.update-banner-close:hover { opacity: 0.6; }
+
+/* LEFT MENU */
+.left-menu-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: flex-start; }
+.left-menu-overlay.open { display: flex; }
+.left-menu { width: 240px; min-height: 100vh; background: var(--blur-bg); backdrop-filter: blur(20px); border-right: 1px solid var(--border); padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; animation: slideIn 0.25s ease; }
+@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.menu-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; margin-bottom: 8px; }
+.menu-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 16px; font-size: 13px; font-weight: 700; color: var(--text); cursor: pointer; text-align: left; transition: all 0.2s; }
+.menu-btn:hover { background: var(--accent); color: white; border-color: transparent; }
+
+/* POPUP */
+.popup-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(5px); z-index: 200; display: none; align-items: center; justify-content: center; }
+.popup-overlay.open { display: flex; }
+.popup { background: var(--blur-bg); backdrop-filter: blur(20px); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px 28px; width: 340px; max-width: 90vw; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: popIn 0.2s ease; }
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.popup-title { font-size: 14px; font-weight: 800; color: var(--text); }
+.popup-field { display: flex; flex-direction: column; gap: 5px; }
+.popup-label { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+.popup-input { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 13px; color: var(--text); outline: none; width: 100%; transition: border-color 0.2s; }
+.popup-input:focus { border-color: var(--accent); }
+.popup-input::placeholder { color: var(--text2); opacity: 0.6; }
+.emoji-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.emoji-opt { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; cursor: pointer; background: var(--bar-bg); border: 2px solid transparent; transition: all 0.15s; }
+.emoji-opt:hover { background: var(--surface); }
+.emoji-opt.selected { border-color: var(--accent); background: var(--surface); }
+.xp-options { display: flex; gap: 8px; }
+.xp-opt { flex: 1; padding: 8px; border-radius: 10px; border: 2px solid var(--border); background: var(--bar-bg); cursor: pointer; text-align: center; font-size: 11px; font-weight: 700; color: var(--text2); transition: all 0.15s; }
+.xp-opt:hover { border-color: var(--accent); }
+.xp-opt.selected { border-color: var(--accent); background: var(--accent); color: white; }
+.xp-opt .xp-label { font-size: 9px; font-weight: 400; opacity: 0.8; }
+.popup-actions { display: flex; gap: 8px; }
+.popup-btn { flex: 1; padding: 10px; border-radius: 12px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; transition: opacity 0.2s; }
+.popup-btn.primary { background: var(--accent); color: white; }
+.popup-btn.primary:hover { opacity: 0.85; }
+.popup-btn.secondary { background: var(--bar-bg); color: var(--text2); border: 1.5px solid var(--border); }
+.popup-btn.secondary:hover { background: var(--surface); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 12px; padding: 10px 20px; font-size: 13px; font-weight: 700;
+  color: var(--text); z-index: 9999; transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0; pointer-events: none; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* PRO BADGE */
+.pro-badge { font-size: 9px; font-weight: 800; letter-spacing: 1px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; margin-left: 4px; vertical-align: middle; }
+
+/* SUBSCRIPTION */
+.sub-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; }
+.sub-overlay.open { display: flex; }
+.sub-popup { background: var(--blur-bg); backdrop-filter: blur(24px); border: 1.5px solid var(--border); border-radius: 24px; padding: 28px; width: 580px; max-width: 95vw; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease; max-height: 90vh; overflow-y: auto; }
+.sub-title { font-size: 20px; font-weight: 800; color: var(--text); text-align: center; }
+.sub-subtitle { font-size: 13px; color: var(--text2); text-align: center; margin-top: -12px; }
+.sub-plans { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sub-plan { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.sub-plan.pro { border-color: var(--accent); border-width: 2px; }
+.sub-plan-name { font-size: 16px; font-weight: 800; color: var(--text); }
+.sub-plan-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+.sub-plan-price { font-size: 28px; font-weight: 800; color: var(--text); }
+.sub-plan-price span { font-size: 12px; font-weight: 400; color: var(--text2); }
+.sub-features { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.sub-feature { font-size: 12px; color: var(--text); display: flex; gap: 7px; align-items: flex-start; line-height: 1.4; }
+.sub-feature::before { content: "✓"; color: var(--accent); font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+.sub-plan-btn { margin-top: auto; padding: 10px; border-radius: 12px; border: none; font-size: 13px; font-weight: 800; cursor: pointer; transition: opacity 0.2s; }
+.sub-plan-btn.current { background: var(--bar-bg); color: var(--text2); cursor: default; }
+.sub-plan-btn.upgrade { background: var(--accent); color: white; }
+.sub-plan-btn.upgrade:hover { opacity: 0.85; }
+.sub-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+.sub-code-section { display: flex; flex-direction: column; gap: 8px; }
+.sub-code-label { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+.sub-code-row { display: flex; gap: 8px; }
+.sub-code-input { flex: 1; background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 13px; color: var(--text); outline: none; text-transform: uppercase; letter-spacing: 1px; transition: border-color 0.2s; }
+.sub-code-input:focus { border-color: var(--accent); }
+.sub-code-input::placeholder { text-transform: none; letter-spacing: 0; color: var(--text2); opacity: 0.6; }
+.sub-code-btn { background: var(--accent2); border: none; border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 800; color: var(--text); cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+.sub-code-btn:hover { opacity: 0.8; }
+.sub-close-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text2); cursor: pointer; transition: background 0.2s; text-align: center; }
+.sub-close-btn:hover { background: var(--surface); }
+
+/* THEME PICKER */
+.theme-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; }
+.theme-overlay.open { display: flex; }
+.theme-popup { background: var(--blur-bg); backdrop-filter: blur(24px); border: 1.5px solid var(--border); border-radius: 24px; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease; }
+.theme-popup-title { font-size: 14px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--text2); text-align: center; }
+.theme-cards { display: flex; gap: 24px; }
+.theme-card { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; }
+.theme-card-label { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 1px; }
+.theme-swatch { width: 120px; height: 120px; border-radius: 16px; border: 2px solid var(--border); position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.15s; }
+.theme-card:hover .theme-swatch { transform: scale(1.04); }
+.theme-swatch.selected { border-color: var(--accent); border-width: 3px; }
+.theme-close-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text2); cursor: pointer; transition: background 0.2s; text-align: center; }
+.theme-close-btn:hover { background: var(--surface); }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+<div class="update-banner" id="updateBanner" style="display:none;">
+  <div style="font-size:20px;">🎉</div>
+  <div class="update-banner-text">
+    Новое обновление!
+    <div class="update-banner-sub" id="updateBannerText">Теперь дедлайны удобно ставить — даже если задача стоит на несколько разных дней 😉</div>
+  </div>
+  <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
+</div>
+
+<div class="header">
+  <button class="header-btn" onclick="toggleMenu()">☰</button>
+  <div class="header-title">Your Daily Pass</div>
+  <button class="header-btn" onclick="openFeedback()">❓</button>
+  <button class="header-btn" id="subBtn" onclick="openSubPopup()" title="Подписка">⭐</button>
+  <button class="header-btn" id="authBtn" title="Войти" onclick="authClick()">👤</button>
+  <button class="header-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  <button class="header-btn" onclick="openThemePicker()" title="Выбор темы">🎨</button>
+</div>
+
+<!-- PASS AREA -->
+<div class="pass-area">
+  <!-- PASS MENU -->
+  <div class="pass-menu-wrap" id="passMenuWrap">
+    <div class="pass-menu-trigger" onclick="togglePassMenu(event)">
+      <span class="pass-menu-emoji" id="passMenuEmoji">🎯</span>
+      <span class="pass-menu-name" id="passMenuName">Мой пасс</span>
+      <span class="pass-menu-arrow" id="passMenuArrow">▾</span>
+    </div>
+    <div class="pass-menu-dropdown" id="passMenuDropdown">
+      <div id="passMenuList"></div>
+      <div class="pass-menu-divider"></div>
+      <button class="pass-menu-action" onclick="openCreatePassPopup()">＋ Создать пасс</button>
+      <button class="pass-menu-action" onclick="openRenamePassPopup()">✏️ Переименовать</button>
+      <button class="pass-menu-action danger" onclick="deleteCurrentPass()">🗑 Удалить пасс</button>
+    </div>
+  </div>
+  <!-- PASS LEVELS -->
+  <div class="pass-container-wrap">
+    <div class="pass-container">
+      <div class="pass-top-row">
+        <div class="pass-title" id="passTitle">Battle Pass</div>
+      </div>
+      <div class="pass-levels-wrap" id="passLevels"></div>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+  <div class="flangs-section">
+    <div class="flangs-header-row">
+      <div class="section-header">✦ Mega Quests</div>
+      <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
+    </div>
+    <div class="mq-list" id="mqList"></div>
+    <div class="mq-focus" id="mqFocus">
+      <button class="mq-back-btn" onclick="mqGoBack()">← назад</button>
+      <div class="flang-card" id="mqFocusCard"></div>
+      <div class="mq-stacked-label">остальные пассы</div>
+      <div class="mq-stacked" id="mqStacked"></div>
+    </div>
+  </div>
+  <div class="quests-section">
+    <div class="quests-header-row">
+      <div class="section-header">⚡ Quests</div>
+      <button class="add-quest-btn" id="addQuestBtn" onclick="onAddQuest()">+ Добавить квест</button>
+    </div>
+    <div class="quests-scroll-wrap">
+      <div class="quests-grid" id="questsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LEFT MENU -->
+<div class="left-menu-overlay" id="menuOverlay" onclick="closeMenuOutside(event)">
+  <div class="left-menu">
+    <div class="menu-title">Меню</div>
+    <button class="menu-btn" onclick="newDay()">🌅 Начать новый день</button>
+    <button class="menu-btn" onclick="exportJSON()">📤 Экспорт данных (JSON)</button>
+    <button class="menu-btn" onclick="importJSON()">📥 Импорт данных (JSON)</button>
+    <button class="menu-btn" onclick="fullReset()" style="color:#e04040;">🗑️ Полный сброс всего</button>
+    <button class="menu-btn" onclick="saveAndClose()">💾 Выйти</button>
+  </div>
+</div>
+
+<!-- ADD QUEST POPUP -->
+<div class="popup-overlay" id="questPopupOverlay" onclick="closePopupOutside(event,'questPopupOverlay')">
+  <div class="popup" style="width:400px;">
+    <div class="popup-title">Новый квест</div>
+    <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="questEmojiGrid"></div></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="questName" type="text" placeholder="Название квеста..." maxlength="20"></div>
+    <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="questSub" type="text" placeholder="Подзаголовок..." maxlength="30"></div>
+    <div class="popup-field"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="questMetric" type="number" placeholder="Например: 17" min="1" max="9999"></div>
+    <div class="popup-field"><div class="popup-label">Опыт за квест</div>
+      <div class="xp-options">
+        <div class="xp-opt selected" data-xp="100" onclick="selectXP(this)">100 XP<br><span class="xp-label">Лёгкий</span></div>
+        <div class="xp-opt" data-xp="250" onclick="selectXP(this)">250 XP<br><span class="xp-label">Средний</span></div>
+        <div class="xp-opt" data-xp="500" onclick="selectXP(this)">500 XP<br><span class="xp-label">Сложный</span></div>
+      </div>
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Повторяемость</div>
+      <div class="repeat-tabs" id="questRepeatTabs">
+        <div class="repeat-tab active" data-type="daily" onclick="selectRepeatTab(this,'questRepeatTabs','questRepeatExtra')">Ежедневно</div>
+        <div class="repeat-tab" data-type="weekly" onclick="selectRepeatTab(this,'questRepeatTabs','questRepeatExtra')">По дням</div>
+        <div class="repeat-tab" data-type="once" onclick="selectRepeatTab(this,'questRepeatTabs','questRepeatExtra')">Один раз</div>
+      </div>
+      <div id="questRepeatExtra" style="margin-top:8px;display:none;"></div>
+    </div>
+    <div class="popup-field" id="questDeadlineField">
+      <div class="popup-label">Дедлайн <span style="opacity:0.5;font-weight:400;">(необязательно)</span></div>
+      <input class="popup-input" id="questDeadline" type="date">
+      <label id="questDeadlineActiveDayWrap" style="display:none;margin-top:6px;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);">
+        <input type="checkbox" id="questDeadlineActiveDay" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;" onchange="toggleDeadlineActiveDay('quest')">
+        Дедлайн в активный день
+      </label>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('questPopupOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="addQuest()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEGA QUEST POPUP -->
+<div class="popup-overlay" id="megaPopupOverlay" onclick="closePopupOutside(event,'megaPopupOverlay')">
+  <div class="popup">
+    <div class="popup-title">Новый мегаквест</div>
+    <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="megaEmojiGrid"></div></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="megaName" type="text" placeholder="Название мегаквеста..." maxlength="20"></div>
+    <div class="popup-field"><div class="popup-label">Описание</div><input class="popup-input" id="megaSub" type="text" placeholder="Краткое описание..." maxlength="40"></div>
+    <div class="popup-field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
+        <input type="checkbox" id="megaTaskMode" onchange="toggleMegaTaskMode()" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer;">
+        Считать метрику от задач в списке
+      </label>
+    </div>
+    <div class="popup-field" id="megaMetricField"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="megaMetric" type="number" placeholder="Например: 100" min="1" max="99999"></div>
+    <div class="popup-field" id="megaUnitField"><div class="popup-label">Единица измерения</div><input class="popup-input" id="megaUnit" type="text" placeholder="Страницы, дни, задачи..." maxlength="15"></div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('megaPopupOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="addMega()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE PASS POPUP -->
+<div class="popup-overlay" id="createPassOverlay" onclick="closePopupOutside(event,'createPassOverlay')">
+  <div class="popup">
+    <div class="popup-title">Новый пасс</div>
+    <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="createPassEmojiGrid"></div></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="createPassName" type="text" placeholder="Название пасса..." maxlength="24"></div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('createPassOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="createPass()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME PASS POPUP -->
+<div class="popup-overlay" id="renamePassOverlay" onclick="closePopupOutside(event,'renamePassOverlay')">
+  <div class="popup">
+    <div class="popup-title">Переименовать пасс</div>
+    <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="renamePassEmojiGrid"></div></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="renamePassName" type="text" maxlength="24"></div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('renamePassOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="saveRenamePass()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT QUEST POPUP -->
+<div class="popup-overlay" id="editQuestOverlay" onclick="closePopupOutside(event,'editQuestOverlay')">
+  <div class="popup" style="width:400px;">
+    <div class="popup-title">✏️ Редактировать квест</div>
+    <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="editQuestEmojiGrid"></div></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="editQuestName" type="text" maxlength="20"></div>
+    <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="editQuestSub" type="text" maxlength="30"></div>
+    <div class="popup-field"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="editQuestMetric" type="number" min="1" max="9999"></div>
+    <div class="popup-field"><div class="popup-label">Опыт за квест</div>
+      <div class="xp-options" id="editXpOptions">
+        <div class="xp-opt" data-xp="100" onclick="selectEditXP(this)">100 XP<br><span class="xp-label">Лёгкий</span></div>
+        <div class="xp-opt" data-xp="250" onclick="selectEditXP(this)">250 XP<br><span class="xp-label">Средний</span></div>
+        <div class="xp-opt" data-xp="500" onclick="selectEditXP(this)">500 XP<br><span class="xp-label">Сложный</span></div>
+      </div>
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Повторяемость</div>
+      <div class="repeat-tabs" id="editQuestRepeatTabs">
+        <div class="repeat-tab" data-type="daily" onclick="selectRepeatTab(this,'editQuestRepeatTabs','editQuestRepeatExtra')">Ежедневно</div>
+        <div class="repeat-tab" data-type="weekly" onclick="selectRepeatTab(this,'editQuestRepeatTabs','editQuestRepeatExtra')">По дням</div>
+        <div class="repeat-tab" data-type="once" onclick="selectRepeatTab(this,'editQuestRepeatTabs','editQuestRepeatExtra')">Один раз</div>
+      </div>
+      <div id="editQuestRepeatExtra" style="margin-top:8px;display:none;"></div>
+    </div>
+    <div class="popup-field" id="editQuestDeadlineField">
+      <div class="popup-label">Дедлайн <span style="opacity:0.5;font-weight:400;">(необязательно)</span></div>
+      <input class="popup-input" id="editQuestDeadline" type="date">
+      <label id="editQuestDeadlineActiveDayWrap" style="display:none;margin-top:6px;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);">
+        <input type="checkbox" id="editQuestDeadlineActiveDay" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;" onchange="toggleDeadlineActiveDay('editQuest')">
+        Дедлайн в активный день
+      </label>
+    </div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('editQuestOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="saveEditQuest()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MEGA POPUP -->
+<div class="popup-overlay" id="editMegaOverlay" onclick="closePopupOutside(event,'editMegaOverlay')">
+  <div class="popup">
+    <div class="popup-title">✏️ Редактировать мегаквест</div>
+    <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="editMegaEmojiGrid"></div></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="editMegaName" type="text" maxlength="20"></div>
+    <div class="popup-field"><div class="popup-label">Описание</div><input class="popup-input" id="editMegaSub" type="text" maxlength="40"></div>
+    <div class="popup-field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
+        <input type="checkbox" id="editMegaTaskMode" onchange="toggleEditMegaTaskMode()" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer;">
+        Считать метрику от задач в списке
+      </label>
+    </div>
+    <div class="popup-field" id="editMegaMetricField"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="editMegaMetric" type="number" min="1" max="99999"></div>
+    <div class="popup-field"><div class="popup-label">Единица измерения</div><input class="popup-input" id="editMegaUnit" type="text" maxlength="15"></div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('editMegaOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="saveEditMega()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE METRIC POPUP -->
+<div class="popup-overlay" id="changeMetricOverlay" onclick="closePopupOutside(event,'changeMetricOverlay')">
+  <div class="popup" style="width:280px;">
+    <div class="popup-title" id="changeMetricTitle">Изменить прогресс</div>
+    <div class="popup-field"><div class="popup-label" id="changeMetricLabel">Текущее значение</div><input class="popup-input" id="changeMetricInput" type="number" min="0"></div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="closePopup('changeMetricOverlay')">Отмена</button>
+      <button class="popup-btn primary" onclick="saveMetricChange()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK POPUP -->
+<div class="popup-overlay" id="feedbackOverlay" onclick="closePopupOutside(event,'feedbackOverlay')">
+  <div class="popup" style="width:480px;max-width:95vw;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="popup-title">💬 Обратная связь</div>
+      <button class="popup-btn secondary" onclick="closePopup('feedbackOverlay')" style="flex:0;padding:6px 12px;font-size:12px;">✕ Закрыть</button>
+    </div>
+    <div style="text-align:center;padding:20px 0 10px;color:var(--text2);font-size:13px;">Нажми кнопку ниже — форма откроется в новой вкладке 👇</div>
+    <a href="https://forms.gle/NbW9mXyg4ydUsbtD7" target="_blank" style="display:block;text-align:center;background:var(--accent);color:white;padding:14px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;transition:opacity 0.2s;" onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">📝 Открыть форму обратной связи</a>
+    <div style="font-size:11px;color:var(--text2);text-align:center;margin-top:8px;">Форма откроется в новой вкладке — можно вернуться обратно после отправки</div>
+  </div>
+</div>
+
+<!-- THEME PICKER -->
+<div class="theme-overlay" id="themePickerOverlay" onclick="closeThemePickerOutside(event)">
+  <div class="theme-popup">
+    <div class="theme-popup-title">Выбор темы</div>
+    <div class="theme-cards">
+      <div class="theme-card" onclick="selectTheme('huntrx')">
+        <div class="theme-swatch" id="swatchHuntrx">
+          <div style="position:absolute;inset:0;background:#96A0E2;clip-path:polygon(0% 100%, 0% 0%, 100% 0%);"></div>
+          <div style="position:absolute;inset:0;background:#C90060;clip-path:polygon(0% 100%, 100% 100%, 100% 0%);"></div>
+        </div>
+        <div class="theme-card-label">HUNTR/X</div>
+      </div>
+      <div class="theme-card" onclick="selectTheme('basic')">
+        <div class="theme-swatch" id="swatchBasic">
+          <div style="position:absolute;inset:0;background:#4A90D9;clip-path:polygon(0% 100%, 0% 0%, 100% 0%);"></div>
+          <div style="position:absolute;inset:0;background:#C8B89A;clip-path:polygon(0% 100%, 100% 100%, 100% 0%);"></div>
+        </div>
+        <div class="theme-card-label">Базовая</div>
+      </div>
+    </div>
+    <button class="theme-close-btn" onclick="closeThemePicker()">Закрыть</button>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION POPUP -->
+<div class="sub-overlay" id="subOverlay" onclick="closeSubOutside(event)">
+  <div class="sub-popup">
+    <div class="sub-title">Выбери свой план</div>
+    <div class="sub-subtitle">Разблокируй полный потенциал Your Daily Pass</div>
+    <div class="sub-plans">
+      <div class="sub-plan" id="subPlanFree">
+        <div class="sub-plan-name">Free</div>
+        <div class="sub-plan-desc">Всё необходимое для старта</div>
+        <div class="sub-plan-price">0 ₽ <span>/навсегда</span></div>
+        <hr class="sub-divider">
+        <div class="sub-features">
+          <div class="sub-feature">1 пасс</div>
+          <div class="sub-feature">До 3 мегаквестов</div>
+          <div class="sub-feature">До 9 квестов</div>
+          <div class="sub-feature">Облачное сохранение</div>
+        </div>
+        <button class="sub-plan-btn current" id="subFreeBtnLabel">Ваш текущий план</button>
+      </div>
+      <div class="sub-plan pro">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="sub-plan-name">Pro</div>
+          <span style="font-size:9px;font-weight:800;background:var(--accent);color:white;padding:2px 7px;border-radius:6px;letter-spacing:1px;">ПОПУЛЯРНОЕ</span>
+        </div>
+        <div class="sub-plan-desc">Без ограничений и с приоритетными фичами</div>
+        <div class="sub-plan-price">— <span>по коду</span></div>
+        <hr class="sub-divider">
+        <div class="sub-features">
+          <div class="sub-feature">До 3 пассов</div>
+          <div class="sub-feature">До 5 мегаквестов в пассе</div>
+          <div class="sub-feature">До 18 квестов в пассе</div>
+          <div class="sub-feature">Облачное сохранение</div>
+          <div class="sub-feature">Приоритетный доступ к новым фичам</div>
+        </div>
+        <button class="sub-plan-btn upgrade" id="subProBtnLabel" onclick="focusCodeInput()">Активировать Pro</button>
+      </div>
+    </div>
+    <hr class="sub-divider">
+    <div class="sub-code-section">
+      <div class="sub-code-label">Активировать по коду</div>
+      <div class="sub-code-row">
+        <input class="sub-code-input" id="subCodeInput" placeholder="Введи код..." maxlength="32" onkeydown="if(event.key==='Enter') applyCode()">
+        <button class="sub-code-btn" onclick="applyCode()">Применить</button>
+      </div>
+      <div id="subCodeMsg" style="font-size:12px;color:var(--text2);min-height:16px;"></div>
+    </div>
+    <button class="sub-close-btn" onclick="closeSubPopup()">Закрыть</button>
+  </div>
+</div>
+
+<!-- MERGE CONFIRM POPUP -->
+<div id="mergeModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;justify-content:center;align-items:center;">
+  <div style="background:var(--blur-bg);border:1.5px solid var(--border);padding:2rem;border-radius:1.5rem;max-width:360px;width:90%;text-align:center;display:flex;flex-direction:column;gap:14px;">
+    <div style="font-size:15px;font-weight:800;color:var(--text);">Найдены локальные данные</div>
+    <div style="color:var(--text2);font-size:13px;line-height:1.6;" id="mergeModalDesc"></div>
+    <button id="mergeBtnKeepCloud" style="width:100%;padding:0.9rem;background:var(--accent);color:white;border:none;border-radius:1rem;font-size:13px;font-weight:700;cursor:pointer;">Загрузить из облака</button>
+    <button id="mergeBtnKeepLocal" style="width:100%;padding:0.9rem;background:var(--accent2);color:var(--text);border:none;border-radius:1rem;font-size:13px;font-weight:700;cursor:pointer;">Сохранить локальные в облако</button>
+    <button id="mergeBtnMerge" style="width:100%;padding:0.9rem;background:var(--bar-bg);color:var(--text);border:1.5px solid var(--border);border-radius:1rem;font-size:13px;font-weight:700;cursor:pointer;">Объединить всё</button>
+  </div>
+</div>
+
+<!-- ACCOUNT POPUP -->
+<div id="accountModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;justify-content:center;align-items:center;">
+  <div style="background:var(--blur-bg);border:1.5px solid var(--border);padding:2rem;border-radius:1.5rem;max-width:360px;width:90%;display:flex;flex-direction:column;gap:14px;">
+    <div style="text-align:center;">
+      <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;">👤 Аккаунт</div>
+      <div style="font-size:13px;color:var(--text2);" id="accountEmail"></div>
+    </div>
+    <button id="accountUploadBtn" style="width:100%;padding:0.9rem;background:var(--accent);color:white;border:none;border-radius:1rem;font-size:13px;font-weight:700;cursor:pointer;text-align:left;padding-left:1.2rem;">
+      📥 Привязать локальный прогресс к аккаунту
+    </button>
+    <div style="font-size:11px;color:var(--text2);margin-top:-8px;padding:0 4px;line-height:1.5;">Загрузит квесты с этого устройства в облако и привяжет к аккаунту</div>
+    <button id="accountSignoutBtn" style="width:100%;padding:0.9rem;background:rgba(224,64,64,0.12);color:#e04040;border:1.5px solid rgba(224,64,64,0.25);border-radius:1rem;font-size:13px;font-weight:700;cursor:pointer;">
+      Выйти из аккаунта
+    </button>
+    <button onclick="document.getElementById('accountModal').style.display='none';" style="width:100%;padding:0.8rem;background:var(--bar-bg);border:1.5px solid var(--border);border-radius:1rem;cursor:pointer;color:var(--text2);font-size:13px;font-weight:700;">Закрыть</button>
+  </div>
+</div>
+
+<div id="authModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;justify-content:center;align-items:center">
+  <div style="background:white;padding:2rem;border-radius:1.5rem;max-width:380px;width:90%;text-align:center">
+    <h3 style="margin:0 0 1rem;color:#333">👤 Войти в аккаунт</h3>
+    <p style="color:#888;font-size:0.9rem;margin:0 0 1.5rem">Квесты сохраняются в облаке</p>
+    <button id="googleBtn" style="width:100%;padding:1rem;background:#4285f4;color:white;border:none;border-radius:1rem;font-size:1rem;font-weight:600;cursor:pointer">🌐 Войти через Google</button>
+    <button onclick="document.getElementById('authModal').style.display='none'" style="width:100%;padding:0.8rem;margin-top:0.75rem;background:#f0f0f0;border:none;border-radius:1rem;cursor:pointer;color:#555">Закрыть</button>
+  </div>
+</div>
+
+<script>
+// ====== UTILS ======
+function save(k, v) { localStorage.setItem('passit4_' + k, JSON.stringify(v)); }
+function load(k, def) { const v = localStorage.getItem('passit4_' + k); return v !== null ? JSON.parse(v) : def; }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+const EMOJIS = ['💻','📚','🏃','🧠','🎯','✏️','📋','💪','🔵','⚡','🌐','🏋️','🎮','💰','🔥','📖','🎨','🏆','⭐','🚀'];
+
+// ====== PASSES DATA STRUCTURE ======
+// passes = [ { id, name, emoji, quests[], megaQuests[] }, ... ]
+let passes = [];
+let currentPassId = null;
+
+function getCurrentPass() {
+  return passes.find(p => p.id === currentPassId) || passes[0];
+}
+function getQuests() { return getCurrentPass()?.quests || []; }
+function getMegaQuests() { return getCurrentPass()?.megaQuests || []; }
+
+function savePasses() {
+  save('passes', passes);
+  save('currentPassId', currentPassId);
+  cloudSave();
+}
+
+// ====== MIGRATION from old format ======
+function migrateOldData() {
+  const oldQuests = localStorage.getItem('passit3_quests');
+  const oldMega = localStorage.getItem('passit3_megaQuests');
+  if (!oldQuests && !oldMega) return null;
+  return {
+    quests: oldQuests ? JSON.parse(oldQuests) : [],
+    megaQuests: oldMega ? JSON.parse(oldMega) : []
+  };
+}
+
+function initPasses(data) {
+  // data = { passes, currentPassId } from cloud or local
+  // OR data = old format { quests, megaQuests }
+  if (data && data.passes && Array.isArray(data.passes) && data.passes.length > 0) {
+    passes = data.passes;
+    currentPassId = data.currentPassId || passes[0].id;
+  } else if (data && data.quests !== undefined) {
+    // old format — migrate into first pass
+    passes = [{
+      id: uid(), name: 'Мой пасс', emoji: '🎯',
+      quests: data.quests || [],
+      megaQuests: data.megaQuests || []
+    }];
+    currentPassId = passes[0].id;
+  } else {
+    // fresh start
+    passes = [{ id: uid(), name: 'Мой пасс', emoji: '🎯', quests: [], megaQuests: [] }];
+    currentPassId = passes[0].id;
+  }
+  // ensure currentPassId is valid
+  if (!passes.find(p => p.id === currentPassId)) currentPassId = passes[0].id;
+}
+
+// Load local
+const localOld = migrateOldData();
+const localNew = load('passes', null);
+const localCurId = load('currentPassId', null);
+if (localNew) {
+  initPasses({ passes: localNew, currentPassId: localCurId });
+} else if (localOld) {
+  initPasses(localOld);
+} else {
+  initPasses(null);
+}
+
+// ====== PASS MENU ======
+let passMenuOpen = false;
+let createPassEmoji = EMOJIS[0];
+let renamePassEmoji = EMOJIS[0];
+
+function togglePassMenu(e) {
+  if (e) e.stopPropagation();
+  passMenuOpen = !passMenuOpen;
+  document.getElementById('passMenuDropdown').classList.toggle('open', passMenuOpen);
+  document.getElementById('passMenuArrow').classList.toggle('open', passMenuOpen);
+  if (passMenuOpen) renderPassMenuList();
+}
+
+function closePassMenu() {
+  passMenuOpen = false;
+  document.getElementById('passMenuDropdown').classList.remove('open');
+  document.getElementById('passMenuArrow').classList.remove('open');
+}
+
+function renderPassMenuList() {
+  const list = document.getElementById('passMenuList');
+  list.innerHTML = passes.map(p => `
+    <div class="pass-menu-item ${p.id === currentPassId ? 'active' : ''}" onclick="switchPass('${p.id}')">
+      <span class="pass-menu-item-emoji">${p.emoji}</span>
+      <span>${p.name}</span>
+    </div>`).join('');
+}
+
+function switchPass(id) {
+  currentPassId = id;
+  save('currentPassId', currentPassId);
+  mqFocused = -1;
+  closePassMenu();
+  render();
+}
+
+function updatePassMenuTrigger() {
+  const p = getCurrentPass();
+  if (!p) return;
+  document.getElementById('passMenuEmoji').textContent = p.emoji;
+  document.getElementById('passMenuName').textContent = p.name;
+  document.getElementById('passTitle').textContent = p.name;
+}
+
+function openCreatePassPopup() {
+  closePassMenu();
+  const maxPasses = userIsPro ? 3 : 1;
+  if (passes.length >= maxPasses) { openSubPopup(); return; }
+  createPassEmoji = EMOJIS[0];
+  renderEmojiGrid('createPassEmojiGrid', createPassEmoji, (el, e) => {
+    createPassEmoji = e;
+    document.querySelectorAll('#createPassEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  });
+  document.getElementById('createPassName').value = '';
+  document.getElementById('createPassOverlay').classList.add('open');
+}
+
+function createPass() {
+  const name = document.getElementById('createPassName').value.trim();
+  if (!name) { showToast('Введи название пасса!'); return; }
+  const newPass = { id: uid(), name, emoji: createPassEmoji, quests: [], megaQuests: [] };
+  passes.push(newPass);
+  currentPassId = newPass.id;
+  mqFocused = -1;
+  savePasses();
+  closePopup('createPassOverlay');
+  render();
+  showToast('✅ Пасс создан!');
+}
+
+function openRenamePassPopup() {
+  closePassMenu();
+  const p = getCurrentPass();
+  renamePassEmoji = p.emoji;
+  renderEmojiGrid('renamePassEmojiGrid', renamePassEmoji, (el, e) => {
+    renamePassEmoji = e;
+    document.querySelectorAll('#renamePassEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+  });
+  document.getElementById('renamePassName').value = p.name;
+  document.getElementById('renamePassOverlay').classList.add('open');
+}
+
+function saveRenamePass() {
+  const name = document.getElementById('renamePassName').value.trim();
+  if (!name) { showToast('Введи название!'); return; }
+  const p = getCurrentPass();
+  p.name = name;
+  p.emoji = renamePassEmoji;
+  savePasses();
+  closePopup('renamePassOverlay');
+  render();
+}
+
+function deleteCurrentPass() {
+  closePassMenu();
+  if (passes.length <= 1) { showToast('Нельзя удалить единственный пасс'); return; }
+  const p = getCurrentPass();
+  if (!confirm(`Удалить пасс "${p.name}"? Все квесты внутри будут удалены.`)) return;
+  passes = passes.filter(x => x.id !== currentPassId);
+  currentPassId = passes[0].id;
+  mqFocused = -1;
+  savePasses();
+  render();
+  showToast('Пасс удалён');
+}
+
+// close pass menu when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('passMenuWrap');
+  if (wrap && !wrap.contains(e.target)) closePassMenu();
+});
+
+// ====== REPEAT / DEADLINE / UPDATE ======
+const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+let selectedQuestDays = [];
+let editQuestDays = [];
+
+function selectRepeatTab(el, tabsId, extraId) {
+  document.querySelectorAll('#' + tabsId + ' .repeat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const extra = document.getElementById(extraId);
+  const type = el.dataset.type;
+  const isEdit = tabsId.startsWith('edit');
+  const prefix = isEdit ? 'editQuest' : 'quest';
+
+  // show/hide deadline active day checkbox
+  const activeDayWrap = document.getElementById(prefix + 'DeadlineActiveDayWrap');
+  const deadlineInput = document.getElementById(prefix + 'Deadline');
+  if (activeDayWrap) {
+    if (type === 'weekly') {
+      activeDayWrap.style.display = 'flex';
+    } else {
+      activeDayWrap.style.display = 'none';
+      if (document.getElementById(prefix + 'DeadlineActiveDay')) {
+        document.getElementById(prefix + 'DeadlineActiveDay').checked = false;
+      }
+      if (deadlineInput) deadlineInput.disabled = false;
+    }
+  }
+
+  if (type === 'weekly') {
+    const daysArr = isEdit ? editQuestDays : selectedQuestDays;
+    extra.style.display = '';
+    extra.innerHTML = `<div class="days-grid">${DAYS.map((d, i) =>
+      `<div class="day-btn ${daysArr.includes(i) ? 'active' : ''}" onclick="toggleDay(this,${i},'${tabsId}')">${d}</div>`
+    ).join('')}</div>`;
+  } else {
+    extra.style.display = 'none';
+    extra.innerHTML = '';
+  }
+}
+
+function toggleDeadlineActiveDay(prefix) {
+  const checked = document.getElementById(prefix + 'DeadlineActiveDay').checked;
+  const deadlineInput = document.getElementById(prefix + 'Deadline');
+  if (checked) {
+    deadlineInput.disabled = true;
+    deadlineInput.value = '';
+    deadlineInput.placeholder = 'авто — ближайший активный день';
+  } else {
+    deadlineInput.disabled = false;
+    deadlineInput.placeholder = '';
+  }
+}
+
+function toggleDay(el, idx, tabsId) {
+  const isEdit = tabsId.startsWith('edit');
+  const arr = isEdit ? editQuestDays : selectedQuestDays;
+  const pos = arr.indexOf(idx);
+  if (pos >= 0) arr.splice(pos, 1); else arr.push(idx);
+  el.classList.toggle('active', arr.includes(idx));
+}
+
+function getRepeatFromPopup(tabsId) {
+  const activeTab = document.querySelector('#' + tabsId + ' .repeat-tab.active');
+  const type = activeTab ? activeTab.dataset.type : 'daily';
+  const isEdit = tabsId.startsWith('edit');
+  const days = isEdit ? [...editQuestDays] : [...selectedQuestDays];
+  return type === 'weekly' ? { type, days } : { type };
+}
+
+const CURRENT_VERSION = 'v1.4';
+function checkUpdateBanner() {
+  const seen = load('lastSeenVersion', null);
+  if (seen !== CURRENT_VERSION) {
+    document.getElementById('updateBanner').style.display = 'flex';
+  }
+}
+function dismissUpdate() {
+  save('lastSeenVersion', CURRENT_VERSION);
+  document.getElementById('updateBanner').style.display = 'none';
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function todayDowIndex() { return (new Date().getDay() + 6) % 7; }
+
+function isQuestActiveToday(q) {
+  if (!q.repeat || q.repeat.type === 'daily') return true;
+  if (q.repeat.type === 'once') return !q.deadline || q.deadline === todayStr();
+  if (q.repeat.type === 'weekly') return (q.repeat.days || []).includes(todayDowIndex());
+  return true;
+}
+function daysUntilDeadline(deadlineStr) {
+  if (!deadlineStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dl = new Date(deadlineStr); dl.setHours(0,0,0,0);
+  return Math.round((dl - today) / 86400000);
+}
+function nextActiveDay(q) {
+  if (!q.repeat || q.repeat.type !== 'weekly') return null;
+  const days = q.repeat.days || [];
+  if (days.length === 0) return null;
+  const today = todayDowIndex();
+  for (let i = 1; i <= 7; i++) {
+    const d = (today + i) % 7;
+    if (days.includes(d)) return DAYS[d];
+  }
+  return null;
+}
+
+// ====== EMOJI GRID ======
+function renderEmojiGrid(gridId, current, onPick) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = EMOJIS.map(e => `
+    <div class="emoji-opt ${e === current ? 'selected' : ''}" onclick="(${onPick.toString()})(this,'${e}')">${e}</div>
+  `).join('');
+}
+
+let selectedQuestEmoji = EMOJIS[0];
+let selectedMegaEmoji = EMOJIS[0];
+function pickQuestEmoji(el, emoji) { selectedQuestEmoji = emoji; document.querySelectorAll('#questEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+function pickMegaEmoji(el, emoji) { selectedMegaEmoji = emoji; document.querySelectorAll('#megaEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+function selectXP(el) { document.querySelectorAll('.xp-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+
+// ====== PASS LEVELS (horizontal scroll) ======
+function updatePass() {
+  const quests = getCurrentPass()?.quests || [];
+  const totalMaxXP = quests.reduce((s, q) => s + q.xp, 0);
+  const totalEarnedXP = quests.reduce((s, q) => s + (Math.min(q.current || 0, q.max) / q.max) * q.xp, 0);
+  const pct = totalMaxXP > 0 ? Math.min((totalEarnedXP / totalMaxXP) * 100, 100) : 0;
+
+  const container = document.getElementById('passLevels');
+  container.innerHTML = '';
+  const n = quests.length;
+  const circles = n + 1;
+
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;align-items:center;justify-content:space-between;position:relative;width:100%;min-width:300px;';
+
+  const track = document.createElement('div');
+  track.style.cssText = 'position:absolute;top:50%;left:19px;right:19px;height:5px;background:var(--bar-bg);border-radius:2px;transform:translateY(-50%);z-index:0;';
+  const fill = document.createElement('div');
+  fill.style.cssText = `height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s ease;width:${pct}%;`;
+  track.appendChild(fill);
+  wrap.appendChild(track);
+
+  for (let i = 0; i < circles; i++) {
+    const threshold = i === 0 ? 0 : (i / n) * 100;
+    const filled = i === 0 || pct >= threshold;
+    const div = document.createElement('div');
+    div.className = 'pass-level' + (filled ? ' filled' : '');
+    div.textContent = i;
+    div.style.zIndex = 1;
+    wrap.appendChild(div);
+  }
+  container.appendChild(wrap);
+}
+
+// ====== RENDER QUESTS with drag & drop (snake order) ======
+// Snake order: row 0 L→R, row 1 R→L, row 2 L→R ...
+// Grid has 3 rows, columns auto-added. Visual index to array index mapping:
+// col 0: [0,1,2], col 1: [3,4,5] etc but snake flips columns:
+// snake pos 0=top-left, 1=top-mid, 2=top-right, 3=mid-right, 4=mid-mid, 5=mid-left...
+
+let dragSrcIndex = null;
+
+function snakeToGrid(snakeIdx, cols) {
+  // Returns {row, col} for a snake index given number of columns
+  const row = Math.floor(snakeIdx / cols);
+  const posInRow = snakeIdx % cols;
+  const col = (row % 2 === 0) ? posInRow : (cols - 1 - posInRow);
+  return { row, col };
+}
+
+function gridToSnake(row, col, cols) {
+  return (row % 2 === 0) ? row * cols + col : row * cols + (cols - 1 - col);
+}
+
+function renderQuests() {
+  const quests = getCurrentPass()?.quests || [];
+  const grid = document.getElementById('questsGrid');
+  const maxQ = userIsPro ? 18 : 9;
+  const COLS = 3;
+  const ROWS = 3;
+  const BLOCK = COLS * ROWS; // 9 квестов на блок
+
+  // Сколько блоков показываем: текущие квесты + 1 пустой блок если не заполнен
+  const filledBlocks = Math.ceil(Math.max(1, quests.length) / BLOCK);
+  const totalBlocks = (quests.length % BLOCK === 0 && quests.length < maxQ) ? filledBlocks + 1 : filledBlocks;
+  const cappedBlocks = Math.min(totalBlocks, Math.ceil(maxQ / BLOCK));
+  const totalCols = cappedBlocks * COLS; // с разрывом между блоками
+
+  grid.style.gridAutoColumns = `calc((100% - ${(COLS - 1) * 8}px) / ${COLS})`;
+  grid.innerHTML = '';
+
+  for (let blockIdx = 0; blockIdx < cappedBlocks; blockIdx++) {
+    for (let col = 0; col < COLS; col++) {
+      for (let row = 0; row < ROWS; row++) {
+        // Змейка внутри блока
+        const posInRow = col;
+        const snakeCol = (row % 2 === 0) ? posInRow : (COLS - 1 - posInRow);
+        const snakeIdxInBlock = row * COLS + snakeCol;
+        const globalSnakeIdx = blockIdx * BLOCK + snakeIdxInBlock;
+
+        const div = document.createElement('div');
+        const q = quests[globalSnakeIdx];
+
+        if (q) {
+          const cur = q.current || 0;
+          const pct = Math.min((cur / q.max) * 100, 100).toFixed(1);
+          const done = cur >= q.max;
+          const active = isQuestActiveToday(q);
+          // compute effective deadline
+          let effectiveDeadline = q.deadline;
+          if (q.deadlineActiveDay && q.repeat?.type === 'weekly' && (q.repeat.days || []).length > 0) {
+            // find nearest upcoming active day
+            const today = todayDowIndex();
+            const days = q.repeat.days;
+            for (let i = 1; i <= 7; i++) {
+              const d = (today + i) % 7;
+              if (days.includes(d)) {
+                const dt = new Date();
+                dt.setDate(dt.getDate() + i);
+                effectiveDeadline = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+                break;
+              }
+            }
+          }
+          const deadlineDays = daysUntilDeadline(effectiveDeadline);
+          const deadlineHtml = deadlineDays !== null
+            ? `<span class="quest-deadline ${deadlineDays <= 2 ? 'urgent' : ''}">${deadlineDays < 0 ? 'просрочен' : deadlineDays === 0 ? 'сегодня' : `ещё ${deadlineDays}д`}</span>`
+            : (q.repeat?.type === 'weekly' ? `<span class="quest-deadline" style="opacity:0.6;">активен сегодня</span>` : '');
+          const nextDay = !active ? nextActiveDay(q) : null;
+          div.className = 'quest-card' + (done ? ' done' : '') + (!active ? ' inactive' : '');
+          div.draggable = active;
+          div.dataset.snakeIdx = globalSnakeIdx;
+          div.innerHTML = `
+            <div class="quest-card-top">
+              <span class="quest-emoji">${q.emoji}</span>
+              <div style="flex:1;min-width:0;"><div class="quest-name">${q.name}</div><div class="quest-sub">${q.sub}</div></div>
+              <span class="quest-xp-badge">${q.xp}XP</span>
+              <button class="quest-edit" onclick="openEditQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✏️</button>
+              <button class="quest-delete" onclick="deleteQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✕</button>
+            </div>
+            <div class="quest-bottom">
+              ${active ? `
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="quest-metric"><span class="editable" contenteditable="true" data-quest="${globalSnakeIdx}">${cur}</span><span>/${q.max}</span></div>
+                <div style="display:flex;gap:6px;align-items:center;">${deadlineHtml}<button class="change-metric-btn" onclick="openChangeMetric('quest',${globalSnakeIdx})">изменить</button></div>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="qbar-${globalSnakeIdx}" style="width:${pct}%"></div></div>
+              ` : `<div class="quest-inactive-label">${
+                nextDay ? `активен в ${nextDay}` :
+                q.repeat?.type === 'once' && q.deadline ? new Date(q.deadline + 'T00:00:00').toLocaleDateString('ru',{day:'numeric',month:'short'}) :
+                'не активен сегодня'
+              }</div>`}
+            </div>`;
+
+          div.addEventListener('dragstart', (e) => {
+            dragSrcIndex = globalSnakeIdx;
+            div.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+          });
+          div.addEventListener('dragend', () => {
+            div.classList.remove('dragging');
+            document.querySelectorAll('.quest-card').forEach(c => c.classList.remove('drag-over'));
+          });
+          div.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.quest-card').forEach(c => c.classList.remove('drag-over'));
+            div.classList.add('drag-over');
+          });
+          div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+          div.addEventListener('drop', (e) => {
+            e.preventDefault();
+            div.classList.remove('drag-over');
+            const targetIdx = parseInt(div.dataset.snakeIdx);
+            if (dragSrcIndex === null || dragSrcIndex === targetIdx) return;
+            const p = getCurrentPass();
+            const moved = p.quests.splice(dragSrcIndex, 1)[0];
+            p.quests.splice(targetIdx, 0, moved);
+            dragSrcIndex = null;
+            savePasses();
+            renderQuests();
+          });
+          setupTouchDrag(div, globalSnakeIdx);
+
+        } else if (globalSnakeIdx < maxQ) {
+          div.className = 'quest-empty';
+          div.textContent = '—';
+          div.addEventListener('dragover', (e) => { e.preventDefault(); div.style.borderColor = 'var(--accent)'; });
+          div.addEventListener('dragleave', () => { div.style.borderColor = ''; });
+          div.addEventListener('drop', (e) => {
+            e.preventDefault();
+            div.style.borderColor = '';
+            if (dragSrcIndex === null) return;
+            const p = getCurrentPass();
+            const moved = p.quests.splice(dragSrcIndex, 1)[0];
+            p.quests.splice(globalSnakeIdx, 0, moved);
+            dragSrcIndex = null;
+            savePasses();
+            renderQuests();
+          });
+        }
+
+        // Добавляем gap между блоками — первая колонка нового блока получает margin
+        if (col === 0 && blockIdx > 0) {
+          div.style.marginLeft = '16px';
+        }
+
+        grid.appendChild(div);
+      }
+    }
+  }
+  bindQuestEditables();
+  updatePass();
+}
+
+function setupTouchDrag(el, snakeIdx) {
+  let touchStartX, touchStartY, clone, startScrollLeft;
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    dragSrcIndex = snakeIdx;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    startScrollLeft = document.querySelector('.quests-scroll-wrap')?.scrollLeft || 0;
+    clone = el.cloneNode(true);
+    clone.style.cssText = `position:fixed;opacity:0.8;pointer-events:none;z-index:9999;width:${el.offsetWidth}px;transform:scale(1.05);border-radius:12px;`;
+    clone.style.left = touchStartX - el.offsetWidth / 2 + 'px';
+    clone.style.top = touchStartY - el.offsetHeight / 2 + 'px';
+    document.body.appendChild(clone);
+    el.classList.add('dragging');
+  }, { passive: true });
+
+  el.addEventListener('touchmove', (e) => {
+    if (!clone) return;
+    e.preventDefault();
+    const tx = e.touches[0].clientX;
+    const ty = e.touches[0].clientY;
+    clone.style.left = tx - el.offsetWidth / 2 + 'px';
+    clone.style.top = ty - el.offsetHeight / 2 + 'px';
+    document.querySelectorAll('.quest-card').forEach(c => c.classList.remove('drag-over'));
+    const target = document.elementFromPoint(tx, ty)?.closest('.quest-card');
+    if (target && target !== el) target.classList.add('drag-over');
+  }, { passive: false });
+
+  el.addEventListener('touchend', (e) => {
+    if (!clone) return;
+    const tx = e.changedTouches[0].clientX;
+    const ty = e.changedTouches[0].clientY;
+    document.body.removeChild(clone);
+    clone = null;
+    el.classList.remove('dragging');
+    document.querySelectorAll('.quest-card').forEach(c => c.classList.remove('drag-over'));
+    const target = document.elementFromPoint(tx, ty)?.closest('[data-snake-idx]');
+    if (target && dragSrcIndex !== null) {
+      const targetIdx = parseInt(target.dataset.snakeIdx);
+      if (dragSrcIndex !== targetIdx) {
+        const p = getCurrentPass();
+        const moved = p.quests.splice(dragSrcIndex, 1)[0];
+        p.quests.splice(targetIdx, 0, moved);
+        savePasses();
+        renderQuests();
+      }
+    }
+    dragSrcIndex = null;
+  });
+}
+
+function deleteQuest(i) {
+  const p = getCurrentPass();
+  if (!confirm(`Удалить квест "${p.quests[i].name}"?`)) return;
+  p.quests.splice(i, 1);
+  savePasses();
+  renderQuests();
+}
+
+function bindQuestEditables() {
+  document.querySelectorAll('.editable[data-quest]').forEach(el => {
+    el.addEventListener('blur', function() {
+      const p = getCurrentPass();
+      const i = parseInt(this.dataset.quest);
+      const val = Math.min(Math.max(parseInt(this.innerText) || 0, 0), p.quests[i].max);
+      this.innerText = val;
+      p.quests[i].current = val;
+      savePasses();
+      const bar = document.getElementById('qbar-' + i);
+      if (bar) bar.style.width = ((val / p.quests[i].max) * 100) + '%';
+      this.closest('.quest-card').classList.toggle('done', val >= p.quests[i].max);
+      updatePass();
+    });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  });
+}
+
+// ====== RENDER MEGA QUESTS ======
+let mqFocused = -1;
+
+function mqPct(mq) { return Math.min(Math.round(((mq.current || 0) / mq.max) * 100), 100); }
+
+function deleteMega(i) {
+  const p = getCurrentPass();
+  if (!confirm(`Удалить мегаквест "${p.megaQuests[i].name}"?`)) return;
+  p.megaQuests.splice(i, 1);
+  savePasses();
+  mqFocused = -1;
+  renderMega();
+}
+
+function renderMega() {
+  const megaQuests = getCurrentPass()?.megaQuests || [];
+  const listEl = document.getElementById('mqList');
+  const focusEl = document.getElementById('mqFocus');
+
+  if (megaQuests.length === 0) {
+    listEl.innerHTML = '<div class="mq-empty">Нет мегаквестов</div>';
+    listEl.classList.remove('hidden');
+    focusEl.classList.remove('active');
+    document.getElementById('addMegaBtn').disabled = false;
+    return;
+  }
+
+  if (mqFocused >= 0 && mqFocused < megaQuests.length) {
+    listEl.classList.add('hidden');
+    focusEl.classList.add('active');
+    renderMqFocus(mqFocused);
+  } else {
+    listEl.classList.remove('hidden');
+    focusEl.classList.remove('active');
+    renderMqList();
+  }
+  document.getElementById('addMegaBtn').disabled = false;
+}
+
+function renderMqList() {
+  const megaQuests = getCurrentPass()?.megaQuests || [];
+  const listEl = document.getElementById('mqList');
+  listEl.innerHTML = megaQuests.map((mq, i) => {
+    const pc = mqPct(mq);
+    return `<div class="mq-row" onclick="mqOpenFocus(${i})">
+      <div class="mq-row-emoji">${mq.emoji}</div>
+      <div class="mq-row-info">
+        <div class="mq-row-name">${mq.name}</div>
+        <div class="mq-row-pct">${pc}% — ${mq.current || 0}/${mq.max} ${mq.unit || 'ед.'}</div>
+        <div class="mq-row-bar"><div class="mq-row-fill" style="width:${pc}%"></div></div>
+      </div>
+      <div class="mq-row-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+function mqOpenFocus(i) { mqFocused = i; renderMega(); }
+function mqGoBack() { mqFocused = -1; renderMega(); }
+
+function renderMqFocus(i) {
+  const megaQuests = getCurrentPass()?.megaQuests || [];
+  const mq = megaQuests[i];
+  const tasks = mq.tasks || [];
+  let cur, maxVal;
+  if (mq.taskMode) {
+    cur = tasks.filter(t => t.done).length;
+    maxVal = Math.max(mq.minMetric || 0, tasks.length);
+    mq.current = cur; mq.max = maxVal;
+  } else {
+    cur = mq.current || 0; maxVal = mq.max;
+  }
+  const pc = maxVal > 0 ? Math.min(Math.round((cur / maxVal) * 100), 100) : 0;
+  const taskItems = tasks.map((t, ti) => `
+    <div class="mega-task-item" id="task-item-${i}-${ti}">
+      <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i},${ti},this.checked)">
+      <span class="${t.done ? 'done-task' : ''}" ondblclick="editTaskInline(${i},${ti})">${t.text}</span>
+      <button class="task-edit-btn" onclick="editTaskInline(${i},${ti})" title="Редактировать">✏️</button>
+      <button class="task-delete-btn" onclick="deleteTask(${i},${ti})" title="Удалить">✕</button>
+    </div>`).join('');
+
+  document.getElementById('mqFocusCard').innerHTML = `
+    <div style="display:flex;justify-content:flex-end;gap:6px;flex-shrink:0;">
+      <button class="mega-edit" onclick="openEditMega(${i})">✏️</button>
+      <button class="mega-delete" onclick="deleteMega(${i})">✕</button>
+    </div>
+    <div class="flang-emoji-area">${mq.emoji}</div>
+    <div class="flang-desc-area"><div class="flang-title">${mq.name}</div><div class="flang-subtitle">${mq.sub}</div></div>
+    <div style="flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:6px;justify-content:space-between;">
+        <button class="mega-tasks-toggle" onclick="toggleTasksPanel(${i})">📋 Задачи <span id="task-count-${i}">(${tasks.length})</span> ▾</button>
+        <button class="mega-task-clear-btn" onclick="clearTasks(${i})">Очистить</button>
+      </div>
+      <div class="mega-tasks-panel" id="tasks-panel-${i}">
+        ${taskItems}
+        <div class="mega-task-add">
+          <input class="mega-task-input" id="task-input-${i}" placeholder="Новая задача..." maxlength="50" onkeydown="if(event.key==='Enter') addTask(${i})">
+          <button class="mega-task-add-btn" onclick="addTask(${i})">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="flang-bar-area">
+      <div class="flang-metric-row">
+        <span>${mq.unit || (mq.taskMode ? 'задач' : 'ед.')}</span>
+        <div style="display:flex;gap:2px;align-items:center;">
+          ${mq.taskMode ? `<span style="font-weight:800;color:var(--text);">${cur}</span>` : `<span class="editable" contenteditable="true" data-mega="${i}">${cur}</span>`}
+          <span>/${maxVal}</span>
+        </div>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="mbar-${i}" style="width:${pc}%"></div></div>
+      <button class="change-metric-btn" style="margin-top:4px;" onclick="openChangeMetric('mega',${i})">изменить прогресс</button>
+    </div>`;
+
+  const rest = megaQuests.filter((_, j) => j !== i);
+  document.getElementById('mqStacked').innerHTML = rest.map(mq2 => {
+    const ri = megaQuests.indexOf(mq2);
+    return `<div class="mq-stacked-row" onclick="mqOpenFocus(${ri})">
+      <div class="mq-stacked-emoji">${mq2.emoji}</div>
+      <div class="mq-stacked-name">${mq2.name}</div>
+      <div class="mq-stacked-pct">${mqPct(mq2)}%</div>
+    </div>`;
+  }).join('');
+  document.querySelector('.mq-stacked-label').style.display = rest.length > 0 ? '' : 'none';
+  bindMegaEditables();
+}
+
+function bindMegaEditables() {
+  document.querySelectorAll('.editable[data-mega]').forEach(el => {
+    el.addEventListener('blur', function() {
+      const p = getCurrentPass();
+      const i = parseInt(this.dataset.mega);
+      const val = Math.min(Math.max(parseInt(this.innerText) || 0, 0), p.megaQuests[i].max);
+      this.innerText = val;
+      p.megaQuests[i].current = val;
+      savePasses();
+      const bar = document.getElementById('mbar-' + i);
+      if (bar) bar.style.width = ((val / p.megaQuests[i].max) * 100) + '%';
+    });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  });
+}
+
+// ====== POPUPS ======
+function closePopup(id) { document.getElementById(id).classList.remove('open'); }
+function closePopupOutside(e, id) { if (e.target === document.getElementById(id)) closePopup(id); }
+
+function openQuestPopup() {
+  selectedQuestEmoji = EMOJIS[0];
+  selectedQuestDays = [];
+  renderEmojiGrid('questEmojiGrid', selectedQuestEmoji, pickQuestEmoji);
+  document.getElementById('questName').value = '';
+  document.getElementById('questSub').value = '';
+  document.getElementById('questMetric').value = '';
+  document.getElementById('questDeadline').value = '';
+  document.getElementById('questDeadline').disabled = false;
+  document.getElementById('questDeadlineActiveDay').checked = false;
+  document.getElementById('questDeadlineActiveDayWrap').style.display = 'none';
+  document.querySelectorAll('.xp-opt').forEach((o,i) => o.classList.toggle('selected', i === 0));
+  // reset repeat tabs
+  document.querySelectorAll('#questRepeatTabs .repeat-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.getElementById('questRepeatExtra').style.display = 'none';
+  document.getElementById('questRepeatExtra').innerHTML = '';
+  document.getElementById('questPopupOverlay').classList.add('open');
+}
+
+function openMegaPopup() {
+  selectedMegaEmoji = EMOJIS[0];
+  renderEmojiGrid('megaEmojiGrid', selectedMegaEmoji, pickMegaEmoji);
+  document.getElementById('megaName').value = '';
+  document.getElementById('megaSub').value = '';
+  document.getElementById('megaMetric').value = '';
+  document.getElementById('megaUnit').value = '';
+  document.getElementById('megaTaskMode').checked = false;
+  document.getElementById('megaMetricField').querySelector('.popup-label').textContent = 'Метрика (максимум)';
+  document.getElementById('megaPopupOverlay').classList.add('open');
+}
+
+function toggleMegaTaskMode() {
+  const checked = document.getElementById('megaTaskMode').checked;
+  document.getElementById('megaMetricField').querySelector('.popup-label').textContent = checked ? 'Минимальное количество задач' : 'Метрика (максимум)';
+  const unitInput = document.getElementById('megaUnit');
+  if (checked && !unitInput.value.trim()) unitInput.value = 'задач';
+}
+
+function toggleEditMegaTaskMode() {
+  const checked = document.getElementById('editMegaTaskMode').checked;
+  document.getElementById('editMegaMetricField').querySelector('.popup-label').textContent = checked ? 'Минимальное количество задач' : 'Метрика (максимум)';
+  const unitInput = document.getElementById('editMegaUnit');
+  if (checked && !unitInput.value.trim()) unitInput.value = 'задач';
+}
+
+function addQuest() {
+  const p = getCurrentPass();
+  const name = document.getElementById('questName').value.trim();
+  const sub = document.getElementById('questSub').value.trim();
+  const metric = parseInt(document.getElementById('questMetric').value);
+  const xpEl = document.querySelector('.xp-opt.selected');
+  const xp = xpEl ? parseInt(xpEl.dataset.xp) : 100;
+  const repeat = getRepeatFromPopup('questRepeatTabs');
+  const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('questDeadlineActiveDay').checked;
+  const deadline = deadlineActiveDay ? null : (document.getElementById('questDeadline').value || null);
+  if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
+  p.quests.push({ emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay });
+  savePasses();
+  closePopup('questPopupOverlay');
+  renderQuests();
+}
+
+function addMega() {
+  const p = getCurrentPass();
+  const name = document.getElementById('megaName').value.trim();
+  const sub = document.getElementById('megaSub').value.trim();
+  const metric = parseInt(document.getElementById('megaMetric').value) || 0;
+  const unit = document.getElementById('megaUnit').value.trim();
+  const taskMode = document.getElementById('megaTaskMode').checked;
+  if (!name) { showToast('Заполни название!'); return; }
+  if (!taskMode && (!metric || metric < 1)) { showToast('Заполни метрику!'); return; }
+  p.megaQuests.push({ emoji: selectedMegaEmoji, name, sub: sub || '', max: metric || 1, minMetric: metric || 0, unit: unit || (taskMode ? 'задач' : 'ед.'), current: 0, taskMode });
+  savePasses();
+  closePopup('megaPopupOverlay');
+  mqFocused = p.megaQuests.length - 1;
+  renderMega();
+}
+
+// ====== LIMITS ======
+function onAddMega() {
+  const p = getCurrentPass();
+  const limit = userIsPro ? 5 : 3;
+  if ((p?.megaQuests || []).length >= limit) { openSubPopup(); return; }
+  openMegaPopup();
+}
+
+function onAddQuest() {
+  const p = getCurrentPass();
+  const limit = userIsPro ? 18 : 9;
+  if ((p?.quests || []).length >= limit) { openSubPopup(); return; }
+  openQuestPopup();
+}
+
+// ====== EDIT QUEST ======
+let editQuestIndex = -1;
+let editQuestEmoji = EMOJIS[0];
+
+function openEditQuest(i) {
+  editQuestIndex = i;
+  const q = getCurrentPass().quests[i];
+  editQuestEmoji = q.emoji;
+  editQuestDays = q.repeat?.days ? [...q.repeat.days] : [];
+  renderEmojiGrid('editQuestEmojiGrid', editQuestEmoji, (el, e) => { editQuestEmoji = e; document.querySelectorAll('#editQuestEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); });
+  document.getElementById('editQuestName').value = q.name;
+  document.getElementById('editQuestSub').value = q.sub;
+  document.getElementById('editQuestMetric').value = q.max;
+  document.getElementById('editQuestDeadline').value = q.deadline || '';
+  document.querySelectorAll('#editXpOptions .xp-opt').forEach(o => o.classList.toggle('selected', parseInt(o.dataset.xp) === q.xp));
+  // set repeat tabs
+  const repeatType = q.repeat?.type || 'daily';
+  document.querySelectorAll('#editQuestRepeatTabs .repeat-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.type === repeatType);
+  });
+  const extra = document.getElementById('editQuestRepeatExtra');
+  if (repeatType === 'weekly') {
+    extra.style.display = '';
+    extra.innerHTML = `<div class="days-grid">${DAYS.map((d, di) =>
+      `<div class="day-btn ${editQuestDays.includes(di) ? 'active' : ''}" onclick="toggleDay(this,${di},'editQuestRepeatTabs')">${d}</div>`
+    ).join('')}</div>`;
+  } else {
+    extra.style.display = 'none';
+    extra.innerHTML = '';
+  }
+  // restore deadline active day
+  const activeDayWrap = document.getElementById('editQuestDeadlineActiveDayWrap');
+  const activeDayCheck = document.getElementById('editQuestDeadlineActiveDay');
+  const editDeadlineInput = document.getElementById('editQuestDeadline');
+  if (repeatType === 'weekly') {
+    activeDayWrap.style.display = 'flex';
+    activeDayCheck.checked = !!q.deadlineActiveDay;
+    if (q.deadlineActiveDay) {
+      editDeadlineInput.disabled = true;
+      editDeadlineInput.value = '';
+      editDeadlineInput.placeholder = 'авто — ближайший активный день';
+    } else {
+      editDeadlineInput.disabled = false;
+      editDeadlineInput.placeholder = '';
+    }
+  } else {
+    activeDayWrap.style.display = 'none';
+    activeDayCheck.checked = false;
+    editDeadlineInput.disabled = false;
+  }
+  document.getElementById('editQuestOverlay').classList.add('open');
+}
+
+function selectEditXP(el) { document.querySelectorAll('#editXpOptions .xp-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+
+function saveEditQuest() {
+  const p = getCurrentPass();
+  const name = document.getElementById('editQuestName').value.trim();
+  const sub = document.getElementById('editQuestSub').value.trim();
+  const metric = parseInt(document.getElementById('editQuestMetric').value);
+  const xpEl = document.querySelector('#editXpOptions .xp-opt.selected');
+  const xp = xpEl ? parseInt(xpEl.dataset.xp) : p.quests[editQuestIndex].xp;
+  const repeat = getRepeatFromPopup('editQuestRepeatTabs');
+  const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('editQuestDeadlineActiveDay').checked;
+  const deadline = deadlineActiveDay ? null : (document.getElementById('editQuestDeadline').value || null);
+  if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
+  p.quests[editQuestIndex] = { ...p.quests[editQuestIndex], emoji: editQuestEmoji, name, sub, max: metric, xp, repeat, deadline, deadlineActiveDay };
+  savePasses();
+  closePopup('editQuestOverlay');
+  renderQuests();
+}
+
+// ====== EDIT MEGA ======
+let editMegaIndex = -1;
+let editMegaEmoji = EMOJIS[0];
+
+function openEditMega(i) {
+  editMegaIndex = i;
+  const mq = getCurrentPass().megaQuests[i];
+  editMegaEmoji = mq.emoji;
+  renderEmojiGrid('editMegaEmojiGrid', editMegaEmoji, (el, e) => { editMegaEmoji = e; document.querySelectorAll('#editMegaEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); });
+  document.getElementById('editMegaName').value = mq.name;
+  document.getElementById('editMegaSub').value = mq.sub;
+  document.getElementById('editMegaMetric').value = mq.taskMode ? (mq.minMetric || 0) : mq.max;
+  document.getElementById('editMegaUnit').value = mq.unit || '';
+  const tm = document.getElementById('editMegaTaskMode');
+  tm.checked = !!mq.taskMode;
+  document.getElementById('editMegaMetricField').querySelector('.popup-label').textContent = mq.taskMode ? 'Минимальное количество задач' : 'Метрика (максимум)';
+  document.getElementById('editMegaOverlay').classList.add('open');
+}
+
+function saveEditMega() {
+  const p = getCurrentPass();
+  const name = document.getElementById('editMegaName').value.trim();
+  const sub = document.getElementById('editMegaSub').value.trim();
+  const metric = parseInt(document.getElementById('editMegaMetric').value) || 0;
+  const unit = document.getElementById('editMegaUnit').value.trim();
+  const taskMode = document.getElementById('editMegaTaskMode').checked;
+  if (!name) { showToast('Заполни название!'); return; }
+  if (!taskMode && (!metric || metric < 1)) { showToast('Заполни метрику!'); return; }
+  p.megaQuests[editMegaIndex] = { ...p.megaQuests[editMegaIndex], emoji: editMegaEmoji, name, sub, max: taskMode ? Math.max(metric, (p.megaQuests[editMegaIndex].tasks || []).length) : metric, minMetric: metric, unit: unit || (taskMode ? 'задач' : 'ед.'), taskMode };
+  savePasses();
+  closePopup('editMegaOverlay');
+  mqFocused = editMegaIndex;
+  renderMega();
+}
+
+// ====== MEGA TASKS ======
+function toggleTasksPanel(i) { const panel = document.getElementById('tasks-panel-' + i); if (panel) panel.classList.toggle('open'); }
+
+function addTask(i) {
+  const p = getCurrentPass();
+  const input = document.getElementById('task-input-' + i);
+  const text = input.value.trim();
+  if (!text) return;
+  if (!p.megaQuests[i].tasks) p.megaQuests[i].tasks = [];
+  p.megaQuests[i].tasks.push({ text, done: false });
+  savePasses();
+  renderMqFocus(i);
+  setTimeout(() => {
+    const panel = document.getElementById('tasks-panel-' + i);
+    if (panel) panel.classList.add('open');
+    const newInput = document.getElementById('task-input-' + i);
+    if (newInput) newInput.focus();
+  }, 10);
+}
+
+function deleteTask(i, ti) {
+  const p = getCurrentPass();
+  p.megaQuests[i].tasks.splice(ti, 1);
+  savePasses();
+  renderMqFocus(i);
+  setTimeout(() => {
+    const panel = document.getElementById('tasks-panel-' + i);
+    if (panel) panel.classList.add('open');
+  }, 10);
+}
+
+function editTaskInline(i, ti) {
+  const p = getCurrentPass();
+  const task = p.megaQuests[i].tasks[ti];
+  const itemEl = document.getElementById(`task-item-${i}-${ti}`);
+  if (!itemEl) return;
+
+  const span = itemEl.querySelector('span');
+  const editBtn = itemEl.querySelector('.task-edit-btn');
+  const deleteBtn = itemEl.querySelector('.task-delete-btn');
+
+  // Replace span with input
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'task-inline-input';
+  input.value = task.text;
+  input.maxLength = 50;
+  span.replaceWith(input);
+  editBtn.style.display = 'none';
+  deleteBtn.style.display = 'none';
+  input.focus();
+  input.select();
+
+  function save() {
+    const newText = input.value.trim();
+    if (newText) p.megaQuests[i].tasks[ti].text = newText;
+    savePasses();
+    renderMqFocus(i);
+    setTimeout(() => {
+      const panel = document.getElementById('tasks-panel-' + i);
+      if (panel) panel.classList.add('open');
+    }, 10);
+  }
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    if (e.key === 'Escape') { input.value = task.text; input.blur(); }
+  });
+}
+
+function clearTasks(i) {
+  if (!confirm('Удалить все задачи этого мегаквеста?')) return;
+  p.megaQuests[i].tasks = [];
+  savePasses();
+  renderMqFocus(i);
+}
+
+function toggleTask(i, ti, checked) {
+  const p = getCurrentPass();
+  if (!p.megaQuests[i].tasks) return;
+  p.megaQuests[i].tasks[ti].done = checked;
+  savePasses();
+  if (p.megaQuests[i].taskMode) {
+    renderMqFocus(i);
+    setTimeout(() => { const panel = document.getElementById('tasks-panel-' + i); if (panel) panel.classList.add('open'); }, 10);
+  } else {
+    const span = document.querySelector(`#tasks-panel-${i} .mega-task-item:nth-child(${ti+1}) span`);
+    if (span) span.classList.toggle('done-task', checked);
+  }
+}
+
+// ====== CHANGE METRIC ======
+let changeMetricType = '';
+let changeMetricIndex = -1;
+
+function openChangeMetric(type, i) {
+  changeMetricType = type; changeMetricIndex = i;
+  const p = getCurrentPass();
+  const titleEl = document.getElementById('changeMetricTitle');
+  const labelEl = document.getElementById('changeMetricLabel');
+  const inputEl = document.getElementById('changeMetricInput');
+  if (type === 'quest') {
+    titleEl.textContent = 'Изменить прогресс';
+    labelEl.textContent = `Текущее значение (макс: ${p.quests[i].max})`;
+    inputEl.max = p.quests[i].max;
+    inputEl.value = p.quests[i].current || 0;
+  } else {
+    const mq = p.megaQuests[i];
+    titleEl.textContent = 'Изменить прогресс';
+    labelEl.textContent = `Текущее значение (макс: ${mq.max})`;
+    inputEl.max = mq.max;
+    inputEl.value = mq.current || 0;
+  }
+  document.getElementById('changeMetricOverlay').classList.add('open');
+  setTimeout(() => inputEl.focus(), 100);
+}
+
+function saveMetricChange() {
+  const p = getCurrentPass();
+  const inputEl = document.getElementById('changeMetricInput');
+  const val = Math.min(Math.max(parseInt(inputEl.value) || 0, 0), parseInt(inputEl.max) || 99999);
+  if (changeMetricType === 'quest') {
+    p.quests[changeMetricIndex].current = val;
+    savePasses();
+    closePopup('changeMetricOverlay');
+    renderQuests();
+  } else {
+    p.megaQuests[changeMetricIndex].current = val;
+    savePasses();
+    closePopup('changeMetricOverlay');
+    renderMqFocus(changeMetricIndex);
+  }
+}
+
+// ====== MENU ======
+function toggleMenu() { document.getElementById('menuOverlay').classList.toggle('open'); }
+function closeMenuOutside(e) { if (e.target === document.getElementById('menuOverlay')) document.getElementById('menuOverlay').classList.remove('open'); }
+
+function newDay() {
+  const p = getCurrentPass();
+  const today = todayStr();
+  p.quests.forEach(q => {
+    if (!isQuestActiveToday(q)) return; // не сбрасываем неактивные
+    // one-time квест с прошедшим дедлайном — не трогаем
+    if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return;
+    q.current = 0;
+  });
+  save('lastNewDay', today);
+  savePasses();
+  document.getElementById('menuOverlay').classList.remove('open');
+  renderQuests();
+  showToast('🌅 Новый день начат!');
+}
+
+function exportJSON() {
+  const data = { passes, currentPassId, exportedAt: new Date().toISOString() };
+  const json = JSON.stringify(data, null, 2);
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const filename = `passit_${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}.json`;
+  const blob = new Blob([json], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+}
+
+function importJSON() {
+  const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.passes) { passes = data.passes; currentPassId = data.currentPassId || passes[0].id; }
+        else if (data.quests) { initPasses(data); }
+        savePasses();
+        document.getElementById('menuOverlay').classList.remove('open');
+        render(); showToast('Данные загружены!');
+      } catch { showToast('Ошибка чтения файла!'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function fullReset() {
+  if (!confirm('Удалить ВСЕ пассы и квесты? Это нельзя отменить!')) return;
+  passes = [{ id: uid(), name: 'Мой пасс', emoji: '🎯', quests: [], megaQuests: [] }];
+  currentPassId = passes[0].id;
+  mqFocused = -1;
+  savePasses();
+  document.getElementById('menuOverlay').classList.remove('open');
+  render();
+}
+
+function saveAndClose() {
+  savePasses();
+  document.getElementById('menuOverlay').classList.remove('open');
+  showToast('Прогресс сохранён!');
+}
+
+// ====== RENDER ALL ======
+function render() {
+  updatePassMenuTrigger();
+  renderMega();
+  renderQuests();
+}
+
+// ====== SUBSCRIPTION ======
+var userIsPro = false;
+
+function setProStatus(val) { userIsPro = val; updateSubUI(); }
+
+function updateSubUI() {
+  var btn = document.getElementById('subBtn');
+  btn.innerHTML = userIsPro ? '👑' : '⭐';
+  btn.title = userIsPro ? 'Pro — активна' : 'Подписка';
+  var freeLabel = document.getElementById('subFreeBtnLabel');
+  var proLabel = document.getElementById('subProBtnLabel');
+  if (freeLabel && proLabel) {
+    if (userIsPro) { freeLabel.textContent = 'Бесплатный план'; freeLabel.className = 'sub-plan-btn current'; proLabel.textContent = '✓ Pro активна'; proLabel.className = 'sub-plan-btn current'; }
+    else { freeLabel.textContent = 'Ваш текущий план'; freeLabel.className = 'sub-plan-btn current'; proLabel.textContent = 'Активировать Pro'; proLabel.className = 'sub-plan-btn upgrade'; }
+  }
+  document.getElementById('addMegaBtn').disabled = false;
+  document.getElementById('addQuestBtn').disabled = false;
+}
+
+function openSubPopup() { updateSubUI(); document.getElementById('subCodeInput').value = ''; document.getElementById('subCodeMsg').textContent = ''; document.getElementById('subOverlay').classList.add('open'); }
+function closeSubPopup() { document.getElementById('subOverlay').classList.remove('open'); }
+function closeSubOutside(e) { if (e.target === document.getElementById('subOverlay')) closeSubPopup(); }
+function focusCodeInput() { document.getElementById('subCodeInput').focus(); }
+
+function applyCode() {
+  var code = document.getElementById('subCodeInput').value.trim().toUpperCase();
+  var msgEl = document.getElementById('subCodeMsg');
+  if (!code) { msgEl.style.color = '#e04040'; msgEl.textContent = 'Введи код'; return; }
+  fbdb.ref('passit_codes/' + code).once('value').then(function(snap) {
+    if (!snap.exists()) { msgEl.style.color = '#e04040'; msgEl.textContent = '❌ Код не найден'; return; }
+    var action = snap.val().action;
+    if (action === 'activate_pro') {
+      setProStatus(true);
+      if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/subscription').set({ type: 'pro', activatedAt: Date.now() });
+      msgEl.style.color = 'var(--accent)'; msgEl.textContent = '✓ Pro активирована!'; showToast('👑 Pro активирована!');
+    } else if (action === 'revoke_pro') {
+      setProStatus(false);
+      if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/subscription').set({ type: 'free', revokedAt: Date.now() });
+      msgEl.style.color = 'var(--text2)'; msgEl.textContent = '✓ Подписка сброшена до Free'; showToast('Подписка сброшена до Free');
+    } else { msgEl.style.color = '#e04040'; msgEl.textContent = '❌ Неизвестный код'; }
+  }).catch(function() { msgEl.style.color = '#e04040'; msgEl.textContent = '❌ Ошибка подключения'; });
+}
+
+// ====== THEME ======
+const THEMES = {
+  huntrx: {
+    light: { '--bg':'#F8EAFA','--surface':'#EEDDFF','--accent':'#96A0E2','--accent2':'#F9DABB','--text':'#2a1a4a','--text2':'#7a5ab0','--border':'rgba(150,160,226,0.35)','--bar-bg':'rgba(150,160,226,0.18)','--card-bg':'rgba(255,255,255,0.55)','--overlay':'rgba(200,180,255,0.25)','--blur-bg':'rgba(238,221,255,0.92)' },
+    dark: { '--bg':'#090107','--surface':'#1a1330','--accent':'#C90060','--accent2':'#554EA7','--text':'#F6E3C2','--text2':'#b89a70','--border':'rgba(201,0,96,0.3)','--bar-bg':'rgba(201,0,96,0.12)','--card-bg':'rgba(85,78,167,0.22)','--overlay':'rgba(9,1,7,0.75)','--blur-bg':'rgba(26,19,48,0.95)' }
+  },
+  basic: {
+    light: { '--bg':'#FFFFFF','--surface':'#F0F4FF','--accent':'#4A90D9','--accent2':'#C8DFF8','--text':'#0d1f3c','--text2':'#4a70a0','--border':'rgba(74,144,217,0.25)','--bar-bg':'rgba(74,144,217,0.1)','--card-bg':'rgba(255,255,255,0.8)','--overlay':'rgba(74,144,217,0.12)','--blur-bg':'rgba(240,244,255,0.96)' },
+    dark: { '--bg':'#0a0a0a','--surface':'#141414','--accent':'#C8B89A','--accent2':'#2a2520','--text':'#F2E8D9','--text2':'#9a8a6a','--border':'rgba(200,184,154,0.25)','--bar-bg':'rgba(200,184,154,0.1)','--card-bg':'rgba(200,184,154,0.06)','--overlay':'rgba(0,0,0,0.6)','--blur-bg':'rgba(14,14,14,0.97)' }
+  }
+};
+
+let dark = load('darkMode', false);
+let currentTheme = load('currentTheme', 'huntrx');
+
+function applyTheme() {
+  document.body.classList.toggle('dark', dark);
+  document.getElementById('themeBtn').textContent = dark ? '☀️' : '🌙';
+  const vars = THEMES[currentTheme] ? THEMES[currentTheme][dark ? 'dark' : 'light'] : THEMES.huntrx.light;
+  Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
+}
+function toggleTheme() { dark = !dark; save('darkMode', dark); applyTheme(); }
+function openThemePicker() { updateSwatchSelected(); document.getElementById('themePickerOverlay').classList.add('open'); }
+function closeThemePicker() { document.getElementById('themePickerOverlay').classList.remove('open'); }
+function closeThemePickerOutside(e) { if (e.target === document.getElementById('themePickerOverlay')) closeThemePicker(); }
+function selectTheme(name) { currentTheme = name; save('currentTheme', name); applyTheme(); updateSwatchSelected(); }
+function updateSwatchSelected() { document.getElementById('swatchHuntrx').classList.toggle('selected', currentTheme === 'huntrx'); document.getElementById('swatchBasic').classList.toggle('selected', currentTheme === 'basic'); }
+
+// ====== FEEDBACK ======
+function openFeedback() { document.getElementById('feedbackOverlay').classList.add('open'); }
+
+applyTheme();
+render();
+checkUpdateBanner();
+
+// ====== FIREBASE AUTH ======
+var currentUser = null;
+
+function authClick() {
+  if (currentUser) {
+    document.getElementById('accountEmail').textContent = currentUser.email;
+    document.getElementById('accountUploadBtn').onclick = function() {
+      cloudSave();
+      document.getElementById('accountModal').style.display = 'none';
+      showToast('✅ Прогресс привязан к аккаунту!');
+    };
+    document.getElementById('accountSignoutBtn').onclick = function() {
+      firebase.auth().signOut();
+      document.getElementById('accountModal').style.display = 'none';
+    };
+    document.getElementById('accountModal').style.display = 'flex';
+  } else {
+    document.getElementById('authModal').style.display = 'flex';
+  }
+}
+
+document.getElementById('googleBtn').onclick = function() {
+  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    .then(function() { document.getElementById('authModal').style.display = 'none'; })
+    .catch(function(e) { showToast('Ошибка: ' + e.message); });
+};
+
+firebase.auth().onAuthStateChanged(function(user) {
+  currentUser = user;
+  var btn = document.getElementById('authBtn');
+  if (user) {
+    btn.innerHTML = '☁️'; btn.title = user.email + ' (нажми чтобы выйти)';
+    logSession();
+    fbdb.ref('passit_users/' + user.uid).once('value').then(function(snap) {
+      var sub = null;
+      if (snap.exists()) { sub = snap.val().subscription; }
+      if (sub && sub.type === 'pro') setProStatus(true); else setProStatus(false);
+
+      var cloudData = snap.exists() ? snap.val() : null;
+      var localHasData = passes.some(p => p.quests.length > 0 || p.megaQuests.length > 0);
+      var cloudHasData = cloudData && cloudData.passes && cloudData.passes.some(p => p.quests.length > 0 || p.megaQuests.length > 0);
+
+      if (localHasData && !cloudHasData) {
+        cloudSave(); render(); showToast('☁️ Локальные данные сохранены в облако!');
+      } else if (localHasData && cloudHasData) {
+        showMergeModal(passes, cloudData.passes, cloudData.currentPassId);
+      } else if (!localHasData && cloudHasData) {
+        initPasses({ passes: cloudData.passes, currentPassId: cloudData.currentPassId });
+        render(); showToast('☁️ Загружено из облака!');
+      } else {
+        render();
+      }
+    });
+  } else {
+    btn.innerHTML = '👤'; btn.title = 'Войти в аккаунт';
+    setProStatus(false);
+  }
+});
+
+function showMergeModal(localPasses, cloudPasses, cloudCurId) {
+  var localTotal = localPasses.reduce((s,p) => s + p.quests.length + p.megaQuests.length, 0);
+  var cloudTotal = cloudPasses.reduce((s,p) => s + p.quests.length + p.megaQuests.length, 0);
+  document.getElementById('mergeModalDesc').innerHTML =
+    'В облаке: <b>' + cloudPasses.length + '</b> пасс(ов), <b>' + cloudTotal + '</b> элементов.<br>' +
+    'Локально: <b>' + localPasses.length + '</b> пасс(ов), <b>' + localTotal + '</b> элементов.';
+  document.getElementById('mergeBtnKeepCloud').onclick = function() {
+    initPasses({ passes: cloudPasses, currentPassId: cloudCurId });
+    savePasses(); document.getElementById('mergeModal').style.display = 'none'; render(); showToast('☁️ Загружено из облака!');
+  };
+  document.getElementById('mergeBtnKeepLocal').onclick = function() {
+    cloudSave(); document.getElementById('mergeModal').style.display = 'none'; render(); showToast('✅ Локальные данные сохранены!');
+  };
+  document.getElementById('mergeBtnMerge').onclick = function() {
+    var merged = [...cloudPasses];
+    localPasses.forEach(function(lp) { if (!merged.find(function(cp) { return cp.name === lp.name; })) merged.push(lp); });
+    initPasses({ passes: merged, currentPassId: cloudCurId || merged[0].id });
+    savePasses(); document.getElementById('mergeModal').style.display = 'none'; render(); showToast('✅ Данные объединены!');
+  };
+  document.getElementById('mergeModal').style.display = 'flex';
+}
+
+function cloudSave() {
+  if (!currentUser) return;
+  const now = new Date();
+  const readable = now.toLocaleString('ru', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+  fbdb.ref('passit_users/' + currentUser.uid).update({
+    passes, currentPassId,
+    updated: readable,
+    updatedTs: now.getTime()
+  });
+}
+
+function logSession() {
+  if (!currentUser) return;
+  const now = new Date();
+  const readable = now.toLocaleString('ru', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+  fbdb.ref('passit_users/' + currentUser.uid + '/sessions').push({
+    at: readable,
+    ts: now.getTime()
+  });
+}
+
+setInterval(cloudSave, 60000);
+</script>
+</body>
+</html>
