@@ -44,6 +44,7 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 24px; background: var(--surface);
   border-bottom: 1px solid var(--border); flex-shrink: 0;
+  overflow: visible; position: relative; z-index: 10;
 }
 .header-title { font-size: 14px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
 .header-btn {
@@ -228,9 +229,9 @@ body {
 .mega-task-add-btn:hover { opacity: 0.8; }
 .mega-task-clear-btn { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--text2); opacity: 0.7; padding: 0; margin-left: auto; }
 .mega-task-clear-btn:hover { opacity: 1; color: #e04040; }
-.mega-delete { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text2); opacity: 0.35; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; padding: 0; }
+.mega-delete { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text2); opacity: 0.4; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; padding: 2px 4px; }
 .mega-delete:hover { opacity: 1; color: #e04040; }
-.mega-edit { background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text2); opacity: 0.35; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; padding: 0; }
+.mega-edit { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text2); opacity: 0.4; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; padding: 2px 4px; }
 .mega-edit:hover { opacity: 1; color: var(--accent); }
 
 /* QUESTS */
@@ -403,6 +404,11 @@ body {
   white-space: nowrap; z-index: 500;
   pointer-events: none;
 }
+/* последние кнопки — тултип вправо не уходит */
+.header-btn:last-child[data-tooltip]:hover::after,
+.header-btn:nth-last-child(2)[data-tooltip]:hover::after {
+  left: auto; right: 0; transform: none;
+}
 
 /* AUTHOR PASS */
 .author-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; }
@@ -485,7 +491,6 @@ body {
     </div>
     <div class="mq-list" id="mqList"></div>
     <div class="mq-focus" id="mqFocus">
-      <button class="mq-back-btn" onclick="mqGoBack()">← назад</button>
       <div class="flang-card" id="mqFocusCard"></div>
       <div class="mq-stacked-label">остальные пассы</div>
       <div class="mq-stacked" id="mqStacked"></div>
@@ -1506,7 +1511,14 @@ function setupTouchDrag(el, snakeIdx) {
 
 function deleteQuest(i) {
   const p = getCurrentPass();
-  if (!confirm(`Удалить квест "${p.quests[i].name}"?`)) return;
+  const q = p.quests[i];
+  if (q.repeat?.type === 'once') {
+    // special popup for one-time quests
+    const choice = confirm(`«${q.name}» удалится сам в полночь.\n\nНажмите OK чтобы удалить вручную сейчас, или Отмена чтобы подождать.`);
+    if (!choice) return;
+  } else {
+    if (!confirm(`Удалить квест «${q.name}»?`)) return;
+  }
   p.quests.splice(i, 1);
   savePasses();
   renderQuests();
@@ -1611,9 +1623,12 @@ function renderMqFocus(i) {
     </div>`).join('');
 
   document.getElementById('mqFocusCard').innerHTML = `
-    <div style="display:flex;justify-content:flex-end;gap:6px;flex-shrink:0;">
-      <button class="mega-edit" onclick="openEditMega(${i})">✏️</button>
-      <button class="mega-delete" onclick="deleteMega(${i})">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <button class="mq-back-btn" onclick="mqGoBack()" title="Назад к списку">← назад</button>
+      <div style="display:flex;gap:6px;">
+        <button class="mega-edit" onclick="openEditMega(${i})" title="Редактировать">✏️</button>
+        <button class="mega-delete" onclick="deleteMega(${i})" title="Удалить мегаквест">✕</button>
+      </div>
     </div>
     <div class="flang-emoji-area">${mq.emoji}</div>
     <div class="flang-desc-area"><div class="flang-title">${mq.name}</div><div class="flang-subtitle">${mq.sub}</div></div>
@@ -2154,6 +2169,41 @@ function closeThemePickerOutside(e) { if (e.target === document.getElementById('
 function selectTheme(name) { currentTheme = name; save('currentTheme', name); applyTheme(); updateSwatchSelected(); }
 function updateSwatchSelected() { document.getElementById('swatchHuntrx').classList.toggle('selected', currentTheme === 'huntrx'); document.getElementById('swatchBasic').classList.toggle('selected', currentTheme === 'basic'); }
 
+// ====== MIDNIGHT CLEANUP ======
+function cleanupExpiredQuests() {
+  const today = todayStr();
+  let changed = false;
+  passes.forEach(p => {
+    const before = p.quests.length;
+    p.quests = p.quests.filter(q => {
+      if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return false;
+      return true;
+    });
+    if (p.quests.length !== before) changed = true;
+  });
+  if (changed) { savePasses(); renderQuests(); showToast('🗑 Одноразовые квесты удалены'); }
+}
+
+function scheduleMidnightCleanup() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setDate(midnight.getDate() + 1);
+  midnight.setHours(0, 0, 10, 0); // 00:00:10
+  const msUntilMidnight = midnight - now;
+  setTimeout(() => {
+    cleanupExpiredQuests();
+    // также сбрасываем ежедневные квесты
+    const p = getCurrentPass();
+    p.quests.forEach(q => {
+      if (isQuestActiveToday(q)) q.current = 0;
+    });
+    savePasses();
+    renderQuests();
+    showToast('🌅 Новый день — квесты сброшены!');
+    scheduleMidnightCleanup(); // планируем следующую полночь
+  }, msUntilMidnight);
+}
+
 // ====== AUTHOR PASS ======
 function openAuthorPass() {
   document.getElementById('authorOverlay').classList.add('open');
@@ -2172,6 +2222,8 @@ applyTheme();
 render();
 checkUpdateBanner();
 initDragToPass();
+cleanupExpiredQuests();
+scheduleMidnightCleanup();
 
 // ====== FIREBASE AUTH ======
 var currentUser = null;
