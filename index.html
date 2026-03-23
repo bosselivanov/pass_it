@@ -1332,9 +1332,11 @@ function renderQuests() {
   const ROWS = 3;
   const BLOCK = COLS * ROWS;
 
-  // Сколько блоков: смотрим на длину массива (с null'ами)
-  const filledBlocks = Math.ceil(Math.max(1, quests.length) / BLOCK);
-  const totalBlocks = (quests.length % BLOCK === 0 && quests.length < maxQ) ? filledBlocks + 1 : filledBlocks;
+  // считаем блоки по реальной длине (включая null-слоты)
+  const nonNull = quests.filter(q => q !== null).length;
+  const effectiveLen = Math.max(quests.length, nonNull);
+  const filledBlocks = Math.ceil(Math.max(1, effectiveLen) / BLOCK);
+  const totalBlocks = (nonNull % BLOCK === 0 && nonNull < maxQ) ? filledBlocks + 1 : filledBlocks;
   const cappedBlocks = Math.min(totalBlocks, Math.ceil(maxQ / BLOCK));
 
   grid.style.gridAutoColumns = `calc((100% - ${(COLS - 1) * 8}px) / ${COLS})`;
@@ -1349,7 +1351,7 @@ function renderQuests() {
         const globalSnakeIdx = blockIdx * BLOCK + snakeIdxInBlock;
 
         const div = document.createElement('div');
-        const q = quests[globalSnakeIdx]; // может быть null или undefined
+        const q = quests[globalSnakeIdx] || null;
 
         if (q) {
           const cur = q.current || 0;
