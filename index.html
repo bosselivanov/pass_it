@@ -415,7 +415,34 @@ body {
   left: auto; right: 0; transform: none;
 }
 
-/* AUTHOR PASS */
+/* DEBT BADGE */
+.header-btn-wrap { position: relative; display: inline-flex; }
+.debt-badge {
+  position: absolute; top: 0; right: 0;
+  background: #e04040; color: white;
+  font-size: 9px; font-weight: 800;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; pointer-events: none;
+  border: 2px solid var(--surface);
+  display: none;
+}
+.debt-badge.visible { display: flex; }
+
+/* DEBT POPUP */
+.debt-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; }
+.debt-overlay.open { display: flex; }
+.debt-popup { background: var(--blur-bg); backdrop-filter: blur(24px); border: 1.5px solid var(--border); border-radius: 24px; padding: 24px 28px; width: 420px; max-width: 95vw; max-height: 80vh; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease; overflow-y: auto; }
+.debt-title { font-size: 15px; font-weight: 800; color: var(--text); }
+.debt-empty { text-align: center; color: var(--text2); font-size: 13px; padding: 20px 0; opacity: 0.6; }
+.debt-item { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.debt-item-info { flex: 1; min-width: 0; }
+.debt-item-name { font-size: 13px; font-weight: 800; color: var(--text); }
+.debt-item-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.debt-item-progress { height: 3px; background: var(--bar-bg); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+.debt-item-fill { height: 100%; background: #e04040; border-radius: 3px; }
+.debt-delete-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text2); opacity: 0.4; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
+.debt-delete-btn:hover { opacity: 1; color: #e04040; }
 .author-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; }
 .author-overlay.open { display: flex; }
 .author-popup { background: var(--blur-bg); backdrop-filter: blur(24px); border: 1.5px solid var(--border); border-radius: 24px; padding: 28px; width: 680px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease; overflow-y: auto; }
@@ -444,7 +471,7 @@ body {
   <div style="font-size:20px;">🎉</div>
   <div class="update-banner-text">
     Новое обновление!
-    <div class="update-banner-sub" id="updateBannerText">🗑️ — удалить квест, ✕ — закрыть мегаквест. Плюс заморозка квестов — кнопка ❄️</div>
+    <div class="update-banner-sub" id="updateBannerText">📋 Долговая книга — невыполненные квесты теперь не теряются. Квесты сбрасываются автоматически каждый день</div>
   </div>
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
@@ -453,6 +480,10 @@ body {
   <button class="header-btn" onclick="toggleMenu()" data-tooltip="Меню">☰</button>
   <div class="header-title">Your Daily Pass</div>
   <button class="header-btn" onclick="openAuthorPass()" data-tooltip="Авторский пасс" id="authorPassBtn">🏆</button>
+  <div class="header-btn-wrap">
+    <button class="header-btn" onclick="openDebts()" data-tooltip="Долговая книга" id="debtBtn">📋</button>
+    <div class="debt-badge" id="debtBadge"></div>
+  </div>
   <button class="header-btn" onclick="openFeedback()" data-tooltip="Обратная связь">❓</button>
   <button class="header-btn" id="subBtn" onclick="openSubPopup()" data-tooltip="Подписка">⭐</button>
   <button class="header-btn" id="authBtn" onclick="authClick()" data-tooltip="Аккаунт">👤</button>
@@ -553,6 +584,12 @@ body {
         Дедлайн в активный день
       </label>
     </div>
+    <div class="popup-field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
+        <input type="checkbox" id="questTrackDebt" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;">
+        Считать долгом если не выполнен
+      </label>
+    </div>
     <div class="popup-actions">
       <button class="popup-btn secondary" onclick="closePopup('questPopupOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="addQuest()">Добавить</button>
@@ -640,6 +677,12 @@ body {
         Дедлайн в активный день
       </label>
     </div>
+    <div class="popup-field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
+        <input type="checkbox" id="editQuestTrackDebt" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;">
+        Считать долгом если не выполнен
+      </label>
+    </div>
     <div class="popup-actions">
       <button class="popup-btn secondary" onclick="closePopup('editQuestOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="saveEditQuest()">💾 Сохранить</button>
@@ -678,6 +721,19 @@ body {
       <button class="popup-btn secondary" onclick="closePopup('changeMetricOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="saveMetricChange()">Сохранить</button>
     </div>
+  </div>
+</div>
+
+<!-- DEBT POPUP -->
+<div class="debt-overlay" id="debtOverlay" onclick="closeDebtOutside(event)">
+  <div class="debt-popup">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="debt-title">📋 Долговая книга</div>
+      <button class="popup-btn secondary" onclick="closeDebts()" style="flex:0;padding:6px 12px;font-size:12px;">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--text2);">Квесты которые не были выполнены вовремя</div>
+    <div id="debtList"></div>
+    <button class="sub-close-btn" onclick="clearAllDebts()">🗑️ Очистить все долги</button>
   </div>
 </div>
 
@@ -1213,7 +1269,7 @@ function getRepeatFromPopup(tabsId) {
   return type === 'weekly' ? { type, days } : { type };
 }
 
-const CURRENT_VERSION = 'v1.6';
+const CURRENT_VERSION = 'v1.8';
 function checkUpdateBanner() {
   const seen = load('lastSeenVersion', null);
   if (seen !== CURRENT_VERSION) {
@@ -1736,6 +1792,7 @@ function openQuestPopup() {
   document.getElementById('questDeadline').disabled = false;
   document.getElementById('questDeadlineActiveDay').checked = false;
   document.getElementById('questDeadlineActiveDayWrap').style.display = 'none';
+  document.getElementById('questTrackDebt').checked = false;
   document.querySelectorAll('.xp-opt').forEach((o,i) => o.classList.toggle('selected', i === 0));
   // reset repeat tabs
   document.querySelectorAll('#questRepeatTabs .repeat-tab').forEach((t,i) => t.classList.toggle('active', i===0));
@@ -1780,8 +1837,9 @@ function addQuest() {
   const repeat = getRepeatFromPopup('questRepeatTabs');
   const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('questDeadlineActiveDay').checked;
   const deadline = deadlineActiveDay ? null : (document.getElementById('questDeadline').value || null);
+  const trackDebt = document.getElementById('questTrackDebt').checked;
   if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
-  const newQuest = { emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay };
+  const newQuest = { emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay, trackDebt };
   // найти первый свободный слот
   const firstNull = p.quests.indexOf(null);
   if (firstNull !== -1) {
@@ -1876,6 +1934,7 @@ function openEditQuest(i) {
     activeDayCheck.checked = false;
     editDeadlineInput.disabled = false;
   }
+  document.getElementById('editQuestTrackDebt').checked = !!q.trackDebt;
   document.getElementById('editQuestOverlay').classList.add('open');
 }
 
@@ -1891,8 +1950,9 @@ function saveEditQuest() {
   const repeat = getRepeatFromPopup('editQuestRepeatTabs');
   const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('editQuestDeadlineActiveDay').checked;
   const deadline = deadlineActiveDay ? null : (document.getElementById('editQuestDeadline').value || null);
+  const trackDebt = document.getElementById('editQuestTrackDebt').checked;
   if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
-  p.quests[editQuestIndex] = { ...p.quests[editQuestIndex], emoji: editQuestEmoji, name, sub, max: metric, xp, repeat, deadline, deadlineActiveDay };
+  p.quests[editQuestIndex] = { ...p.quests[editQuestIndex], emoji: editQuestEmoji, name, sub, max: metric, xp, repeat, deadline, deadlineActiveDay, trackDebt };
   savePasses();
   closePopup('editQuestOverlay');
   renderQuests();
@@ -2083,6 +2143,7 @@ function newDay() {
     q.current = 0;
   });
   save('lastNewDay', today);
+  save('lastAutoReset', today);
   savePasses();
   document.getElementById('menuOverlay').classList.remove('open');
   renderQuests();
@@ -2240,17 +2301,134 @@ function scheduleMidnightCleanup() {
   const msUntilMidnight = midnight - now;
   setTimeout(() => {
     cleanupExpiredQuests();
-    // также сбрасываем ежедневные квесты
-    const p = getCurrentPass();
-    p.quests.forEach(q => {
+    const today = todayStr();
+    // сохраняем долги
+    passes.forEach(p => {
+      (p.quests || []).forEach(q => {
+        if (!q || q.frozen) return;
+        if (!isQuestActiveToday(q)) return;
+        if (q.trackDebt && (q.current || 0) > 0 && q.current < q.max) {
+          addDebt(q, p.name);
+        }
+      });
+    });
+    // сбрасываем
+    passes.forEach(p => {
+      (p.quests || []).forEach(q => {
+        if (!q || q.frozen) return;
+        if (isQuestActiveToday(q)) q.current = 0;
+      });
+    });
+    save('lastAutoReset', today);
+    savePasses();
+    renderQuests();
+    updateDebtBadge();
+    showToast('🌅 Новый день — квесты сброшены!');
+    scheduleMidnightCleanup();
+  }, msUntilMidnight);
+}
+
+// ====== DEBT SYSTEM ======
+function getDebts() { return load('passit_debts', []); }
+function saveDebts(d) { save('passit_debts', d); }
+
+function addDebt(quest, passName) {
+  const debts = getDebts();
+  debts.push({
+    id: Date.now() + Math.random(),
+    emoji: quest.emoji,
+    name: quest.name,
+    current: quest.current || 0,
+    max: quest.max,
+    passName: passName,
+    date: todayStr()
+  });
+  saveDebts(debts);
+  updateDebtBadge();
+}
+
+function updateDebtBadge() {
+  const debts = getDebts();
+  const badge = document.getElementById('debtBadge');
+  if (!badge) return;
+  if (debts.length > 0) {
+    badge.textContent = debts.length > 9 ? '9+' : debts.length;
+    badge.classList.add('visible');
+  } else {
+    badge.classList.remove('visible');
+  }
+}
+
+function openDebts() {
+  renderDebtList();
+  document.getElementById('debtOverlay').classList.add('open');
+}
+function closeDebts() { document.getElementById('debtOverlay').classList.remove('open'); }
+function closeDebtOutside(e) { if (e.target === document.getElementById('debtOverlay')) closeDebts(); }
+
+function renderDebtList() {
+  const debts = getDebts();
+  const list = document.getElementById('debtList');
+  if (debts.length === 0) {
+    list.innerHTML = '<div class="debt-empty">🎉 Долгов нет!</div>';
+    return;
+  }
+  list.innerHTML = debts.map((d, i) => `
+    <div class="debt-item">
+      <span style="font-size:20px;">${d.emoji}</span>
+      <div class="debt-item-info">
+        <div class="debt-item-name">${d.name}</div>
+        <div class="debt-item-meta">${d.passName} · ${d.current}/${d.max} · ${d.date}</div>
+        <div class="debt-item-progress"><div class="debt-item-fill" style="width:${Math.round((d.current/d.max)*100)}%"></div></div>
+      </div>
+      <button class="debt-delete-btn" onclick="removeDebt(${i})" title="Закрыть долг">🗑️</button>
+    </div>`).join('');
+}
+
+function removeDebt(i) {
+  const debts = getDebts();
+  debts.splice(i, 1);
+  saveDebts(debts);
+  updateDebtBadge();
+  renderDebtList();
+}
+
+function clearAllDebts() {
+  if (!confirm('Очистить все долги?')) return;
+  saveDebts([]);
+  updateDebtBadge();
+  renderDebtList();
+}
+
+// ====== AUTO RESET ON PAGE LOAD ======
+function checkAndAutoReset() {
+  const today = todayStr();
+  const lastReset = load('lastAutoReset', null);
+  if (lastReset === today) return; // уже сбрасывали сегодня
+
+  // сохраняем долги перед сбросом
+  passes.forEach(p => {
+    (p.quests || []).forEach(q => {
+      if (!q || q.frozen) return;
+      if (!isQuestActiveToday(q)) return;
+      if (q.trackDebt && (q.current || 0) > 0 && q.current < q.max) {
+        addDebt(q, p.name);
+      }
+    });
+  });
+
+  // сбрасываем
+  passes.forEach(p => {
+    (p.quests || []).forEach(q => {
       if (!q || q.frozen) return;
       if (isQuestActiveToday(q)) q.current = 0;
     });
-    savePasses();
-    renderQuests();
-    showToast('🌅 Новый день — квесты сброшены!');
-    scheduleMidnightCleanup(); // планируем следующую полночь
-  }, msUntilMidnight);
+  });
+
+  save('lastAutoReset', today);
+  savePasses();
+  cleanupExpiredQuests();
+  showToast('🌅 Новый день — квесты сброшены!');
 }
 
 // ====== AUTHOR PASS ======
@@ -2271,8 +2449,10 @@ applyTheme();
 render();
 checkUpdateBanner();
 initDragToPass();
+checkAndAutoReset();
 cleanupExpiredQuests();
 scheduleMidnightCleanup();
+updateDebtBadge();
 
 // ====== FIREBASE AUTH ======
 var currentUser = null;
