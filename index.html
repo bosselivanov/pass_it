@@ -1328,14 +1328,14 @@ function selectXP(el) { document.querySelectorAll('.xp-opt').forEach(o => o.clas
 // ====== PASS LEVELS (horizontal scroll) ======
 function updatePass() {
   const allQuests = getCurrentPass()?.quests || [];
-  const quests = allQuests.filter(q => q !== null);
+  const quests = allQuests.filter(q => q !== null && !q.frozen && isQuestActiveToday(q));
   const totalMaxXP = quests.reduce((s, q) => s + q.xp, 0);
   const totalEarnedXP = quests.reduce((s, q) => s + (Math.min(q.current || 0, q.max) / q.max) * q.xp, 0);
   const pct = totalMaxXP > 0 ? Math.min((totalEarnedXP / totalMaxXP) * 100, 100) : 0;
 
   const container = document.getElementById('passLevels');
   container.innerHTML = '';
-  const n = quests.length;
+  const n = quests.length; // только активные
   const circles = n + 1;
 
   const wrap = document.createElement('div');
