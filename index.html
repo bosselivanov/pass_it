@@ -508,7 +508,7 @@ body {
   <div style="font-size:20px;">🎉</div>
   <div class="update-banner-text">
     Новое обновление!
-    <div class="update-banner-sub" id="updateBannerText">Подписка и обратная связь переехали в профиль 👤 — верхнее меню теперь чище!</div>
+    <div class="update-banner-sub" id="updateBannerText">Профиль 👤 в правом углу — подписка и обратная связь теперь там. И прогресс квеста можно вводить процентно!</div>
   </div>
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
@@ -772,9 +772,20 @@ body {
 
 <!-- CHANGE METRIC POPUP -->
 <div class="popup-overlay" id="changeMetricOverlay" onclick="closePopupOutside(event,'changeMetricOverlay')">
-  <div class="popup" style="width:280px;">
+  <div class="popup" style="width:300px;">
     <div class="popup-title" id="changeMetricTitle">Изменить прогресс</div>
-    <div class="popup-field"><div class="popup-label" id="changeMetricLabel">Текущее значение</div><input class="popup-input" id="changeMetricInput" type="number" min="0"></div>
+    <div class="popup-field">
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div class="repeat-tab active" id="metricModeAbs" onclick="setMetricMode('abs')">Число</div>
+        <div class="repeat-tab" id="metricModePct" onclick="setMetricMode('pct')">Процент</div>
+      </div>
+      <div class="popup-label" id="changeMetricLabel">Текущее значение</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input class="popup-input" id="changeMetricInput" type="number" min="0" style="flex:1;">
+        <span id="changeMetricUnit" style="font-size:14px;font-weight:700;color:var(--text2);flex-shrink:0;"></span>
+      </div>
+      <div id="changeMetricHint" style="font-size:11px;color:var(--text2);margin-top:6px;"></div>
+    </div>
     <div class="popup-actions">
       <button class="popup-btn secondary" onclick="closePopup('changeMetricOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="saveMetricChange()">Сохранить</button>
@@ -2192,24 +2203,76 @@ function toggleTask(i, ti, checked) {
 let changeMetricType = '';
 let changeMetricIndex = -1;
 
+let metricMode = 'abs'; // 'abs' или 'pct'
+let changeMetricMax = 0;
+
+function setMetricMode(mode) {
+  metricMode = mode;
+  document.getElementById('metricModeAbs').classList.toggle('active', mode === 'abs');
+  document.getElementById('metricModePct').classList.toggle('active', mode === 'pct');
+  const inputEl = document.getElementById('changeMetricInput');
+  const unitEl = document.getElementById('changeMetricUnit');
+  const hintEl = document.getElementById('changeMetricHint');
+  if (mode === 'pct') {
+    inputEl.max = 100;
+    inputEl.min = 0;
+    unitEl.textContent = '%';
+    const curVal = parseInt(inputEl.value) || 0;
+    const pct = Math.round((curVal / changeMetricMax) * 100);
+    inputEl.value = pct;
+    hintEl.textContent = `= ${Math.round(pct / 100 * changeMetricMax)} из ${changeMetricMax}`;
+  } else {
+    inputEl.max = changeMetricMax;
+    inputEl.min = 0;
+    unitEl.textContent = `/ ${changeMetricMax}`;
+    const pct = parseInt(inputEl.value) || 0;
+    inputEl.value = Math.round(pct / 100 * changeMetricMax);
+    hintEl.textContent = '';
+  }
+  inputEl.addEventListener('input', updateMetricHint);
+}
+
+function updateMetricHint() {
+  const hintEl = document.getElementById('changeMetricHint');
+  const val = parseInt(document.getElementById('changeMetricInput').value) || 0;
+  if (metricMode === 'pct') {
+    hintEl.textContent = `= ${Math.round(val / 100 * changeMetricMax)} из ${changeMetricMax}`;
+  } else {
+    hintEl.textContent = `= ${Math.round(val / changeMetricMax * 100)}%`;
+  }
+}
+
 function openChangeMetric(type, i) {
   changeMetricType = type; changeMetricIndex = i;
+  metricMode = 'abs';
   const p = getCurrentPass();
   const titleEl = document.getElementById('changeMetricTitle');
   const labelEl = document.getElementById('changeMetricLabel');
   const inputEl = document.getElementById('changeMetricInput');
+  const unitEl = document.getElementById('changeMetricUnit');
+  const hintEl = document.getElementById('changeMetricHint');
+  document.getElementById('metricModeAbs').classList.add('active');
+  document.getElementById('metricModePct').classList.remove('active');
+
   if (type === 'quest') {
+    const q = p.quests[i];
+    changeMetricMax = q.max;
     titleEl.textContent = 'Изменить прогресс';
-    labelEl.textContent = `Текущее значение (макс: ${p.quests[i].max})`;
-    inputEl.max = p.quests[i].max;
-    inputEl.value = p.quests[i].current || 0;
+    labelEl.textContent = `Текущее значение`;
+    inputEl.max = q.max;
+    inputEl.value = q.current || 0;
   } else {
     const mq = p.megaQuests[i];
+    changeMetricMax = mq.max;
     titleEl.textContent = 'Изменить прогресс';
-    labelEl.textContent = `Текущее значение (макс: ${mq.max})`;
+    labelEl.textContent = `Текущее значение`;
     inputEl.max = mq.max;
     inputEl.value = mq.current || 0;
   }
+  unitEl.textContent = `/ ${changeMetricMax}`;
+  hintEl.textContent = `= ${Math.round((parseInt(inputEl.value) || 0) / changeMetricMax * 100)}%`;
+  inputEl.removeEventListener('input', updateMetricHint);
+  inputEl.addEventListener('input', updateMetricHint);
   document.getElementById('changeMetricOverlay').classList.add('open');
   setTimeout(() => inputEl.focus(), 100);
 }
@@ -2217,7 +2280,13 @@ function openChangeMetric(type, i) {
 function saveMetricChange() {
   const p = getCurrentPass();
   const inputEl = document.getElementById('changeMetricInput');
-  const val = Math.min(Math.max(parseInt(inputEl.value) || 0, 0), parseInt(inputEl.max) || 99999);
+  let val;
+  if (metricMode === 'pct') {
+    const pct = Math.min(Math.max(parseInt(inputEl.value) || 0, 0), 100);
+    val = Math.round(pct / 100 * changeMetricMax);
+  } else {
+    val = Math.min(Math.max(parseInt(inputEl.value) || 0, 0), changeMetricMax);
+  }
   if (changeMetricType === 'quest') {
     p.quests[changeMetricIndex].current = val;
     savePasses();
