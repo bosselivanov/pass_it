@@ -412,7 +412,29 @@ body {
 .theme-swatch.selected { border-color: var(--accent); border-width: 3px; }
 .theme-close-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text2); cursor: pointer; transition: background 0.2s; text-align: center; }
 .theme-close-btn:hover { background: var(--surface); }
-/* TOOLTIPS */
+/* PROFILE DROPDOWN */
+.profile-wrap { position: relative; }
+.profile-btn { position: relative; }
+.profile-dropdown {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--blur-bg); backdrop-filter: blur(20px);
+  border: 1.5px solid var(--border); border-radius: 16px;
+  padding: 12px; min-width: 220px; z-index: 400;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  animation: popIn 0.18s ease;
+  flex-direction: column; gap: 4px;
+}
+.profile-dropdown.open { display: flex; }
+.profile-email { font-size: 13px; font-weight: 800; color: var(--text); padding: 4px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-sub { font-size: 11px; color: var(--text2); padding: 0 8px 4px; font-weight: 700; }
+.profile-divider { height: 1px; background: var(--border); margin: 4px 0; }
+.profile-item {
+  background: none; border: none; cursor: pointer; width: 100%;
+  text-align: left; padding: 8px 10px; border-radius: 10px;
+  font-size: 13px; font-weight: 700; color: var(--text2);
+  transition: background 0.15s, color 0.15s;
+}
+.profile-item:hover { background: var(--bar-bg); color: var(--text); }
 .header-btn { position: relative; }
 .header-btn[data-tooltip]:hover::after {
   content: attr(data-tooltip);
@@ -486,7 +508,7 @@ body {
   <div style="font-size:20px;">🎉</div>
   <div class="update-banner-text">
     Новое обновление!
-    <div class="update-banner-sub" id="updateBannerText">📋 Долговая книга — невыполненные квесты теперь не теряются. Квесты сбрасываются автоматически каждый день</div>
+    <div class="update-banner-sub" id="updateBannerText">Подписка и обратная связь переехали в профиль 👤 — верхнее меню теперь чище!</div>
   </div>
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
@@ -499,11 +521,21 @@ body {
     <button class="header-btn" onclick="openDebts()" data-tooltip="Долговая книга" id="debtBtn">📋</button>
     <div class="debt-badge" id="debtBadge"></div>
   </div>
-  <button class="header-btn" onclick="openFeedback()" data-tooltip="Обратная связь">❓</button>
-  <button class="header-btn" id="subBtn" onclick="openSubPopup()" data-tooltip="Подписка">⭐</button>
-  <button class="header-btn" id="authBtn" onclick="authClick()" data-tooltip="Аккаунт">👤</button>
   <button class="header-btn" onclick="toggleTheme()" id="themeBtn" data-tooltip="Сменить тему">🌙</button>
   <button class="header-btn" onclick="openThemePicker()" data-tooltip="Выбор оформления">🎨</button>
+  <!-- PROFILE -->
+  <div class="profile-wrap" id="profileWrap">
+    <button class="header-btn profile-btn" onclick="toggleProfileMenu()" data-tooltip="Профиль" id="profileBtn">👤</button>
+    <div class="profile-dropdown" id="profileDropdown">
+      <div class="profile-email" id="profileEmail">Не авторизован</div>
+      <div class="profile-sub" id="profileSubStatus">Free план</div>
+      <div class="profile-divider"></div>
+      <button class="profile-item" onclick="openSubPopup();closeProfileMenu()">⭐ Подписка</button>
+      <button class="profile-item" onclick="openFeedbackExt();closeProfileMenu()">💬 Обратная связь</button>
+      <div class="profile-divider"></div>
+      <button class="profile-item" id="profileAuthBtn" onclick="profileAuthAction()">🔑 Войти</button>
+    </div>
+  </div>
 </div>
 
 <!-- PASS AREA -->
@@ -1332,7 +1364,7 @@ function getRepeatFromPopup(tabsId) {
   return type === 'weekly' ? { type, days } : { type };
 }
 
-const CURRENT_VERSION = 'v1.8';
+const CURRENT_VERSION = 'v1.9';
 function checkUpdateBanner() {
   const seen = load('lastSeenVersion', null);
   if (seen !== CURRENT_VERSION) {
@@ -2277,12 +2309,9 @@ function render() {
 // ====== SUBSCRIPTION ======
 var userIsPro = false;
 
-function setProStatus(val) { userIsPro = val; updateSubUI(); }
+function setProStatus(val) { userIsPro = val; updateSubUI(); updateProfileMenu(); }
 
 function updateSubUI() {
-  var btn = document.getElementById('subBtn');
-  btn.innerHTML = userIsPro ? '👑' : '⭐';
-  btn.title = userIsPro ? 'Pro — активна' : 'Подписка';
   var freeLabel = document.getElementById('subFreeBtnLabel');
   var proLabel = document.getElementById('subProBtnLabel');
   if (freeLabel && proLabel) {
@@ -2523,6 +2552,46 @@ function closeAuthorOutside(e) {
   if (e.target === document.getElementById('authorOverlay')) closeAuthorPass();
 }
 
+// ====== PROFILE MENU ======
+function toggleProfileMenu() {
+  document.getElementById('profileDropdown').classList.toggle('open');
+}
+function closeProfileMenu() {
+  document.getElementById('profileDropdown').classList.remove('open');
+}
+function updateProfileMenu() {
+  const emailEl = document.getElementById('profileEmail');
+  const subEl = document.getElementById('profileSubStatus');
+  const authBtn = document.getElementById('profileAuthBtn');
+  if (currentUser) {
+    emailEl.textContent = currentUser.email;
+    subEl.textContent = userIsPro ? '👑 Pro план' : 'Free план';
+    authBtn.textContent = '🚪 Выйти';
+  } else {
+    emailEl.textContent = 'Не авторизован';
+    subEl.textContent = 'Free план';
+    authBtn.textContent = '🔑 Войти через Google';
+  }
+}
+function profileAuthAction() {
+  closeProfileMenu();
+  if (currentUser) {
+    firebase.auth().signOut();
+  } else {
+    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      .catch(e => showToast('Ошибка: ' + e.message));
+  }
+}
+function openFeedbackExt() {
+  window.open('https://docs.google.com/forms/d/e/1FAIpQLSf_placeholder/viewform', '_blank');
+}
+
+// close profile on outside click
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('profileWrap');
+  if (wrap && !wrap.contains(e.target)) closeProfileMenu();
+});
+
 // ====== FEEDBACK ======
 function openFeedback() { document.getElementById('feedbackOverlay').classList.add('open'); }
 
@@ -2564,9 +2633,8 @@ document.getElementById('googleBtn').onclick = function() {
 
 firebase.auth().onAuthStateChanged(function(user) {
   currentUser = user;
-  var btn = document.getElementById('authBtn');
+  updateProfileMenu();
   if (user) {
-    btn.innerHTML = '☁️'; btn.title = user.email + ' (нажми чтобы выйти)';
     logSession();
     fbdb.ref('passit_users/' + user.uid).once('value').then(function(snap) {
       var sub = null;
@@ -2613,7 +2681,6 @@ firebase.auth().onAuthStateChanged(function(user) {
       }
     });
   } else {
-    btn.innerHTML = '👤'; btn.title = 'Войти в аккаунт';
     setProStatus(false);
   }
 });
