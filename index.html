@@ -274,7 +274,8 @@ body {
 .quest-xp-badge { font-size: 10px; font-weight: 700; background: var(--bar-bg); color: var(--accent); padding: 2px 6px; border-radius: 6px; flex-shrink: 0; }
 .quest-bottom { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
 .quest-metric { font-size: 13px; font-weight: 700; color: var(--text); display: flex; gap: 2px; align-items: center; }
-.quest-empty { border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 11px; opacity: 0.5; }
+.quest-empty { border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 11px; opacity: 0.5; transition: opacity 0.15s, border-color 0.15s; }
+.quest-empty:hover { opacity: 0.85; border-color: var(--accent); }
 .quest-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text2); opacity: 0.4; padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
 .quest-delete:hover { opacity: 1; color: #e04040; }
 .quest-edit { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text2); opacity: 0.4; padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
@@ -571,7 +572,7 @@ body {
   <div style="font-size:20px;">🎉</div>
   <div class="update-banner-text">
     Новое обновление!
-    <div class="update-banner-sub" id="updateBannerText">Профиль 👤 в правом углу — подписка и обратная связь теперь там. И прогресс квеста можно вводить процентно!</div>
+    <div class="update-banner-sub" id="updateBannerText">Нажми на пустую ячейку — сразу создаст квест. Прогресс теперь выделяется автоматически при открытии!</div>
   </div>
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
@@ -834,8 +835,8 @@ body {
 </div>
 
 <!-- CHANGE METRIC POPUP -->
-<div class="popup-overlay" id="changeMetricOverlay" onclick="closePopupOutside(event,'changeMetricOverlay')">
-  <div class="popup" style="width:300px;">
+<div class="popup-overlay" id="changeMetricOverlay" onmousedown="handleMetricOverlayMousedown(event)">
+  <div class="popup" style="width:300px;" onmousedown="event.stopPropagation()">
     <div class="popup-title" id="changeMetricTitle">Изменить прогресс</div>
     <div class="popup-field">
       <div style="display:flex;gap:6px;margin-bottom:8px;">
@@ -1549,7 +1550,7 @@ function getRepeatFromPopup(tabsId) {
   return type === 'weekly' ? { type, days } : { type };
 }
 
-const CURRENT_VERSION = 'v1.9';
+const CURRENT_VERSION = 'v2.0';
 function checkUpdateBanner() {
   const seen = load('lastSeenVersion', null);
   if (seen !== CURRENT_VERSION) {
@@ -1784,8 +1785,11 @@ function renderQuests() {
         } else if (globalSnakeIdx < maxQ) {
           // Пустой слот — принимает drop
           div.className = 'quest-empty';
-          div.textContent = '—';
+          div.innerHTML = '<span style="font-size:18px;opacity:0.3;">+</span>';
+          div.title = 'Добавить квест';
+          div.style.cursor = 'pointer';
           div.dataset.snakeIdx = globalSnakeIdx;
+          div.addEventListener('click', () => { if (dragSrcIndex === null) onAddQuest(); });
           div.addEventListener('dragover', (e) => { e.preventDefault(); div.style.borderColor = 'var(--accent)'; });
           div.addEventListener('dragleave', () => { div.style.borderColor = ''; });
           div.addEventListener('drop', (e) => {
@@ -2377,7 +2381,11 @@ function toggleTask(i, ti, checked) {
 let changeMetricType = '';
 let changeMetricIndex = -1;
 
-let metricMode = 'abs'; // 'abs' или 'pct'
+function handleMetricOverlayMousedown(e) {
+  if (e.target === document.getElementById('changeMetricOverlay')) {
+    closePopup('changeMetricOverlay');
+  }
+} // 'abs' или 'pct'
 let changeMetricMax = 0;
 
 function setMetricMode(mode) {
@@ -2448,7 +2456,7 @@ function openChangeMetric(type, i) {
   inputEl.removeEventListener('input', updateMetricHint);
   inputEl.addEventListener('input', updateMetricHint);
   document.getElementById('changeMetricOverlay').classList.add('open');
-  setTimeout(() => inputEl.focus(), 100);
+  setTimeout(() => { inputEl.focus(); inputEl.select(); }, 100);
 }
 
 function saveMetricChange() {
