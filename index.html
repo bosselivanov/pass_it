@@ -450,77 +450,31 @@ body {
 }
 .theme-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; }
 .theme-overlay.open { display: flex; }
-.theme-popup {
-  background: var(--blur-bg); backdrop-filter: blur(24px);
-  border: 1.5px solid var(--border); border-radius: 24px;
-  padding: 28px 32px; width: 680px; max-width: 95vw; max-height: 85vh;
-  display: flex; flex-direction: column; gap: 16px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease;
-}
-.theme-popup-title { font-size: 16px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
-.cosmetics-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; overflow-y: auto; flex: 1; padding-right: 4px; scrollbar-width: thin; }
-.cosmetics-col-title { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; }
-.rarity-badge {
-  display: inline-block; font-size: 10px; font-weight: 800;
-  padding: 3px 10px; border-radius: 8px; letter-spacing: 1px;
-  text-transform: uppercase; margin: 12px 0 8px;
-}
+.theme-popup { background: var(--blur-bg); backdrop-filter: blur(24px); border: 1.5px solid var(--border); border-radius: 24px; padding: 24px 28px; width: 840px; max-width: 96vw; max-height: 88vh; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease; }
+.cos-cols { display: flex; flex-direction: row; gap: 28px; overflow-y: auto; flex: 1; min-height: 0; }
+.cos-col { flex: 0 0 calc(50% - 14px); }
+.cos-col-title { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); margin-bottom: 10px; }
+.rarity-badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 8px; letter-spacing: 1px; text-transform: uppercase; margin: 12px 0 8px; }
 .rarity-common { background: rgba(50,200,80,0.15); color: #1a8a30; border: 1px solid rgba(50,200,80,0.3); }
 .rarity-rare { background: rgba(80,160,240,0.15); color: #1a60c0; border: 1px solid rgba(80,160,240,0.3); }
 .rarity-legendary { background: rgba(240,160,20,0.15); color: #b06000; border: 1px solid rgba(240,160,20,0.3); }
-.cosmetics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
-.cosmetic-card {
-  border-radius: 14px; border: 1.5px solid var(--border);
-  overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s;
-  display: flex; flex-direction: column;
-}
-.cosmetic-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-.cosmetic-card.selected { border-color: var(--accent); border-width: 2px; }
-.cosmetic-card.locked { cursor: default; opacity: 1; }
-.cosmetic-card.locked:hover { transform: none; border-color: var(--border); }
-.cosmetic-preview { height: 80px; position: relative; overflow: hidden; }
-.cosmetic-preview-split {
-  position: absolute; inset: 0;
-  display: grid; grid-template-columns: 1fr 1fr;
-  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-}
-.cosmetic-preview-light { /* left-top triangle */ }
-.cosmetic-preview-dark { /* right-bottom triangle */ }
-/* diagonal split via clip-path on child */
-.split-light { position: absolute; inset: 0; clip-path: polygon(0% 0%, 100% 0%, 0% 100%); }
-.split-dark  { position: absolute; inset: 0; clip-path: polygon(100% 0%, 100% 100%, 0% 100%); }
-.cosmetic-pieces-grid {
-  position: absolute; inset: 0;
-  display: grid; gap: 2px; padding: 6px;
-}
-.cosmetic-piece {
-  border-radius: 3px;
-  background: rgba(0,0,0,0.45);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: background 0.3s;
-}
-.cosmetic-piece.collected {
-  background: rgba(255,255,255,0.35);
-  border-color: rgba(255,255,255,0.5);
-}
-.cosmetic-card.locked .cosmetic-preview::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: rgba(0,0,0,0.18);
-  pointer-events: none;
-}
-  position: absolute; bottom: 5px; right: 5px;
-  background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 6px; padding: 2px 7px; font-size: 9px; font-weight: 700;
-  color: rgba(255,255,255,0.8); cursor: not-allowed; letter-spacing: 0.5px;
-  backdrop-filter: blur(4px);
-}
-.cosmetic-footer { padding: 6px 8px; background: var(--card-bg); }
-.cosmetic-name { font-size: 11px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cosmetic-progress { height: 3px; background: var(--bar-bg); border-radius: 3px; margin-top: 4px; overflow: hidden; }
-.cosmetic-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-.theme-close-btn { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px; font-size: 13px; font-weight: 700; color: var(--text2); cursor: pointer; transition: background 0.2s; text-align: center; flex-shrink: 0; }
-.theme-close-btn:hover { background: var(--surface); }
+.cos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.cos-card { border-radius: 14px; border: 1.5px solid var(--border); overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s; display: flex; flex-direction: column; }
+.cos-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.cos-card.selected { border-color: var(--accent); border-width: 2.5px; }
+.cos-card.locked { cursor: default; }
+.cos-card.locked:hover { transform: none; border-color: var(--border); }
+.cos-preview { height: 75px; position: relative; overflow: hidden; }
+.cos-light { position: absolute; inset: 0; clip-path: polygon(0% 0%, 100% 0%, 0% 100%); }
+.cos-dark  { position: absolute; inset: 0; clip-path: polygon(100% 0%, 100% 100%, 0% 100%); }
+.cos-pieces { position: absolute; inset: 0; display: grid; gap: 3px; padding: 7px; }
+.cos-piece { border-radius: 3px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); }
+.cos-piece.got { background: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.6); }
+.cos-preview-btn { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; padding: 2px 6px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.85); cursor: not-allowed; }
+.cos-footer { padding: 6px 8px; background: var(--card-bg); }
+.cos-name { font-size: 11px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cos-bar { height: 3px; background: var(--bar-bg); border-radius: 3px; margin-top: 4px; overflow: hidden; }
+.cos-bar-fill { height: 100%; border-radius: 3px; }
 /* PROFILE DROPDOWN */
 .profile-wrap { position: relative; }
 .profile-btn { position: relative; }
@@ -996,175 +950,129 @@ body {
 
 <!-- THEME PICKER -->
 <div class="theme-overlay" id="themePickerOverlay" onclick="closeThemePickerOutside(event)">
-  <div class="theme-popup">
+  <div class="theme-popup" onclick="event.stopPropagation()">
+
+    <!-- HEADER -->
     <div style="display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-      <div class="theme-popup-title">🎨 Оформление</div>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <input class="sub-code-input" id="cosmeticCodeInput" placeholder="Код..." maxlength="32" style="width:120px;" onkeydown="if(event.key==='Enter') applyCosmeticCode()">
+      <div style="font-size:15px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text);">🎨 Оформление</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input class="sub-code-input" id="cosmeticCodeInput" placeholder="Код..." maxlength="32" style="width:110px;" onkeydown="if(event.key==='Enter') applyCosmeticCode()">
         <button class="sub-code-btn" onclick="applyCosmeticCode()">OK</button>
+        <button onclick="closeThemePicker()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text2);padding:0 4px;opacity:0.6;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">✕</button>
       </div>
     </div>
-    <div id="cosmeticCodeMsg" style="font-size:11px;font-weight:700;min-height:14px;text-align:right;margin-top:-8px;"></div>
-    <div class="cosmetics-cols">
+    <div id="cosmeticCodeMsg" style="font-size:11px;font-weight:700;min-height:14px;text-align:right;margin-top:-6px;"></div>
 
-      <!-- ЛЕВАЯ КОЛОНКА — БАЗОВЫЕ ЦВЕТА -->
-      <div>
-        <div class="cosmetics-col-title">Базовые цвета</div>
+    <!-- TWO COLUMNS -->
+    <div class="cos-cols">
+
+      <!-- LEFT: БАЗОВЫЕ ЦВЕТА -->
+      <div class="cos-col">
+        <div class="cos-col-title">Базовые цвета</div>
 
         <div class="rarity-badge rarity-common">Обычный</div>
-        <div class="cosmetics-grid">
-          <div class="cosmetic-card selected" onclick="selectTheme('basic')">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#F0F4FF 40%,#4A90D9 100%);"></div>
-              <div class="split-dark" style="background:linear-gradient(160deg,#141414 30%,#C8B89A 100%);"></div>
-              <div id="swatchBasic"></div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+        <div class="cos-grid">
+          <div class="cos-card selected" onclick="selectTheme('basic')">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#F0F4FF 40%,#4A90D9 100%);"></div>
+              <div class="cos-dark"  style="background:linear-gradient(160deg,#141414 30%,#C8B89A 100%);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">Базовая</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:100%;background:#4A90D9;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">Базовая</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#4A90D9;"></div></div></div>
           </div>
         </div>
 
         <div class="rarity-badge rarity-rare">Редкий</div>
-        <div class="cosmetics-grid">
-          <div class="cosmetic-card" onclick="selectTheme('huntrxs')">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#F8EAFA 40%,#96A0E2 100%);"></div>
-              <div class="split-dark" style="background:linear-gradient(160deg,#1a1330 30%,#C90060 100%);"></div>
-              <div id="swatchHuntrxs"></div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+        <div class="cos-grid">
+          <div class="cos-card" onclick="selectTheme('huntrxs')">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#F8EAFA 40%,#96A0E2 100%);"></div>
+              <div class="cos-dark"  style="background:linear-gradient(160deg,#1a1330 30%,#C90060 100%);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">HUNTRIX / S</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:100%;background:#96A0E2;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">HUNTRIX / S</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#96A0E2;"></div></div></div>
           </div>
         </div>
 
         <div class="rarity-badge rarity-legendary">Легендарный</div>
-        <div class="cosmetics-grid">
-          <div class="cosmetic-card locked" data-theme="huntrxh">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#E2DEFF,#A78BFA);">
-              <div class="cosmetic-locked-overlay">
-                <div style="font-size:18px;">🔒</div>
-                <div class="cosmetic-locked-pieces">0 / 8 кусочков</div>
-              </div>
+        <div class="cos-grid">
+          <div class="cos-card locked" data-theme="huntrxh" data-pieces="8" data-collected="0">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#E2DEFF 40%,#A78BFA 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">HUNTRIX / H</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#A78BFA;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">HUNTRIX / H</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#A78BFA;"></div></div></div>
           </div>
-        <div class="rarity-badge rarity-legendary">Легендарный</div>
-        <div class="cosmetics-grid">
-          <div class="cosmetic-card locked" data-theme="huntrxh" data-pieces="8" data-collected="0">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#E2DEFF 40%,#A78BFA 100%);"></div>
-              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);" id="pieces-huntrxh">
-              </div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+          <div class="cos-card locked" data-pieces="8" data-collected="0">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#f5e6ff 40%,#e94560 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">HUNTRIX / H</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#A78BFA;"></div></div>
-            </div>
-          </div>
-          <div class="cosmetic-card locked" data-pieces="8" data-collected="0">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#f5e6ff 40%,#e94560 100%);"></div>
-              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);">
-              </div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
-            </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">Ночной город</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#e94560;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">Ночной город</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#e94560;"></div></div></div>
           </div>
         </div>
       </div>
 
-      <!-- ПРАВАЯ КОЛОНКА — ИЗОБРАЖЕНИЯ НА ФОНЕ -->
-      <div>
-        <div class="cosmetics-col-title">Изображения на фоне</div>
+      <!-- RIGHT: ИЗОБРАЖЕНИЯ НА ФОНЕ -->
+      <div class="cos-col">
+        <div class="cos-col-title">Изображения на фоне</div>
 
         <div class="rarity-badge rarity-common">Обычный</div>
-        <div class="cosmetics-grid">
-          <div class="cosmetic-card locked" data-pieces="4" data-collected="0">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#e8f5e9 40%,#66bb6a 100%);"></div>
-              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);">
-              </div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+        <div class="cos-grid">
+          <div class="cos-card locked" data-pieces="4" data-collected="0">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#e8f5e9 40%,#66bb6a 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">Весенний луг</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#66bb6a;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">Весенний луг</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#66bb6a;"></div></div></div>
           </div>
-          <div class="cosmetic-card locked" data-pieces="4" data-collected="0">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#fff3e0 40%,#ffa726 100%);"></div>
-              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);">
-              </div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+          <div class="cos-card locked" data-pieces="4" data-collected="0">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#fff3e0 40%,#ffa726 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">Закат</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#ffa726;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">Закат</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#ffa726;"></div></div></div>
           </div>
         </div>
 
         <div class="rarity-badge rarity-rare">Редкий</div>
-        <div class="cosmetics-grid">
-          <div class="cosmetic-card locked" data-pieces="6" data-collected="0">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#e3f0fb 40%,#1b6ca8 100%);"></div>
-              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);">
-              </div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+        <div class="cos-grid">
+          <div class="cos-card locked" data-pieces="6" data-collected="0">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#e3f0fb 40%,#1b6ca8 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">Глубокий океан</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#1b6ca8;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">Глубокий океан</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#1b6ca8;"></div></div></div>
           </div>
-          <div class="cosmetic-card locked" data-pieces="6" data-collected="0">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#ede0ff 40%,#8e24aa 100%);"></div>
-              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);">
-              </div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+          <div class="cos-card locked" data-pieces="6" data-collected="0">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#ede0ff 40%,#8e24aa 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">Галактика</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#8e24aa;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">Галактика</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#8e24aa;"></div></div></div>
           </div>
         </div>
 
         <div class="rarity-badge rarity-legendary">Легендарный</div>
-        <div class="cosmetics-grid">
-          <div class="cosmetic-card locked" data-pieces="14" data-collected="0">
-            <div class="cosmetic-preview">
-              <div class="split-light" style="background:linear-gradient(160deg,#ede0ff 40%,#7b2ff7 100%);"></div>
-              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(2,1fr);">
-              </div>
-              <div class="cosmetic-preview-btn">Предпросмотр</div>
+        <div class="cos-grid">
+          <div class="cos-card locked" data-pieces="14" data-collected="0">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#ede0ff 40%,#7b2ff7 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cosmetic-footer">
-              <div class="cosmetic-name">Стадион HUNTRIX</div>
-              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#7b2ff7;"></div></div>
-            </div>
+            <div class="cos-footer"><div class="cos-name">Стадион HUNTRIX</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#7b2ff7;"></div></div></div>
           </div>
         </div>
       </div>
 
     </div>
-    <button class="theme-close-btn" onclick="closeThemePicker()">Закрыть</button>
   </div>
 </div>
 
@@ -2846,26 +2754,25 @@ function applyTheme() {
 }
 function toggleTheme() { dark = !dark; save('darkMode', dark); applyTheme(); }
 function renderPiecesGrids() {
-  document.querySelectorAll('.cosmetic-card.locked[data-pieces]').forEach(card => {
+  document.querySelectorAll('.cos-card.locked[data-pieces]').forEach(card => {
     const total = parseInt(card.dataset.pieces) || 4;
     const collected = parseInt(card.dataset.collected) || 0;
-    const grid = card.querySelector('.cosmetic-pieces-grid');
+    const grid = card.querySelector('.cos-pieces');
     if (!grid) return;
     grid.innerHTML = Array.from({length: total}, (_, i) =>
-      `<div class="cosmetic-piece ${i < collected ? 'collected' : ''}"></div>`
+      `<div class="cos-piece ${i < collected ? 'got' : ''}"></div>`
     ).join('');
   });
 }
 
 function openThemePicker() {
   renderPiecesGrids();
-  // обновляем состояние всех карточек с data-theme
-  document.querySelectorAll('.cosmetic-card[data-theme]').forEach(card => {
+  document.querySelectorAll('.cos-card[data-theme]').forEach(card => {
     const themeId = card.dataset.theme;
     if (isCosmeticUnlocked(themeId)) {
       card.classList.remove('locked');
-      card.querySelector('.cosmetic-locked-overlay')?.remove();
-      const fill = card.querySelector('.cosmetic-progress-fill');
+      card.querySelector('.cos-pieces')?.remove();
+      const fill = card.querySelector('.cos-bar-fill');
       if (fill) fill.style.width = '100%';
       if (!card.getAttribute('onclick')) {
         card.setAttribute('onclick', `selectTheme('${themeId}')`);
@@ -2881,10 +2788,9 @@ function closeThemePicker() { document.getElementById('themePickerOverlay').clas
 function closeThemePickerOutside(e) { if (e.target === document.getElementById('themePickerOverlay')) closeThemePicker(); }
 function selectTheme(name) { currentTheme = name; save('currentTheme', name); applyTheme(); updateSwatchSelected(); }
 function updateSwatchSelected() {
-  document.querySelectorAll('.cosmetic-card').forEach(c => c.classList.remove('selected'));
-  if (currentTheme === 'basic') document.querySelector('.cosmetic-card[onclick*="basic"]')?.classList.add('selected');
-  if (currentTheme === 'huntrxs') document.querySelector('.cosmetic-card[onclick*="huntrxs"]')?.classList.add('selected');
-  if (currentTheme === 'huntrxh') document.querySelector('.cosmetic-card[onclick*="huntrxh"]')?.classList.add('selected');
+  document.querySelectorAll('.cos-card').forEach(c => c.classList.remove('selected'));
+  const sel = document.querySelector(`.cos-card[onclick*="${currentTheme}"]`);
+  if (sel) sel.classList.add('selected');
 }
 
 // ====== MIDNIGHT CLEANUP ======
