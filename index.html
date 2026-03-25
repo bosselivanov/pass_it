@@ -603,6 +603,14 @@ body {
       </label>
     </div>
     <div class="popup-field">
+      <div class="popup-label">Начать с <span style="opacity:0.5;font-weight:400;">(необязательно)</span></div>
+      <input class="popup-input" id="questStartDate" type="date">
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Начать с <span style="opacity:0.5;font-weight:400;">(необязательно)</span></div>
+      <input class="popup-input" id="questStartDate" type="date">
+    </div>
+    <div class="popup-field">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
         <input type="checkbox" id="questTrackDebt" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;">
         Считать долгом если не выполнен
@@ -694,6 +702,10 @@ body {
         <input type="checkbox" id="editQuestDeadlineActiveDay" style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer;" onchange="toggleDeadlineActiveDay('editQuest')">
         Дедлайн в активный день
       </label>
+    </div>
+    <div class="popup-field">
+      <div class="popup-label">Начать с <span style="opacity:0.5;font-weight:400;">(необязательно)</span></div>
+      <input class="popup-input" id="editQuestStartDate" type="date">
     </div>
     <div class="popup-field">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
@@ -1336,8 +1348,10 @@ function todayStr() {
 function todayDowIndex() { return (new Date().getDay() + 6) % 7; }
 
 function isQuestActiveToday(q) {
+  const today = todayStr();
+  if (q.startDate && q.startDate > today) return false; // ещё не началось
   if (!q.repeat || q.repeat.type === 'daily') return true;
-  if (q.repeat.type === 'once') return !q.deadline || q.deadline === todayStr();
+  if (q.repeat.type === 'once') return !q.deadline || q.deadline === today;
   if (q.repeat.type === 'weekly') return (q.repeat.days || []).includes(todayDowIndex());
   return true;
 }
@@ -1462,7 +1476,8 @@ function renderQuests() {
           const pct = Math.min((cur / q.max) * 100, 100).toFixed(1);
           const done = cur >= q.max;
           const frozen = !!q.frozen;
-          const active = !frozen && isQuestActiveToday(q);
+          const notStarted = q.startDate && q.startDate > todayStr();
+          const active = !frozen && !notStarted && isQuestActiveToday(q);
 
           let effectiveDeadline = q.deadline;
           if (q.deadlineActiveDay && q.repeat?.type === 'weekly' && (q.repeat.days || []).length > 0) {
@@ -1485,7 +1500,7 @@ function renderQuests() {
           const nextDay = !active && !frozen ? nextActiveDay(q) : null;
 
           div.className = 'quest-card' + (done ? ' done' : '') + (!active && !frozen ? ' inactive' : '') + (frozen ? ' frozen' : '');
-          div.draggable = !frozen;
+          div.draggable = !frozen && !notStarted;
           div.dataset.snakeIdx = globalSnakeIdx;
           div.innerHTML = `
             <div class="quest-card-top">
@@ -1505,6 +1520,7 @@ function renderQuests() {
               </div>
               <div class="progress-bar-bg"><div class="progress-bar-fill" id="qbar-${globalSnakeIdx}" style="width:${pct}%"></div></div>
               ` : `<div class="quest-inactive-label">${
+                notStarted ? `начнётся ${new Date(q.startDate + 'T00:00:00').toLocaleDateString('ru',{day:'numeric',month:'short'})}` :
                 nextDay ? `активен в ${nextDay}` :
                 q.repeat?.type === 'once' && q.deadline ? new Date(q.deadline + 'T00:00:00').toLocaleDateString('ru',{day:'numeric',month:'short'}) :
                 'не активен сегодня'
@@ -1841,6 +1857,7 @@ function openQuestPopup() {
   document.getElementById('questDeadlineActiveDay').checked = false;
   document.getElementById('questDeadlineActiveDayWrap').style.display = 'none';
   document.getElementById('questTrackDebt').checked = false;
+  document.getElementById('questStartDate').value = '';
   document.querySelectorAll('.xp-opt').forEach((o,i) => o.classList.toggle('selected', i === 0));
   // reset repeat tabs
   document.querySelectorAll('#questRepeatTabs .repeat-tab').forEach((t,i) => t.classList.toggle('active', i===0));
@@ -1886,8 +1903,9 @@ function addQuest() {
   const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('questDeadlineActiveDay').checked;
   const deadline = deadlineActiveDay ? null : (document.getElementById('questDeadline').value || null);
   const trackDebt = document.getElementById('questTrackDebt').checked;
+  const startDate = document.getElementById('questStartDate').value || null;
   if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
-  const newQuest = { emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay, trackDebt };
+  const newQuest = { emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay, trackDebt, startDate };
   // найти первый свободный слот
   const firstNull = p.quests.indexOf(null);
   if (firstNull !== -1) {
@@ -1983,6 +2001,7 @@ function openEditQuest(i) {
     editDeadlineInput.disabled = false;
   }
   document.getElementById('editQuestTrackDebt').checked = !!q.trackDebt;
+  document.getElementById('editQuestStartDate').value = q.startDate || '';
   document.getElementById('editQuestOverlay').classList.add('open');
 }
 
@@ -1999,8 +2018,9 @@ function saveEditQuest() {
   const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('editQuestDeadlineActiveDay').checked;
   const deadline = deadlineActiveDay ? null : (document.getElementById('editQuestDeadline').value || null);
   const trackDebt = document.getElementById('editQuestTrackDebt').checked;
+  const startDate = document.getElementById('editQuestStartDate').value || null;
   if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
-  p.quests[editQuestIndex] = { ...p.quests[editQuestIndex], emoji: editQuestEmoji, name, sub, max: metric, xp, repeat, deadline, deadlineActiveDay, trackDebt };
+  p.quests[editQuestIndex] = { ...p.quests[editQuestIndex], emoji: editQuestEmoji, name, sub, max: metric, xp, repeat, deadline, deadlineActiveDay, trackDebt, startDate };
   savePasses();
   closePopup('editQuestOverlay');
   renderQuests();
