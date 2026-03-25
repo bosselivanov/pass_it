@@ -476,19 +476,45 @@ body {
 }
 .cosmetic-card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .cosmetic-card.selected { border-color: var(--accent); border-width: 2px; }
-.cosmetic-card.locked { cursor: default; opacity: 0.7; }
+.cosmetic-card.locked { cursor: default; opacity: 1; }
 .cosmetic-card.locked:hover { transform: none; border-color: var(--border); }
-.cosmetic-preview {
-  height: 70px; position: relative; overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-}
-.cosmetic-locked-overlay {
+.cosmetic-preview { height: 80px; position: relative; overflow: hidden; }
+.cosmetic-preview-split {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 100%);
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 2px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
 }
-.cosmetic-locked-pieces { font-size: 11px; font-weight: 800; color: white; }
+.cosmetic-preview-light { /* left-top triangle */ }
+.cosmetic-preview-dark { /* right-bottom triangle */ }
+/* diagonal split via clip-path on child */
+.split-light { position: absolute; inset: 0; clip-path: polygon(0% 0%, 100% 0%, 0% 100%); }
+.split-dark  { position: absolute; inset: 0; clip-path: polygon(100% 0%, 100% 100%, 0% 100%); }
+.cosmetic-pieces-grid {
+  position: absolute; inset: 0;
+  display: grid; gap: 2px; padding: 6px;
+}
+.cosmetic-piece {
+  border-radius: 3px;
+  background: rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: background 0.3s;
+}
+.cosmetic-piece.collected {
+  background: rgba(255,255,255,0.35);
+  border-color: rgba(255,255,255,0.5);
+}
+.cosmetic-card.locked .cosmetic-preview::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.18);
+  pointer-events: none;
+}
+  position: absolute; bottom: 5px; right: 5px;
+  background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px; padding: 2px 7px; font-size: 9px; font-weight: 700;
+  color: rgba(255,255,255,0.8); cursor: not-allowed; letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+}
 .cosmetic-footer { padding: 6px 8px; background: var(--card-bg); }
 .cosmetic-name { font-size: 11px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cosmetic-progress { height: 3px; background: var(--bar-bg); border-radius: 3px; margin-top: 4px; overflow: hidden; }
@@ -988,8 +1014,11 @@ body {
         <div class="rarity-badge rarity-common">Обычный</div>
         <div class="cosmetics-grid">
           <div class="cosmetic-card selected" onclick="selectTheme('basic')">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#4A90D9,#C8B89A);">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#F0F4FF 40%,#4A90D9 100%);"></div>
+              <div class="split-dark" style="background:linear-gradient(160deg,#141414 30%,#C8B89A 100%);"></div>
               <div id="swatchBasic"></div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">Базовая</div>
@@ -1001,8 +1030,11 @@ body {
         <div class="rarity-badge rarity-rare">Редкий</div>
         <div class="cosmetics-grid">
           <div class="cosmetic-card" onclick="selectTheme('huntrxs')">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#96A0E2,#C90060);">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#F8EAFA 40%,#96A0E2 100%);"></div>
+              <div class="split-dark" style="background:linear-gradient(160deg,#1a1330 30%,#C90060 100%);"></div>
               <div id="swatchHuntrxs"></div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">HUNTRIX / S</div>
@@ -1013,7 +1045,7 @@ body {
 
         <div class="rarity-badge rarity-legendary">Легендарный</div>
         <div class="cosmetics-grid">
-          <div class="cosmetic-card locked">
+          <div class="cosmetic-card locked" data-theme="huntrxh">
             <div class="cosmetic-preview" style="background:linear-gradient(135deg,#E2DEFF,#A78BFA);">
               <div class="cosmetic-locked-overlay">
                 <div style="font-size:18px;">🔒</div>
@@ -1025,12 +1057,26 @@ body {
               <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#A78BFA;"></div></div>
             </div>
           </div>
-          <div class="cosmetic-card locked">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#1a1a2e,#e94560);">
-              <div class="cosmetic-locked-overlay">
-                <div style="font-size:18px;">🔒</div>
-                <div class="cosmetic-locked-pieces">0 / 8 кусочков</div>
+        <div class="rarity-badge rarity-legendary">Легендарный</div>
+        <div class="cosmetics-grid">
+          <div class="cosmetic-card locked" data-theme="huntrxh" data-pieces="8" data-collected="0">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#E2DEFF 40%,#A78BFA 100%);"></div>
+              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);" id="pieces-huntrxh">
               </div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
+            </div>
+            <div class="cosmetic-footer">
+              <div class="cosmetic-name">HUNTRIX / H</div>
+              <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#A78BFA;"></div></div>
+            </div>
+          </div>
+          <div class="cosmetic-card locked" data-pieces="8" data-collected="0">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#f5e6ff 40%,#e94560 100%);"></div>
+              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);">
+              </div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">Ночной город</div>
@@ -1046,24 +1092,24 @@ body {
 
         <div class="rarity-badge rarity-common">Обычный</div>
         <div class="cosmetics-grid">
-          <div class="cosmetic-card locked">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#e8f5e9,#a5d6a7);">
-              <div class="cosmetic-locked-overlay">
-                <div style="font-size:18px;">🔒</div>
-                <div class="cosmetic-locked-pieces">0 / 4 кусочков</div>
+          <div class="cosmetic-card locked" data-pieces="4" data-collected="0">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#e8f5e9 40%,#66bb6a 100%);"></div>
+              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);">
               </div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">Весенний луг</div>
               <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#66bb6a;"></div></div>
             </div>
           </div>
-          <div class="cosmetic-card locked">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#fff3e0,#ffb74d);">
-              <div class="cosmetic-locked-overlay">
-                <div style="font-size:18px;">🔒</div>
-                <div class="cosmetic-locked-pieces">0 / 4 кусочков</div>
+          <div class="cosmetic-card locked" data-pieces="4" data-collected="0">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#fff3e0 40%,#ffa726 100%);"></div>
+              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);">
               </div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">Закат</div>
@@ -1074,24 +1120,24 @@ body {
 
         <div class="rarity-badge rarity-rare">Редкий</div>
         <div class="cosmetics-grid">
-          <div class="cosmetic-card locked">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#0d1b2a,#1b4f72);">
-              <div class="cosmetic-locked-overlay">
-                <div style="font-size:18px;">🔒</div>
-                <div class="cosmetic-locked-pieces">0 / 6 кусочков</div>
+          <div class="cosmetic-card locked" data-pieces="6" data-collected="0">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#e3f0fb 40%,#1b6ca8 100%);"></div>
+              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);">
               </div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">Глубокий океан</div>
               <div class="cosmetic-progress"><div class="cosmetic-progress-fill" style="width:0%;background:#1b6ca8;"></div></div>
             </div>
           </div>
-          <div class="cosmetic-card locked">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#1a0533,#6a1b9a);">
-              <div class="cosmetic-locked-overlay">
-                <div style="font-size:18px;">🔒</div>
-                <div class="cosmetic-locked-pieces">0 / 6 кусочков</div>
+          <div class="cosmetic-card locked" data-pieces="6" data-collected="0">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#ede0ff 40%,#8e24aa 100%);"></div>
+              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);">
               </div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">Галактика</div>
@@ -1102,12 +1148,12 @@ body {
 
         <div class="rarity-badge rarity-legendary">Легендарный</div>
         <div class="cosmetics-grid">
-          <div class="cosmetic-card locked">
-            <div class="cosmetic-preview" style="background:linear-gradient(135deg,#0e0b1f,#2d1b69,#7b2ff7);">
-              <div class="cosmetic-locked-overlay">
-                <div style="font-size:18px;">🔒</div>
-                <div class="cosmetic-locked-pieces">0 / 14 кусочков</div>
+          <div class="cosmetic-card locked" data-pieces="14" data-collected="0">
+            <div class="cosmetic-preview">
+              <div class="split-light" style="background:linear-gradient(160deg,#ede0ff 40%,#7b2ff7 100%);"></div>
+              <div class="cosmetic-pieces-grid" style="grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(2,1fr);">
               </div>
+              <div class="cosmetic-preview-btn">Предпросмотр</div>
             </div>
             <div class="cosmetic-footer">
               <div class="cosmetic-name">Стадион HUNTRIX</div>
@@ -2751,7 +2797,23 @@ function applyCosmeticCode() {
 function loadCloudCosmetics() {
   if (!currentUser) return;
   fbdb.ref('passit_users/' + currentUser.uid + '/unlockedCosmetics').once('value').then(function(snap) {
-    if (snap.exists()) { saveUnlockedCosmetics(snap.val()); }
+    if (snap.exists()) {
+      const cloudArr = snap.val() || [];
+      const localArr = getUnlockedCosmetics();
+      // объединяем облачные и локальные
+      const merged = [...new Set([...cloudArr, ...localArr])];
+      saveUnlockedCosmetics(merged);
+      // если локальных больше — обновляем облако
+      if (merged.length > cloudArr.length) {
+        fbdb.ref('passit_users/' + currentUser.uid + '/unlockedCosmetics').set(merged);
+      }
+    } else {
+      // нет данных в облаке — загружаем локальные
+      const localArr = getUnlockedCosmetics();
+      if (localArr.length > 0) {
+        fbdb.ref('passit_users/' + currentUser.uid + '/unlockedCosmetics').set(localArr);
+      }
+    }
   });
 }
 
@@ -2783,18 +2845,34 @@ function applyTheme() {
   Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
 }
 function toggleTheme() { dark = !dark; save('darkMode', dark); applyTheme(); }
+function renderPiecesGrids() {
+  document.querySelectorAll('.cosmetic-card.locked[data-pieces]').forEach(card => {
+    const total = parseInt(card.dataset.pieces) || 4;
+    const collected = parseInt(card.dataset.collected) || 0;
+    const grid = card.querySelector('.cosmetic-pieces-grid');
+    if (!grid) return;
+    grid.innerHTML = Array.from({length: total}, (_, i) =>
+      `<div class="cosmetic-piece ${i < collected ? 'collected' : ''}"></div>`
+    ).join('');
+  });
+}
+
 function openThemePicker() {
-  updateSwatchSelected();
-  // обновляем карточку HUNTRIX / H в зависимости от разблокировки
-  const huntrxhCard = document.querySelector('.cosmetic-card[onclick*="huntrxh"]');
-  if (huntrxhCard) {
-    if (isCosmeticUnlocked('huntrxh')) {
-      huntrxhCard.classList.remove('locked');
-      huntrxhCard.querySelector('.cosmetic-locked-overlay')?.remove();
-      const fill = huntrxhCard.querySelector('.cosmetic-progress-fill');
+  renderPiecesGrids();
+  // обновляем состояние всех карточек с data-theme
+  document.querySelectorAll('.cosmetic-card[data-theme]').forEach(card => {
+    const themeId = card.dataset.theme;
+    if (isCosmeticUnlocked(themeId)) {
+      card.classList.remove('locked');
+      card.querySelector('.cosmetic-locked-overlay')?.remove();
+      const fill = card.querySelector('.cosmetic-progress-fill');
       if (fill) fill.style.width = '100%';
+      if (!card.getAttribute('onclick')) {
+        card.setAttribute('onclick', `selectTheme('${themeId}')`);
+      }
     }
-  }
+  });
+  updateSwatchSelected();
   document.getElementById('cosmeticCodeInput').value = '';
   document.getElementById('cosmeticCodeMsg').textContent = '';
   document.getElementById('themePickerOverlay').classList.add('open');
