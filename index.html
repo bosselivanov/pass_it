@@ -404,7 +404,7 @@ body {
 .theme-overlay.open { display: flex; }
 .theme-popup { background: var(--blur-bg); backdrop-filter: blur(24px); border: 1.5px solid var(--border); border-radius: 24px; padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: popIn 0.22s ease; }
 .theme-popup-title { font-size: 14px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--text2); text-align: center; }
-.theme-cards { display: flex; gap: 24px; }
+.theme-cards { display: flex; gap: 16px; }
 .theme-card { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; }
 .theme-card-label { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 1px; }
 .theme-swatch { width: 120px; height: 120px; border-radius: 16px; border: 2px solid var(--border); position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.15s; }
@@ -847,12 +847,19 @@ body {
   <div class="theme-popup">
     <div class="theme-popup-title">Выбор темы</div>
     <div class="theme-cards">
-      <div class="theme-card" onclick="selectTheme('huntrx')">
-        <div class="theme-swatch" id="swatchHuntrx">
+      <div class="theme-card" onclick="selectTheme('huntrxh')">
+        <div class="theme-swatch" id="swatchHuntrxh">
+          <div style="position:absolute;inset:0;background:#E2DEFF;clip-path:polygon(0% 100%, 0% 0%, 100% 0%);"></div>
+          <div style="position:absolute;inset:0;background:#A78BFA;clip-path:polygon(0% 100%, 100% 100%, 100% 0%);"></div>
+        </div>
+        <div class="theme-card-label">HUNTRIX / H</div>
+      </div>
+      <div class="theme-card" onclick="selectTheme('huntrxs')">
+        <div class="theme-swatch" id="swatchHuntrxs">
           <div style="position:absolute;inset:0;background:#96A0E2;clip-path:polygon(0% 100%, 0% 0%, 100% 0%);"></div>
           <div style="position:absolute;inset:0;background:#C90060;clip-path:polygon(0% 100%, 100% 100%, 100% 0%);"></div>
         </div>
-        <div class="theme-card-label">HUNTR/X</div>
+        <div class="theme-card-label">HUNTRIX / S</div>
       </div>
       <div class="theme-card" onclick="selectTheme('basic')">
         <div class="theme-swatch" id="swatchBasic">
@@ -2312,9 +2319,13 @@ function applyCode() {
 
 // ====== THEME ======
 const THEMES = {
-  huntrx: {
+  huntrxs: {
     light: { '--bg':'#F8EAFA','--surface':'#EEDDFF','--accent':'#96A0E2','--accent2':'#F9DABB','--text':'#2a1a4a','--text2':'#7a5ab0','--border':'rgba(150,160,226,0.35)','--bar-bg':'rgba(150,160,226,0.18)','--card-bg':'rgba(255,255,255,0.55)','--overlay':'rgba(200,180,255,0.25)','--blur-bg':'rgba(238,221,255,0.92)' },
     dark: { '--bg':'#090107','--surface':'#1a1330','--accent':'#C90060','--accent2':'#554EA7','--text':'#F6E3C2','--text2':'#b89a70','--border':'rgba(201,0,96,0.3)','--bar-bg':'rgba(201,0,96,0.12)','--card-bg':'rgba(85,78,167,0.22)','--overlay':'rgba(9,1,7,0.75)','--blur-bg':'rgba(26,19,48,0.95)' }
+  },
+  huntrxh: {
+    light: { '--bg':'#F0EEFF','--surface':'#E2DEFF','--accent':'#7B6FD4','--accent2':'#FFD6F0','--text':'#1a1540','--text2':'#5a4fa0','--border':'rgba(123,111,212,0.3)','--bar-bg':'rgba(123,111,212,0.12)','--card-bg':'rgba(255,255,255,0.7)','--overlay':'rgba(200,190,255,0.25)','--blur-bg':'rgba(240,238,255,0.96)' },
+    dark: { '--bg':'#0e0b1f','--surface':'#1a1640','--accent':'#A78BFA','--accent2':'#2DD4BF','--text':'#EDE9FF','--text2':'#A78BFA','--border':'rgba(167,139,250,0.3)','--bar-bg':'rgba(167,139,250,0.12)','--card-bg':'rgba(45,40,100,0.35)','--overlay':'rgba(14,11,31,0.8)','--blur-bg':'rgba(26,22,64,0.97)' }
   },
   basic: {
     light: { '--bg':'#FFFFFF','--surface':'#F0F4FF','--accent':'#4A90D9','--accent2':'#C8DFF8','--text':'#0d1f3c','--text2':'#4a70a0','--border':'rgba(74,144,217,0.25)','--bar-bg':'rgba(74,144,217,0.1)','--card-bg':'rgba(255,255,255,0.8)','--overlay':'rgba(74,144,217,0.12)','--blur-bg':'rgba(240,244,255,0.96)' },
@@ -2323,12 +2334,14 @@ const THEMES = {
 };
 
 let dark = load('darkMode', false);
-let currentTheme = load('currentTheme', 'huntrx');
+let currentTheme = load('currentTheme', 'huntrxs');
+// migrate old key
+if (currentTheme === 'huntrx') { currentTheme = 'huntrxs'; save('currentTheme', 'huntrxs'); }
 
 function applyTheme() {
   document.body.classList.toggle('dark', dark);
   document.getElementById('themeBtn').textContent = dark ? '☀️' : '🌙';
-  const vars = THEMES[currentTheme] ? THEMES[currentTheme][dark ? 'dark' : 'light'] : THEMES.huntrx.light;
+  const vars = THEMES[currentTheme] ? THEMES[currentTheme][dark ? 'dark' : 'light'] : THEMES.huntrxs.light;
   Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
 }
 function toggleTheme() { dark = !dark; save('darkMode', dark); applyTheme(); }
@@ -2336,7 +2349,11 @@ function openThemePicker() { updateSwatchSelected(); document.getElementById('th
 function closeThemePicker() { document.getElementById('themePickerOverlay').classList.remove('open'); }
 function closeThemePickerOutside(e) { if (e.target === document.getElementById('themePickerOverlay')) closeThemePicker(); }
 function selectTheme(name) { currentTheme = name; save('currentTheme', name); applyTheme(); updateSwatchSelected(); }
-function updateSwatchSelected() { document.getElementById('swatchHuntrx').classList.toggle('selected', currentTheme === 'huntrx'); document.getElementById('swatchBasic').classList.toggle('selected', currentTheme === 'basic'); }
+function updateSwatchSelected() {
+  document.getElementById('swatchHuntrxs').classList.toggle('selected', currentTheme === 'huntrxs');
+  document.getElementById('swatchHuntrxh').classList.toggle('selected', currentTheme === 'huntrxh');
+  document.getElementById('swatchBasic').classList.toggle('selected', currentTheme === 'basic');
+}
 
 // ====== MIDNIGHT CLEANUP ======
 function cleanupExpiredQuests() {
