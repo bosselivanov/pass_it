@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PASS IT — Do Your Own Pass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0e0b1f; --surface: #1a1640; --accent: #A78BFA;
+  --teal: #2DD4BF; --text: #EDE9FF; --text2: #8B82C4;
+  --border: rgba(167,139,250,0.2); --card: rgba(45,40,100,0.4);
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.4;
+}
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 60px;
+  background: linear-gradient(to bottom, rgba(14,11,31,0.95), transparent);
+  backdrop-filter: blur(8px);
+}
+.nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 3px; color: var(--text); text-decoration: none; }
+.nav-logo span { color: var(--accent); }
+.nav-login { font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: var(--text2); text-decoration: none; border: 1px solid var(--border); border-radius: 8px; padding: 8px 20px; transition: all 0.2s; }
+.nav-login:hover { color: var(--text); border-color: var(--accent); background: rgba(167,139,250,0.08); }
+.hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 60px; padding: 120px 60px 80px; position: relative; }
+.hero-glow { position: absolute; top: -100px; right: -100px; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%); pointer-events: none; }
+.hero-glow2 { position: absolute; bottom: -50px; left: 200px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.08) 0%, transparent 70%); pointer-events: none; }
+.hero-left { position: relative; z-index: 1; }
+.hero-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(167,139,250,0.1); border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; font-size: 11px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 32px; }
+.hero-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+.hero-title { font-family: 'Syne', sans-serif; font-size: clamp(48px, 6vw, 80px); font-weight: 800; line-height: 1.0; letter-spacing: -2px; margin-bottom: 24px; }
+.hero-title .line2 { color: var(--accent); display: block; }
+.hero-title .line3 { color: var(--teal); display: block; font-size: 0.6em; letter-spacing: 4px; font-weight: 400; margin-top: 8px; }
+.hero-sub { font-size: 17px; line-height: 1.7; color: var(--text2); max-width: 420px; margin-bottom: 48px; }
+.hero-cta { display: inline-flex; align-items: center; gap: 12px; background: var(--accent); color: #0e0b1f; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; padding: 16px 32px; border-radius: 12px; transition: all 0.2s; }
+.hero-cta::after { content: '→'; transition: transform 0.2s; }
+.hero-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(167,139,250,0.35); }
+.hero-cta:hover::after { transform: translateX(4px); }
+.hero-right { position: relative; z-index: 1; }
+.mockup { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: 0 40px 80px rgba(0,0,0,0.4); animation: float 6s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+.mockup-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mockup-pass { background: rgba(167,139,250,0.08); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.mockup-pass-emoji { font-size: 20px; }
+.mockup-pass-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); flex: 1; }
+.mockup-track { height: 6px; background: rgba(167,139,250,0.15); border-radius: 6px; margin-top: 6px; overflow: hidden; }
+.mockup-track-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--accent), var(--teal)); animation: fillBar 3s ease-in-out infinite alternate; }
+@keyframes fillBar { from { width: 30%; } to { width: 75%; } }
+.mockup-quests { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.mockup-quest { background: rgba(45,40,100,0.5); border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; }
+.mockup-quest-emoji { font-size: 16px; }
+.mockup-quest-name { font-size: 9px; font-weight: 600; color: var(--text2); margin-top: 4px; }
+.mockup-quest-bar { height: 3px; background: rgba(167,139,250,0.15); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.mockup-quest-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+.mockup-quest.done .mockup-quest-fill { background: var(--teal); width: 100% !important; }
+.hero-slogan { position: absolute; bottom: -20px; right: 20px; background: var(--teal); color: #0e0b1f; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; padding: 8px 16px; border-radius: 8px; box-shadow: 0 8px 24px rgba(45,212,191,0.3); }
+.scroll-hint { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text2); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; animation: bounce 2s ease-in-out infinite; }
+@keyframes bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+.scroll-arrow { width: 20px; height: 20px; border-right: 1.5px solid var(--text2); border-bottom: 1.5px solid var(--text2); transform: rotate(45deg); }
+.reasons { padding: 120px 60px; }
+.reasons-title { font-family: 'Syne', sans-serif; font-weight: 400; font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: var(--text2); text-align: center; margin-bottom: 80px; }
+.reasons-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.reason-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 40px 32px; position: relative; overflow: hidden; transition: transform 0.3s, border-color 0.3s; }
+.reason-card:hover { transform: translateY(-6px); border-color: var(--accent); }
+.reason-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: 0; transition: opacity 0.3s; }
+.reason-card:hover::before { opacity: 1; }
+.reason-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 64px; color: rgba(167,139,250,0.12); line-height: 1; margin-bottom: 24px; }
+.reason-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(167,139,250,0.1); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+.reason-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; margin-bottom: 12px; color: var(--text); }
+.reason-desc { font-size: 14px; line-height: 1.7; color: var(--text2); }
+.preview { padding: 80px 60px 120px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.preview-left h2 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(32px, 4vw, 52px); line-height: 1.1; margin-bottom: 20px; }
+.preview-left h2 span { color: var(--accent); }
+.preview-left p { font-size: 16px; line-height: 1.8; color: var(--text2); }
+.preview-right { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 32px; min-height: 260px; display: flex; align-items: center; justify-content: center; }
+.pass-demo { width: 100%; }
+.pass-demo-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+.pass-demo-circles { display: flex; align-items: center; }
+.pass-demo-line { flex: 1; height: 3px; background: rgba(167,139,250,0.2); transition: background 0.4s; }
+.pass-demo-line.filled { background: var(--accent); }
+.pass-demo-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(167,139,250,0.3); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--text2); background: var(--surface); flex-shrink: 0; transition: all 0.4s; }
+.pass-demo-circle.filled { border-color: var(--accent); color: var(--accent); background: rgba(167,139,250,0.1); }
+.pass-demo-xp { font-size: 11px; color: var(--teal); font-weight: 700; margin-top: 12px; text-align: right; }
+.cta-section { padding: 120px 60px; text-align: center; position: relative; }
+.cta-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 600px; height: 300px; background: radial-gradient(ellipse, rgba(167,139,250,0.1) 0%, transparent 70%); pointer-events: none; }
+.cta-eyebrow { font-size: 12px; letter-spacing: 4px; text-transform: uppercase; color: var(--text2); margin-bottom: 24px; text-decoration: line-through; opacity: 0.5; }
+.cta-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(40px, 6vw, 80px); line-height: 1; margin-bottom: 48px; }
+.cta-title span { color: var(--accent); }
+.cta-btn { display: inline-flex; align-items: center; gap: 16px; background: transparent; border: 2px solid var(--accent); color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; padding: 20px 48px; border-radius: 14px; transition: all 0.25s; position: relative; overflow: hidden; }
+.cta-btn::before { content: ''; position: absolute; inset: 0; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
+.cta-btn:hover::before { transform: scaleX(1); }
+.cta-btn:hover { color: #0e0b1f; }
+.cta-btn span, .cta-btn em { position: relative; z-index: 1; }
+.cta-btn em { font-style: normal; }
+footer { border-top: 1px solid var(--border); padding: 32px 60px; display: flex; justify-content: space-between; align-items: center; }
+.footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 3px; color: var(--text2); }
+.footer-copy { font-size: 12px; color: var(--text2); opacity: 0.5; }
+.fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.7s, transform 0.7s; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; gap: 40px; }
+  .hero-right { display: none; }
+  .reasons { padding: 80px 24px; }
+  .reasons-grid { grid-template-columns: 1fr; gap: 20px; }
+  .preview { grid-template-columns: 1fr; padding: 60px 24px; gap: 40px; }
+  .cta-section { padding: 80px 24px; }
+  footer { padding: 24px; flex-direction: column; gap: 12px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">PASS<span>IT</span></a>
+  <a href="app.html" class="nav-login">Open App →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-left">
+    <div class="hero-tag">Battle Pass · Productivity · Your Rules</div>
+    <h1 class="hero-title">Do your<br><span class="line2">own pass.</span><span class="line3">Every quest matters</span></h1>
+    <p class="hero-sub">Turn your daily goals into a battle pass. Complete quests, level up, unlock rewards — and actually get things done.</p>
+    <a href="app.html" class="hero-cta">Get Started</a>
+  </div>
+  <div class="hero-right">
+    <div class="mockup">
+      <div class="mockup-bar">
+        <div class="mockup-dot" style="background:#ff5f57;"></div>
+        <div class="mockup-dot" style="background:#ffbd2e;"></div>
+        <div class="mockup-dot" style="background:#28c840;"></div>
+      </div>
+      <div class="mockup-pass">
+        <div class="mockup-pass-emoji">🎯</div>
+        <div style="flex:1;">
+          <div class="mockup-pass-name">My Pass</div>
+          <div class="mockup-track"><div class="mockup-track-fill"></div></div>
+        </div>
+        <div style="font-size:10px;font-weight:700;color:#A78BFA;">Lvl 4</div>
+      </div>
+      <div class="mockup-quests">
+        <div class="mockup-quest done"><div class="mockup-quest-emoji">📖</div><div class="mockup-quest-name">Reading</div><div class="mockup-quest-bar"><div class="mockup-quest-fill"></div></div></div>
+        <div class="mockup-quest done"><div class="mockup-quest-emoji">🏃</div><div class="mockup-quest-name">Run 5km</div><div class="mockup-quest-bar"><div class="mockup-quest-fill"></div></div></div>
+        <div class="mockup-quest"><div class="mockup-quest-emoji">💻</div><div class="mockup-quest-name">Code</div><div class="mockup-quest-bar"><div class="mockup-quest-fill" style="width:60%;"></div></div></div>
+        <div class="mockup-quest"><div class="mockup-quest-emoji">✏️</div><div class="mockup-quest-name">Study</div><div class="mockup-quest-bar"><div class="mockup-quest-fill" style="width:40%;"></div></div></div>
+        <div class="mockup-quest done"><div class="mockup-quest-emoji">💧</div><div class="mockup-quest-name">Water</div><div class="mockup-quest-bar"><div class="mockup-quest-fill"></div></div></div>
+        <div class="mockup-quest"><div class="mockup-quest-emoji">🎸</div><div class="mockup-quest-name">Guitar</div><div class="mockup-quest-bar"><div class="mockup-quest-fill" style="width:20%;"></div></div></div>
+      </div>
+    </div>
+    <div class="hero-slogan">Every quest matters</div>
+  </div>
+  <div class="scroll-hint"><div class="scroll-arrow"></div>scroll</div>
+</section>
+
+<section class="reasons">
+  <div class="reasons-title">Why PASS IT?</div>
+  <div class="reasons-grid">
+    <div class="reason-card fade-up">
+      <div class="reason-num">1</div>
+      <div class="reason-icon">⚔️</div>
+      <div class="reason-title">Gamify your tasks</div>
+      <div class="reason-desc">Your to-do list becomes a battle pass. Complete quests, earn XP, unlock new levels. Productivity that actually feels rewarding.</div>
+    </div>
+    <div class="reason-card fade-up">
+      <div class="reason-num">2</div>
+      <div class="reason-icon">🎯</div>
+      <div class="reason-title">Work straight to your goal</div>
+      <div class="reason-desc">Set deadlines, track metrics, freeze tasks when life gets in the way. Your goals, your rules — no rigid templates.</div>
+    </div>
+    <div class="reason-card fade-up">
+      <div class="reason-num">3</div>
+      <div class="reason-icon">🎨</div>
+      <div class="reason-title">Farm XP &amp; unlock themes</div>
+      <div class="reason-desc">Complete quests to earn pieces of exclusive themes. Every quest you finish brings you closer to unlocking legendary cosmetics.</div>
+    </div>
+  </div>
+</section>
+
+<section class="preview">
+  <div class="preview-left fade-up">
+    <h2>Your pass.<br><span>Your progress.</span></h2>
+    <p>Every completed quest moves the needle. Watch your pass level up in real time as you check off your daily goals. The more you do, the more you unlock.</p>
+  </div>
+  <div class="preview-right fade-up">
+    <div class="pass-demo">
+      <div class="pass-demo-label">Your Daily Pass — today's progress</div>
+      <div class="pass-demo-circles" id="demoCircles"></div>
+      <div class="pass-demo-xp" id="demoXp">+0 XP earned today</div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="cta-eyebrow">Try it</div>
+  <div class="cta-title">PASS<span> IT.</span></div>
+  <a href="app.html" class="cta-btn"><span>GET IN</span><em>→</em></a>
+</section>
+
+<footer>
+  <div class="footer-logo">PASS IT</div>
+  <div class="footer-copy">© 2026 · Do your own pass</div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+function buildDemo() {
+  const container = document.getElementById('demoCircles');
+  const total = 6;
+  container.innerHTML = '';
+  for (let i = 0; i <= total; i++) {
+    if (i > 0) {
+      const line = document.createElement('div');
+      line.className = 'pass-demo-line'; line.id = `dline-${i}`;
+      container.appendChild(line);
+    }
+    const circle = document.createElement('div');
+    circle.className = 'pass-demo-circle' + (i === 0 ? ' filled' : '');
+    circle.textContent = i; circle.id = `dcircle-${i}`;
+    container.appendChild(circle);
+  }
+  let current = 0;
+  const xp = [0, 100, 250, 100, 500, 250, 100];
+  let totalXp = 0;
+  setInterval(() => {
+    if (current < total) {
+      current++; totalXp += xp[current];
+      document.getElementById(`dcircle-${current}`).classList.add('filled');
+      document.getElementById(`dline-${current}`).classList.add('filled');
+      document.getElementById('demoXp').textContent = `+${totalXp} XP earned today`;
+    } else {
+      current = 0; totalXp = 0;
+      document.querySelectorAll('.pass-demo-circle').forEach((c, i) => c.classList.toggle('filled', i === 0));
+      document.querySelectorAll('.pass-demo-line').forEach(l => l.classList.remove('filled'));
+      document.getElementById('demoXp').textContent = '+0 XP earned today';
+    }
+  }, 900);
+}
+buildDemo();
+</script>
+</body>
+</html>
