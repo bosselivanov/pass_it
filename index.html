@@ -1654,6 +1654,32 @@ function updatePass() {
 // snake pos 0=top-left, 1=top-mid, 2=top-right, 3=mid-right, 4=mid-mid, 5=mid-left...
 
 let dragSrcIndex = null;
+let questClipboard = null; // скопированный квест
+
+function copyQuest(i) {
+  const q = getCurrentPass()?.quests[i];
+  if (!q) return;
+  questClipboard = JSON.parse(JSON.stringify(q)); // deep copy
+  questClipboard.current = 0; // сбрасываем прогресс
+  showToast('📋 Квест скопирован!');
+  // обновляем кнопки вставки
+  document.querySelectorAll('.quest-paste-btn').forEach(b => b.style.display = '');
+}
+
+function pasteQuest() {
+  if (!questClipboard) return;
+  const p = getCurrentPass();
+  const maxQ = userIsPro ? 18 : 9;
+  const filled = (p.quests || []).filter(q => q !== null).length;
+  if (filled >= maxQ) { showToast('Нет свободных слотов!'); return; }
+  const copy = JSON.parse(JSON.stringify(questClipboard));
+  const firstNull = p.quests.indexOf(null);
+  if (firstNull !== -1) p.quests[firstNull] = copy;
+  else p.quests.push(copy);
+  savePasses();
+  renderQuests();
+  showToast('✅ Квест вставлен!');
+}
 
 function snakeToGrid(snakeIdx, cols) {
   // Returns {row, col} for a snake index given number of columns
@@ -1733,6 +1759,7 @@ function renderQuests() {
               <div style="flex:1;min-width:0;"><div class="quest-name">${q.name}</div><div class="quest-sub">${q.sub}</div></div>
               <span class="quest-xp-badge">${q.xp}XP</span>
               <button class="quest-freeze-btn" onclick="toggleFreezeQuest(${globalSnakeIdx})" title="${frozen ? 'Разморозить' : 'Заморозить'}" ondragstart="event.stopPropagation()">${frozen ? '🔥' : '❄️'}</button>
+              <button class="quest-freeze-btn" onclick="copyQuest(${globalSnakeIdx})" title="Копировать квест" ondragstart="event.stopPropagation()">📋</button>
               <button class="quest-edit" onclick="openEditQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✏️</button>
               <button class="quest-delete" onclick="deleteQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">🗑️</button>
             </div>
@@ -1789,11 +1816,17 @@ function renderQuests() {
         } else if (globalSnakeIdx < maxQ) {
           // Пустой слот — принимает drop
           div.className = 'quest-empty';
-          div.innerHTML = '<span style="font-size:18px;opacity:0.3;">+</span>';
-          div.title = 'Добавить квест';
-          div.style.cursor = 'pointer';
           div.dataset.snakeIdx = globalSnakeIdx;
-          div.addEventListener('click', () => { if (dragSrcIndex === null) onAddQuest(); });
+          div.innerHTML = questClipboard
+            ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0.6;"><span style="font-size:14px;">📋</span><span style="font-size:9px;font-weight:700;">вставить</span></div>`
+            : `<span style="font-size:18px;opacity:0.3;">+</span>`;
+          div.title = questClipboard ? 'Вставить квест' : 'Добавить квест';
+          div.style.cursor = 'pointer';
+          div.addEventListener('click', () => {
+            if (dragSrcIndex !== null) return;
+            if (questClipboard) pasteQuest();
+            else onAddQuest();
+          });
           div.addEventListener('dragover', (e) => { e.preventDefault(); div.style.borderColor = 'var(--accent)'; });
           div.addEventListener('dragleave', () => { div.style.borderColor = ''; });
           div.addEventListener('drop', (e) => {
@@ -2490,21 +2523,53 @@ function saveMetricChange() {
 function toggleMenu() { document.getElementById('menuOverlay').classList.toggle('open'); }
 function closeMenuOutside(e) { if (e.target === document.getElementById('menuOverlay')) document.getElementById('menuOverlay').classList.remove('open'); }
 
-function newDay() {
-  const p = getCurrentPass();
+function performDayReset(isManual) {
   const today = todayStr();
-  p.quests.forEach(q => {
-    if (!q || q.frozen) return;
-    if (!isQuestActiveToday(q)) return;
-    // one-time квест с прошедшим дедлайном — не трогаем
-    if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return;
-    q.current = 0;
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yd = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+  const ydDow = (yesterday.getDay() + 6) % 7;
+
+  function wasActiveOn(q, dateStr, dow) {
+    if (!q.repeat || q.repeat.type === 'daily') return true;
+    if (q.repeat.type === 'once') return !q.deadline || dateStr <= q.deadline;
+    if (q.repeat.type === 'weekly') return (q.repeat.days || []).includes(dow);
+    return true;
+  }
+
+  // долги за вчера (при автосбросе) или за сегодня (при ручном — пользователь закрывает день)
+  const debtDate = isManual ? today : yd;
+  const debtDow = isManual ? todayDowIndex() : ydDow;
+
+  passes.forEach(p => {
+    (p.quests || []).forEach(q => {
+      if (!q || q.frozen) return;
+      if (!wasActiveOn(q, debtDate, debtDow)) return;
+      if (q.trackDebt && (q.current || 0) > 0 && q.current < q.max) {
+        addDebt(q, p.name);
+      }
+    });
   });
-  save('lastNewDay', today);
+
+  // сброс всех активных на сегодня квестов
+  passes.forEach(p => {
+    (p.quests || []).forEach(q => {
+      if (!q || q.frozen) return;
+      if (isQuestActiveToday(q)) q.current = 0;
+    });
+  });
+
   save('lastAutoReset', today);
+  save('lastNewDay', today);
   savePasses();
-  document.getElementById('menuOverlay').classList.remove('open');
+  cleanupExpiredQuests();
   renderQuests();
+  updateDebtBadge();
+}
+
+function newDay() {
+  performDayReset(true);
+  document.getElementById('menuOverlay').classList.remove('open');
   showToast('🌅 Новый день начат!');
 }
 
@@ -2828,32 +2893,10 @@ function scheduleMidnightCleanup() {
   const now = new Date();
   const midnight = new Date(now);
   midnight.setDate(midnight.getDate() + 1);
-  midnight.setHours(0, 0, 10, 0); // 00:00:10
+  midnight.setHours(0, 0, 10, 0);
   const msUntilMidnight = midnight - now;
   setTimeout(() => {
-    cleanupExpiredQuests();
-    const today = todayStr();
-    // сохраняем долги
-    passes.forEach(p => {
-      (p.quests || []).forEach(q => {
-        if (!q || q.frozen) return;
-        if (!isQuestActiveToday(q)) return;
-        if (q.trackDebt && (q.current || 0) > 0 && q.current < q.max) {
-          addDebt(q, p.name);
-        }
-      });
-    });
-    // сбрасываем
-    passes.forEach(p => {
-      (p.quests || []).forEach(q => {
-        if (!q || q.frozen) return;
-        if (isQuestActiveToday(q)) q.current = 0;
-      });
-    });
-    save('lastAutoReset', today);
-    savePasses();
-    renderQuests();
-    updateDebtBadge();
+    performDayReset(false);
     showToast('🌅 Новый день — квесты сброшены!');
     scheduleMidnightCleanup();
   }, msUntilMidnight);
@@ -2936,42 +2979,7 @@ function checkAndAutoReset() {
   const today = todayStr();
   const lastReset = load('lastAutoReset', null);
   if (lastReset === today) return;
-
-  // для долгов проверяем вчерашний день
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-  const yesterdayDow = (yesterday.getDay() + 6) % 7;
-
-  function wasActiveYesterday(q) {
-    if (!q.repeat || q.repeat.type === 'daily') return true;
-    if (q.repeat.type === 'once') return !q.deadline || yesterdayStr <= q.deadline;
-    if (q.repeat.type === 'weekly') return (q.repeat.days || []).includes(yesterdayDow);
-    return true;
-  }
-
-  // сохраняем долги за вчера
-  passes.forEach(p => {
-    (p.quests || []).forEach(q => {
-      if (!q || q.frozen) return;
-      if (!wasActiveYesterday(q)) return;
-      if (q.trackDebt && (q.current || 0) > 0 && q.current < q.max) {
-        addDebt(q, p.name);
-      }
-    });
-  });
-
-  // сбрасываем активные сегодня
-  passes.forEach(p => {
-    (p.quests || []).forEach(q => {
-      if (!q || q.frozen) return;
-      if (isQuestActiveToday(q)) q.current = 0;
-    });
-  });
-
-  save('lastAutoReset', today);
-  savePasses();
-  cleanupExpiredQuests();
+  performDayReset(false);
   showToast('🌅 Новый день — квесты сброшены!');
 }
 
