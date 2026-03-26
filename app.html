@@ -60,10 +60,23 @@ body {
   margin: 12px 24px 0; gap: 10px;
 }
 
-/* PASS SWITCH */
+/* AUTHOR HEADER MODE */
+.header.author-mode {
+  background: linear-gradient(135deg, #1f1200, #2a1800);
+  border-bottom-color: rgba(232,150,10,0.3);
+  transition: background 0.4s, border-color 0.4s;
+}
+.header.author-mode .header-title { color: #F5C842; letter-spacing: 4px; }
+.header.author-mode .header-btn { color: rgba(245,200,66,0.7); }
+.header.author-mode .header-btn:hover { background: rgba(232,150,10,0.15); color: #F5C842; }
 .pass-switch-wrap {
   display: flex; justify-content: center;
   padding: 4px 24px 0; flex-shrink: 0;
+  transition: background 0.4s;
+}
+.screens-wrap.author-shown ~ * .pass-switch-wrap,
+.pass-switch-wrap.author-mode {
+  background: linear-gradient(135deg, #1f1200, #2a1800);
 }
 .pass-switch-btn {
   display: flex; align-items: center; gap: 6px;
@@ -116,11 +129,11 @@ body {
 .author-col-wrap { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .author-col-hdr { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #E8960A; padding-bottom: 6px; border-bottom: 1px solid rgba(232,150,10,0.2); flex-shrink: 0; }
 .author-quest-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
-.author-quest-card { background: rgba(232,150,10,0.07); border: 1px solid rgba(232,150,10,0.2); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.author-quest-card { background: rgba(232,150,10,0.1); border: 1px solid rgba(232,150,10,0.3); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
 .author-quest-name { font-size: 12px; font-weight: 700; color: #F5E8C0; }
-.author-quest-bar-bg { height: 3px; background: rgba(232,150,10,0.15); border-radius: 3px; overflow: hidden; }
+.author-quest-bar-bg { height: 3px; background: rgba(232,150,10,0.2); border-radius: 3px; overflow: hidden; }
 .author-quest-bar-fill { height: 100%; background: linear-gradient(90deg,#E8960A,#F5C842); border-radius: 3px; transition: width 0.4s; }
-.author-quest-meta { font-size: 10px; color: rgba(245,200,66,0.7); }
+.author-quest-meta { font-size: 10px; color: rgba(245,200,66,0.65); }
 .pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
 .pass-menu-card {
   border: 1.5px solid var(--border); border-radius: 16px;
@@ -637,16 +650,16 @@ body {
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
 
-<div class="header">
-  <button class="header-btn" onclick="toggleMenu()" data-tooltip="Меню">☰</button>
-  <div class="header-title">Your Daily Pass</div>
-  <button class="header-btn" onclick="openAuthorPass()" data-tooltip="Авторский пасс" id="authorPassBtn">🏆</button>
-  <div class="header-btn-wrap">
+<div class="header" id="mainHeader">
+  <button class="header-btn" onclick="toggleMenu()" data-tooltip="Меню" id="headerMenuBtn">☰</button>
+  <div class="header-title" id="headerTitle">Your Daily Pass</div>
+  <button class="header-btn" onclick="toggleAuthorScreen()" data-tooltip="Авторский пасс" id="authorPassBtn">🏆</button>
+  <div class="header-btn-wrap" id="headerDebtWrap">
     <button class="header-btn" onclick="openDebts()" data-tooltip="Долговая книга" id="debtBtn">📋</button>
     <div class="debt-badge" id="debtBadge"></div>
   </div>
   <button class="header-btn" onclick="toggleTheme()" id="themeBtn" data-tooltip="Сменить тему">🌙</button>
-  <button class="header-btn" onclick="openThemePicker()" data-tooltip="Выбор оформления">🎨</button>
+  <button class="header-btn" onclick="openThemePicker()" data-tooltip="Выбор оформления" id="headerCosmeticsBtn">🎨</button>
   <!-- PROFILE -->
   <div class="profile-wrap" id="profileWrap">
     <button class="header-btn profile-btn" onclick="toggleProfileMenu()" data-tooltip="Профиль" id="profileBtn">👤</button>
@@ -732,75 +745,55 @@ body {
   </div>
 
   <!-- SCREEN 2: АВТОРСКИЙ ПАСС -->
-  <div class="screen" id="screenAuthor">
+  <div class="screen" id="screenAuthor" style="background:linear-gradient(180deg,#1f1200 0%,#2a1800 40%,#1a1000 100%);">
+    <!-- PASS BAR -->
     <div class="author-pass-area">
-      <div class="author-pass-header">
-        <div>
-          <div class="author-pass-label">✦ Авторский пасс</div>
-          <div class="author-pass-sub">Сезон 1 · Скоро</div>
+      <div class="pass-container-wrap" style="flex:1;">
+        <div class="pass-container" style="background:rgba(232,150,10,0.08);border-color:rgba(232,150,10,0.25);">
+          <div class="pass-top-row">
+            <div class="pass-title" style="color:#F5C842;letter-spacing:3px;">✦ АВТОРСКИЙ ПАСС</div>
+          </div>
+          <div class="pass-levels-wrap">
+            <div style="display:flex;align-items:center;width:100%;gap:0;">
+              <div style="width:32px;height:32px;border-radius:50%;border:2px solid #E8960A;background:rgba(232,150,10,0.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#F5C842;flex-shrink:0;">0</div>
+              <div style="flex:1;height:4px;background:rgba(232,150,10,0.15);border-radius:4px;"><div id="authorPassBarFill" style="height:100%;background:linear-gradient(90deg,#E8960A,#F5C842);border-radius:4px;width:0%;transition:width 0.5s;"></div></div>
+              <div style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(232,150,10,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(232,150,10,0.5);flex-shrink:0;">1</div>
+              <div style="flex:1;height:4px;background:rgba(232,150,10,0.15);border-radius:4px;"></div>
+              <div style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(232,150,10,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(232,150,10,0.5);flex-shrink:0;">2</div>
+              <div style="flex:1;height:4px;background:rgba(232,150,10,0.15);border-radius:4px;"></div>
+              <div style="width:32px;height:32px;border-radius:50%;border:1px solid rgba(232,150,10,0.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(232,150,10,0.5);flex-shrink:0;">3</div>
+            </div>
+          </div>
         </div>
-        <div class="author-pass-badge">СКОРО</div>
-      </div>
-      <div class="author-pass-bar-wrap">
-        <div class="author-pass-bar-track">
-          <div class="author-pass-bar-fill" id="authorPassBarFill" style="width:0%"></div>
-        </div>
-        <div class="author-pass-bar-pct" id="authorPassBarPct">0%</div>
       </div>
     </div>
 
-    <div class="author-quests-layout">
-      <!-- ЕЖЕДНЕВНЫЕ -->
-      <div class="author-col-wrap">
-        <div class="author-col-hdr">☀️ Ежедневные</div>
-        <div class="author-quest-list" id="authorDailyList">
-          <div class="author-quest-card" id="adq0">
-            <div class="author-quest-name" id="adq0name">Выполни квесты</div>
-            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq0bar" style="width:0%"></div></div>
-            <div class="author-quest-meta" id="adq0meta">0 / ? · +200 XP</div>
-          </div>
-          <div class="author-quest-card" id="adq1">
-            <div class="author-quest-name" id="adq1name">Выполни больше</div>
-            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq1bar" style="width:0%"></div></div>
-            <div class="author-quest-meta" id="adq1meta">0 / ? · +200 XP</div>
-          </div>
-          <div class="author-quest-card" id="adq2">
-            <div class="author-quest-name" id="adq2name">Выполни все</div>
-            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq2bar" style="width:0%"></div></div>
-            <div class="author-quest-meta" id="adq2meta">0 / ? · +200 XP</div>
-          </div>
+    <!-- MAIN LAYOUT -->
+    <div class="main-layout">
+      <!-- LEFT: место под будущее -->
+      <div class="flangs-section" style="display:flex;align-items:center;justify-content:center;opacity:0.25;">
+        <div style="text-align:center;color:#F5C842;">
+          <div style="font-size:32px;margin-bottom:8px;">🔮</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Скоро</div>
         </div>
       </div>
 
-      <!-- ЕЖЕНЕДЕЛЬНЫЕ -->
-      <div class="author-col-wrap">
-        <div class="author-col-hdr">📅 Еженедельные</div>
-        <div class="author-quest-list">
-          <div class="author-quest-card">
-            <div class="author-quest-name">Набери XP за неделю</div>
-            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq0bar" style="width:0%"></div></div>
-            <div class="author-quest-meta" id="awq0meta">0 / ? XP · +500 XP</div>
-          </div>
-          <div class="author-quest-card" style="opacity:0.45;">
-            <div class="author-quest-name">Квест недели</div>
-            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" style="width:0%"></div></div>
-            <div class="author-quest-meta">Скоро · +500 XP</div>
-          </div>
-          <div class="author-quest-card" style="opacity:0.45;">
-            <div class="author-quest-name">Продли стрик 3 раза</div>
-            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" style="width:0%"></div></div>
-            <div class="author-quest-meta">Скоро · +500 XP</div>
-          </div>
+      <!-- RIGHT: задания -->
+      <div class="quests-section">
+        <div class="quests-header-row">
+          <div class="section-header" style="color:#E8960A;">⚡ Задания</div>
         </div>
-      </div>
-
-      <!-- СЕЗОННЫЕ -->
-      <div class="author-col-wrap">
-        <div class="author-col-hdr">🌟 Сезонные</div>
-        <div class="author-quest-list" style="display:flex;align-items:center;justify-content:center;flex:1;opacity:0.4;">
-          <div style="text-align:center;">
-            <div style="font-size:28px;margin-bottom:8px;">🔒</div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Скоро</div>
+        <div class="quests-scroll-wrap">
+          <div class="quests-grid" style="grid-template-columns:repeat(3,1fr);">
+            <div class="author-quest-card" id="adq0"><div class="author-quest-name" id="adq0name">Выполни квесты</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq0meta">0 / ? · +200 XP</div></div>
+            <div class="author-quest-card" id="adq1"><div class="author-quest-name" id="adq1name">Выполни больше</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq1meta">0 / ? · +200 XP</div></div>
+            <div class="author-quest-card" id="adq2"><div class="author-quest-name" id="adq2name">Выполни все</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq2bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq2meta">0 / ? · +200 XP</div></div>
+            <div class="author-quest-card"><div class="author-quest-name">XP за неделю</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq0meta">0 / ? XP · +500 XP</div></div>
+            <div class="author-quest-card" style="opacity:0.4;"><div class="author-quest-name">Квест недели</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" style="width:0%"></div></div><div class="author-quest-meta">Скоро · +500 XP</div></div>
+            <div class="author-quest-card" style="opacity:0.4;"><div class="author-quest-name">Продли стрик</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" style="width:0%"></div></div><div class="author-quest-meta">Скоро · +500 XP</div></div>
+            <div class="author-quest-card" style="opacity:0.2;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="font-size:14px;">🔒</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#E8960A;">Скоро</div></div>
+            <div class="author-quest-card" style="opacity:0.2;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="font-size:14px;">🔒</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#E8960A;">Скоро</div></div>
+            <div class="author-quest-card" style="opacity:0.2;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="font-size:14px;">🔒</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#E8960A;">Скоро</div></div>
           </div>
         </div>
       </div>
@@ -3146,15 +3139,32 @@ function toggleAuthorScreen() {
   const btn = document.getElementById('passSwitchBtn');
   const icon = document.getElementById('passSwitchIcon');
   const label = document.getElementById('passSwitchLabel');
+  const header = document.getElementById('mainHeader');
+  const headerTitle = document.getElementById('headerTitle');
+  const debtWrap = document.getElementById('headerDebtWrap');
+  const themeBtn = document.getElementById('themeBtn');
+  const cosmeticsBtn = document.getElementById('headerCosmeticsBtn');
+
+  document.getElementById('passSwitchWrap').classList.toggle('author-mode', authorScreenOpen);
   wrap.classList.toggle('author-shown', authorScreenOpen);
   btn.classList.toggle('author-active', authorScreenOpen);
+  header.classList.toggle('author-mode', authorScreenOpen);
+
   if (authorScreenOpen) {
     icon.textContent = '▼';
     label.textContent = 'Личный пасс';
+    headerTitle.textContent = 'Season Pass';
+    debtWrap.style.display = 'none';
+    themeBtn.style.display = 'none';
+    cosmeticsBtn.style.display = 'none';
     updateAuthorPassUI();
   } else {
     icon.textContent = '▲';
     label.textContent = 'Авторский пасс';
+    headerTitle.textContent = 'Your Daily Pass';
+    debtWrap.style.display = '';
+    themeBtn.style.display = '';
+    cosmeticsBtn.style.display = '';
   }
 }
 
@@ -3193,7 +3203,6 @@ function updateAuthorPassUI() {
   const dailyDone = [0,1,2].filter(i => done >= targets[i]).length;
   const pctTotal = Math.round((dailyDone / 3) * 100);
   document.getElementById('authorPassBarFill').style.width = pctTotal + '%';
-  document.getElementById('authorPassBarPct').textContent = pctTotal + '%';
 
   // еженедельный XP (примерный)
   const weekXp = done * 150;
