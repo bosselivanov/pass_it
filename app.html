@@ -60,7 +60,67 @@ body {
   margin: 12px 24px 0; gap: 10px;
 }
 
-/* PASS MENU (left side — same width as flangs-section) */
+/* PASS SWITCH */
+.pass-switch-wrap {
+  display: flex; justify-content: center;
+  padding: 4px 24px 0; flex-shrink: 0;
+}
+.pass-switch-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 14px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  color: var(--text2); cursor: pointer;
+  transition: all 0.2s;
+}
+.pass-switch-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pass-switch-btn.author-active { border-color: #E8960A; color: #E8960A; background: rgba(232,150,10,0.08); }
+
+/* SCREENS */
+.screens-wrap {
+  flex: 1; min-height: 0; overflow: hidden;
+  position: relative;
+}
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+}
+.screen#screenPersonal { transform: translateY(0); opacity: 1; }
+.screen#screenAuthor { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+.screens-wrap.author-shown .screen#screenPersonal { transform: translateY(100%); opacity: 0; pointer-events: none; }
+.screens-wrap.author-shown .screen#screenAuthor { transform: translateY(0); opacity: 1; pointer-events: all; }
+
+/* AUTHOR PASS SCREEN */
+.author-pass-area {
+  background: linear-gradient(135deg, #1A0F00 0%, #2A1800 60%, #1A1000 100%);
+  border-bottom: 1.5px solid rgba(232,150,10,0.3);
+  padding: 10px 24px 12px;
+  flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
+}
+.author-pass-header { display: flex; align-items: center; justify-content: space-between; }
+.author-pass-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #F5C842; }
+.author-pass-sub { font-size: 10px; color: rgba(245,200,66,0.6); margin-top: 2px; }
+.author-pass-badge { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: rgba(232,150,10,0.15); color: #E8960A; border: 1px solid rgba(232,150,10,0.3); border-radius: 6px; padding: 3px 8px; }
+.author-pass-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.author-pass-bar-track { flex: 1; height: 5px; background: rgba(232,150,10,0.15); border-radius: 5px; overflow: hidden; }
+.author-pass-bar-fill { height: 100%; background: linear-gradient(90deg, #E8960A, #F5C842); border-radius: 5px; transition: width 0.5s; }
+.author-pass-bar-pct { font-size: 10px; font-weight: 700; color: #F5C842; }
+
+.author-quests-layout {
+  flex: 1; min-height: 0; display: grid;
+  grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+  padding: 10px 24px 12px; overflow: hidden;
+}
+.author-col-wrap { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.author-col-hdr { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #E8960A; padding-bottom: 6px; border-bottom: 1px solid rgba(232,150,10,0.2); flex-shrink: 0; }
+.author-quest-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
+.author-quest-card { background: rgba(232,150,10,0.07); border: 1px solid rgba(232,150,10,0.2); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.author-quest-name { font-size: 12px; font-weight: 700; color: #F5E8C0; }
+.author-quest-bar-bg { height: 3px; background: rgba(232,150,10,0.15); border-radius: 3px; overflow: hidden; }
+.author-quest-bar-fill { height: 100%; background: linear-gradient(90deg,#E8960A,#F5C842); border-radius: 3px; transition: width 0.4s; }
+.author-quest-meta { font-size: 10px; color: rgba(245,200,66,0.7); }
 .pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
 .pass-menu-card {
   border: 1.5px solid var(--border); border-radius: 16px;
@@ -603,58 +663,150 @@ body {
 </div>
 
 <!-- PASS AREA -->
-<div class="pass-area">
-  <!-- PASS MENU -->
-  <div class="pass-menu-wrap" id="passMenuWrap">
-    <div class="pass-menu-card" id="passMenuCard">
-      <div class="pass-menu-trigger" onclick="togglePassMenu(event)">
-        <span class="pass-menu-emoji" id="passMenuEmoji">🎯</span>
-        <span class="pass-menu-name" id="passMenuName">Мой пасс</span>
-        <span class="pass-menu-arrow" id="passMenuArrow">▾</span>
-      </div>
-      <div class="pass-menu-hint" id="passMenuHint"></div>
-    </div>
-    <div class="pass-menu-dropdown" id="passMenuDropdown">
-      <div id="passMenuList"></div>
-      <div class="pass-menu-divider"></div>
-      <button class="pass-menu-action" onclick="openCreatePassPopup()">＋ Создать пасс</button>
-      <button class="pass-menu-action" onclick="openRenamePassPopup()">✏️ Переименовать</button>
-      <button class="pass-menu-action danger" onclick="deleteCurrentPass()">🗑 Удалить пасс</button>
-    </div>
-  </div>
-  <!-- PASS LEVELS -->
-  <div class="pass-container-wrap">
-    <div class="pass-container">
-      <div class="pass-top-row">
-        <div class="pass-title" id="passTitle">Battle Pass</div>
-      </div>
-      <div class="pass-levels-wrap" id="passLevels"></div>
-    </div>
-  </div>
+<!-- PASS SWITCH ARROW -->
+<div class="pass-switch-wrap" id="passSwitchWrap">
+  <button class="pass-switch-btn" id="passSwitchBtn" onclick="toggleAuthorScreen()" title="Авторский пасс">
+    <span id="passSwitchIcon">▲</span>
+    <span id="passSwitchLabel">Авторский пасс</span>
+  </button>
 </div>
 
-<div class="main-layout">
-  <div class="flangs-section">
-    <div class="flangs-header-row">
-      <div class="section-header">✦ Mega Quests</div>
-      <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
+<!-- SCREENS WRAPPER -->
+<div class="screens-wrap" id="screensWrap">
+
+  <!-- SCREEN 1: ЛИЧНЫЙ ПАСС -->
+  <div class="screen" id="screenPersonal">
+    <div class="pass-area">
+      <!-- PASS MENU -->
+      <div class="pass-menu-wrap" id="passMenuWrap">
+        <div class="pass-menu-card" id="passMenuCard">
+          <div class="pass-menu-trigger" onclick="togglePassMenu(event)">
+            <span class="pass-menu-emoji" id="passMenuEmoji">🎯</span>
+            <span class="pass-menu-name" id="passMenuName">Мой пасс</span>
+            <span class="pass-menu-arrow" id="passMenuArrow">▾</span>
+          </div>
+          <div class="pass-menu-hint" id="passMenuHint"></div>
+        </div>
+        <div class="pass-menu-dropdown" id="passMenuDropdown">
+          <div id="passMenuList"></div>
+          <div class="pass-menu-divider"></div>
+          <button class="pass-menu-action" onclick="openCreatePassPopup()">＋ Создать пасс</button>
+          <button class="pass-menu-action" onclick="openRenamePassPopup()">✏️ Переименовать</button>
+          <button class="pass-menu-action danger" onclick="deleteCurrentPass()">🗑 Удалить пасс</button>
+        </div>
+      </div>
+      <!-- PASS LEVELS -->
+      <div class="pass-container-wrap">
+        <div class="pass-container">
+          <div class="pass-top-row">
+            <div class="pass-title" id="passTitle">Battle Pass</div>
+          </div>
+          <div class="pass-levels-wrap" id="passLevels"></div>
+        </div>
+      </div>
     </div>
-    <div class="mq-list" id="mqList"></div>
-    <div class="mq-focus" id="mqFocus">
-      <div class="flang-card" id="mqFocusCard"></div>
-      <div class="mq-stacked-label">остальные пассы</div>
-      <div class="mq-stacked" id="mqStacked"></div>
+
+    <div class="main-layout">
+      <div class="flangs-section">
+        <div class="flangs-header-row">
+          <div class="section-header">✦ Mega Quests</div>
+          <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
+        </div>
+        <div class="mq-list" id="mqList"></div>
+        <div class="mq-focus" id="mqFocus">
+          <div class="flang-card" id="mqFocusCard"></div>
+          <div class="mq-stacked-label">остальные пассы</div>
+          <div class="mq-stacked" id="mqStacked"></div>
+        </div>
+      </div>
+      <div class="quests-section">
+        <div class="quests-header-row">
+          <div class="section-header">⚡ Quests</div>
+          <button class="add-quest-btn" id="addQuestBtn" onclick="onAddQuest()">+ Добавить квест</button>
+        </div>
+        <div class="quests-scroll-wrap">
+          <div class="quests-grid" id="questsGrid"></div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="quests-section">
-    <div class="quests-header-row">
-      <div class="section-header">⚡ Quests</div>
-      <button class="add-quest-btn" id="addQuestBtn" onclick="onAddQuest()">+ Добавить квест</button>
+
+  <!-- SCREEN 2: АВТОРСКИЙ ПАСС -->
+  <div class="screen" id="screenAuthor">
+    <div class="author-pass-area">
+      <div class="author-pass-header">
+        <div>
+          <div class="author-pass-label">✦ Авторский пасс</div>
+          <div class="author-pass-sub">Сезон 1 · Скоро</div>
+        </div>
+        <div class="author-pass-badge">СКОРО</div>
+      </div>
+      <div class="author-pass-bar-wrap">
+        <div class="author-pass-bar-track">
+          <div class="author-pass-bar-fill" id="authorPassBarFill" style="width:0%"></div>
+        </div>
+        <div class="author-pass-bar-pct" id="authorPassBarPct">0%</div>
+      </div>
     </div>
-    <div class="quests-scroll-wrap">
-      <div class="quests-grid" id="questsGrid"></div>
+
+    <div class="author-quests-layout">
+      <!-- ЕЖЕДНЕВНЫЕ -->
+      <div class="author-col-wrap">
+        <div class="author-col-hdr">☀️ Ежедневные</div>
+        <div class="author-quest-list" id="authorDailyList">
+          <div class="author-quest-card" id="adq0">
+            <div class="author-quest-name" id="adq0name">Выполни квесты</div>
+            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq0bar" style="width:0%"></div></div>
+            <div class="author-quest-meta" id="adq0meta">0 / ? · +200 XP</div>
+          </div>
+          <div class="author-quest-card" id="adq1">
+            <div class="author-quest-name" id="adq1name">Выполни больше</div>
+            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq1bar" style="width:0%"></div></div>
+            <div class="author-quest-meta" id="adq1meta">0 / ? · +200 XP</div>
+          </div>
+          <div class="author-quest-card" id="adq2">
+            <div class="author-quest-name" id="adq2name">Выполни все</div>
+            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq2bar" style="width:0%"></div></div>
+            <div class="author-quest-meta" id="adq2meta">0 / ? · +200 XP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ЕЖЕНЕДЕЛЬНЫЕ -->
+      <div class="author-col-wrap">
+        <div class="author-col-hdr">📅 Еженедельные</div>
+        <div class="author-quest-list">
+          <div class="author-quest-card">
+            <div class="author-quest-name">Набери XP за неделю</div>
+            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq0bar" style="width:0%"></div></div>
+            <div class="author-quest-meta" id="awq0meta">0 / ? XP · +500 XP</div>
+          </div>
+          <div class="author-quest-card" style="opacity:0.45;">
+            <div class="author-quest-name">Квест недели</div>
+            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" style="width:0%"></div></div>
+            <div class="author-quest-meta">Скоро · +500 XP</div>
+          </div>
+          <div class="author-quest-card" style="opacity:0.45;">
+            <div class="author-quest-name">Продли стрик 3 раза</div>
+            <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" style="width:0%"></div></div>
+            <div class="author-quest-meta">Скоро · +500 XP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- СЕЗОННЫЕ -->
+      <div class="author-col-wrap">
+        <div class="author-col-hdr">🌟 Сезонные</div>
+        <div class="author-quest-list" style="display:flex;align-items:center;justify-content:center;flex:1;opacity:0.4;">
+          <div style="text-align:center;">
+            <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Скоро</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
 </div>
 
 <!-- LEFT MENU -->
@@ -2985,7 +3137,73 @@ function checkAndAutoReset() {
   showToast('🌅 Новый день — квесты сброшены!');
 }
 
-// ====== AUTHOR PASS ======
+// ====== AUTHOR PASS SCREEN ======
+let authorScreenOpen = false;
+
+function toggleAuthorScreen() {
+  authorScreenOpen = !authorScreenOpen;
+  const wrap = document.getElementById('screensWrap');
+  const btn = document.getElementById('passSwitchBtn');
+  const icon = document.getElementById('passSwitchIcon');
+  const label = document.getElementById('passSwitchLabel');
+  wrap.classList.toggle('author-shown', authorScreenOpen);
+  btn.classList.toggle('author-active', authorScreenOpen);
+  if (authorScreenOpen) {
+    icon.textContent = '▼';
+    label.textContent = 'Личный пасс';
+    updateAuthorPassUI();
+  } else {
+    icon.textContent = '▲';
+    label.textContent = 'Авторский пасс';
+  }
+}
+
+function updateAuthorPassUI() {
+  // считаем активные квесты сегодня по всем пассам
+  const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
+  const activeToday = allQuests.filter(q => isQuestActiveToday(q));
+  const total = activeToday.length;
+  const done = activeToday.filter(q => (q.current || 0) >= q.max).length;
+
+  // три уровня: 20%, 50%, 100%
+  const targets = [
+    Math.max(1, Math.ceil(total * 0.2)),
+    Math.max(1, Math.ceil(total * 0.5)),
+    total || 1
+  ];
+  const names = [
+    `Выполни ${targets[0]} квест${targets[0] > 1 ? 'а' : ''}`,
+    `Выполни ${targets[1]} из ${total}`,
+    `Выполни все (${total})`
+  ];
+  const xps = [200, 200, 200];
+
+  for (let i = 0; i < 3; i++) {
+    const pct = Math.min(100, Math.round((done / targets[i]) * 100));
+    const el = document.getElementById(`adq${i}`);
+    if (!el) continue;
+    document.getElementById(`adq${i}name`).textContent = names[i];
+    document.getElementById(`adq${i}bar`).style.width = pct + '%';
+    document.getElementById(`adq${i}meta`).textContent = `${done} / ${targets[i]} · +${xps[i]} XP`;
+    el.style.opacity = done >= targets[i] ? '1' : '0.75';
+    el.style.borderColor = done >= targets[i] ? 'rgba(245,200,66,0.6)' : '';
+  }
+
+  // общий прогресс авторского пасса (из выполненных ежедневных)
+  const dailyDone = [0,1,2].filter(i => done >= targets[i]).length;
+  const pctTotal = Math.round((dailyDone / 3) * 100);
+  document.getElementById('authorPassBarFill').style.width = pctTotal + '%';
+  document.getElementById('authorPassBarPct').textContent = pctTotal + '%';
+
+  // еженедельный XP (примерный)
+  const weekXp = done * 150;
+  const weekTarget = Math.max(total * 150 * 5, 500);
+  const weekPct = Math.min(100, Math.round((weekXp / weekTarget) * 100));
+  document.getElementById('awq0bar').style.width = weekPct + '%';
+  document.getElementById('awq0meta').textContent = `${weekXp} / ${weekTarget} XP · +500 XP`;
+}
+
+// ====== AUTHOR PASS (old popup — kept for compat) ======
 function openAuthorPass() {
   document.getElementById('authorOverlay').classList.add('open');
 }
