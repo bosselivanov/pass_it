@@ -1677,6 +1677,7 @@ function pasteQuest() {
   if (firstNull !== -1) p.quests[firstNull] = copy;
   else p.quests.push(copy);
   savePasses();
+  questClipboard = null; // очищаем буфер после вставки
   renderQuests();
   showToast('✅ Квест вставлен!');
 }
