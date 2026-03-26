@@ -1572,7 +1572,11 @@ function isQuestActiveToday(q) {
   const today = todayStr();
   if (q.startDate && q.startDate > today) return false; // ещё не началось
   if (!q.repeat || q.repeat.type === 'daily') return true;
-  if (q.repeat.type === 'once') return !q.deadline || q.deadline === today;
+  if (q.repeat.type === 'once') {
+    // активен с момента создания до дедлайна включительно
+    if (!q.deadline) return true;
+    return today <= q.deadline;
+  }
   if (q.repeat.type === 'weekly') return (q.repeat.days || []).includes(todayDowIndex());
   return true;
 }
@@ -2931,20 +2935,33 @@ function clearAllDebts() {
 function checkAndAutoReset() {
   const today = todayStr();
   const lastReset = load('lastAutoReset', null);
-  if (lastReset === today) return; // уже сбрасывали сегодня
+  if (lastReset === today) return;
 
-  // сохраняем долги перед сбросом
+  // для долгов проверяем вчерашний день
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+  const yesterdayDow = (yesterday.getDay() + 6) % 7;
+
+  function wasActiveYesterday(q) {
+    if (!q.repeat || q.repeat.type === 'daily') return true;
+    if (q.repeat.type === 'once') return !q.deadline || yesterdayStr <= q.deadline;
+    if (q.repeat.type === 'weekly') return (q.repeat.days || []).includes(yesterdayDow);
+    return true;
+  }
+
+  // сохраняем долги за вчера
   passes.forEach(p => {
     (p.quests || []).forEach(q => {
       if (!q || q.frozen) return;
-      if (!isQuestActiveToday(q)) return;
+      if (!wasActiveYesterday(q)) return;
       if (q.trackDebt && (q.current || 0) > 0 && q.current < q.max) {
         addDebt(q, p.name);
       }
     });
   });
 
-  // сбрасываем
+  // сбрасываем активные сегодня
   passes.forEach(p => {
     (p.quests || []).forEach(q => {
       if (!q || q.frozen) return;
