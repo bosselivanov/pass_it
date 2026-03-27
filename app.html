@@ -1222,6 +1222,19 @@ body {
   </div>
 </div>
 
+<!-- NEW DAY POPUP -->
+<div class="popup-overlay" id="newDayOverlay" style="z-index:500;">
+  <div class="popup" style="width:320px;text-align:center;gap:16px;" onmousedown="event.stopPropagation()">
+    <div style="font-size:36px;">🌅</div>
+    <div class="popup-title">Начался новый день!</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;">Сбросить прогресс квестов и начать новый день?</div>
+    <div class="popup-actions">
+      <button class="popup-btn secondary" onclick="skipDayReset()">Не сейчас</button>
+      <button class="popup-btn primary" onclick="confirmDayReset()">Сбросить</button>
+    </div>
+  </div>
+</div>
+
 <!-- UNLOCK CELEBRATION -->
 <div class="unlock-overlay" id="unlockOverlay" onclick="closeUnlockCelebration()">
   <canvas class="unlock-particles" id="unlockParticles"></canvas>
@@ -2653,7 +2666,15 @@ function saveMetricChange() {
   } else {
     val = Math.min(Math.max(parseInt(inputEl.value) || 0, 0), changeMetricMax);
   }
-  if (changeMetricType === 'quest') {
+  if (changeMetricType === 'debt') {
+    const debts = getDebts();
+    if (debts[changeDebtIndex]) {
+      debts[changeDebtIndex].current = val;
+      saveDebts(debts);
+      closePopup('changeMetricOverlay');
+      renderDebtList();
+    }
+  } else if (changeMetricType === 'quest') {
     p.quests[changeMetricIndex].current = val;
     savePasses();
     closePopup('changeMetricOverlay');
@@ -2692,7 +2713,7 @@ function performDayReset(isManual) {
     (p.quests || []).forEach(q => {
       if (!q || q.frozen) return;
       if (!wasActiveOn(q, debtDate, debtDow)) return;
-      if (q.trackDebt && (q.current || 0) > 0 && q.current < q.max) {
+      if (q.trackDebt && (q.current || 0) < q.max) {
         addDebt(q, p.name);
       }
     });
@@ -3043,10 +3064,26 @@ function scheduleMidnightCleanup() {
   midnight.setHours(0, 0, 10, 0);
   const msUntilMidnight = midnight - now;
   setTimeout(() => {
-    performDayReset(false);
-    showToast('🌅 Новый день — квесты сброшены!');
+    showNewDayPopup();
     scheduleMidnightCleanup();
   }, msUntilMidnight);
+}
+
+// ====== NEW DAY POPUP ======
+function showNewDayPopup() {
+  document.getElementById('newDayOverlay').classList.add('open');
+}
+
+function confirmDayReset() {
+  document.getElementById('newDayOverlay').classList.remove('open');
+  performDayReset(false);
+  showToast('🌅 Новый день начат — квесты сброшены!');
+}
+
+function skipDayReset() {
+  // отложить до следующего открытия — не сохраняем lastAutoReset
+  document.getElementById('newDayOverlay').classList.remove('open');
+  showToast('⏸ Сброс отложен — напомним позже');
 }
 
 // ====== DEBT SYSTEM ======
@@ -3099,11 +3136,38 @@ function renderDebtList() {
       <span style="font-size:20px;">${d.emoji}</span>
       <div class="debt-item-info">
         <div class="debt-item-name">${d.name}</div>
-        <div class="debt-item-meta">${d.passName} · ${d.current}/${d.max} · ${d.date}</div>
-        <div class="debt-item-progress"><div class="debt-item-fill" style="width:${Math.round((d.current/d.max)*100)}%"></div></div>
+        <div class="debt-item-meta">${d.passName} · ${d.date}</div>
+        <div class="debt-item-progress"><div class="debt-item-fill" style="width:${Math.round(((d.current||0)/d.max)*100)}%"></div></div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px;">${d.current||0} / ${d.max}</div>
       </div>
+      <button class="change-metric-btn" onclick="openChangeDebt(${i})" style="margin-right:6px;">изменить</button>
       <button class="debt-delete-btn" onclick="removeDebt(${i})" title="Закрыть долг">🗑️</button>
     </div>`).join('');
+}
+
+let changeDebtIndex = -1;
+
+function openChangeDebt(i) {
+  const debts = getDebts();
+  const d = debts[i];
+  changeDebtIndex = i;
+  changeMetricType = 'debt';
+  changeMetricMax = d.max;
+  metricMode = 'abs';
+  const inputEl = document.getElementById('changeMetricInput');
+  const unitEl = document.getElementById('changeMetricUnit');
+  const hintEl = document.getElementById('changeMetricHint');
+  document.getElementById('changeMetricTitle').textContent = d.name;
+  document.getElementById('changeMetricLabel').textContent = 'Текущее значение';
+  document.getElementById('metricModeAbs').classList.add('active');
+  document.getElementById('metricModePct').classList.remove('active');
+  inputEl.max = d.max; inputEl.value = d.current || 0;
+  unitEl.textContent = `/ ${d.max}`;
+  hintEl.textContent = `= ${Math.round(((d.current||0) / d.max) * 100)}%`;
+  inputEl.removeEventListener('input', updateMetricHint);
+  inputEl.addEventListener('input', updateMetricHint);
+  document.getElementById('changeMetricOverlay').classList.add('open');
+  setTimeout(() => { inputEl.focus(); inputEl.select(); }, 100);
 }
 
 function removeDebt(i) {
@@ -3126,8 +3190,8 @@ function checkAndAutoReset() {
   const today = todayStr();
   const lastReset = load('lastAutoReset', null);
   if (lastReset === today) return;
-  performDayReset(false);
-  showToast('🌅 Новый день — квесты сброшены!');
+  // показываем попап с вопросом вместо автосброса
+  showNewDayPopup();
 }
 
 // ====== AUTHOR PASS SCREEN ======
