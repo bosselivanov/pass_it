@@ -403,6 +403,7 @@ body {
 
 /* POPUP */
 .popup-overlay { position: fixed; inset: 0; background: var(--overlay); backdrop-filter: blur(5px); z-index: 200; display: none; align-items: center; justify-content: center; }
+#changeMetricOverlay { z-index: 400; }
 .popup-overlay.open { display: flex; }
 .popup { background: var(--blur-bg); backdrop-filter: blur(20px); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px 28px; width: 340px; max-width: 90vw; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: popIn 0.2s ease; }
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -2670,7 +2671,12 @@ function saveMetricChange() {
     const debts = getDebts();
     if (debts[changeDebtIndex]) {
       debts[changeDebtIndex].current = val;
+      if (val >= debts[changeDebtIndex].max) {
+        debts.splice(changeDebtIndex, 1);
+        showToast('✅ Долг закрыт!');
+      }
       saveDebts(debts);
+      updateDebtBadge();
       closePopup('changeMetricOverlay');
       renderDebtList();
     }
@@ -3138,9 +3144,8 @@ function renderDebtList() {
         <div class="debt-item-name">${d.name}</div>
         <div class="debt-item-meta">${d.passName} · ${d.date}</div>
         <div class="debt-item-progress"><div class="debt-item-fill" style="width:${Math.round(((d.current||0)/d.max)*100)}%"></div></div>
-        <div style="font-size:10px;color:var(--text2);margin-top:3px;">${d.current||0} / ${d.max}</div>
+        <div style="font-size:10px;color:var(--accent);margin-top:3px;cursor:pointer;font-weight:700;" onclick="openChangeDebt(${i})">${d.current||0} / ${d.max} — нажми чтобы изменить</div>
       </div>
-      <button class="change-metric-btn" onclick="openChangeDebt(${i})" style="margin-right:6px;">изменить</button>
       <button class="debt-delete-btn" onclick="removeDebt(${i})" title="Закрыть долг">🗑️</button>
     </div>`).join('');
 }
