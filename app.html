@@ -2704,28 +2704,34 @@ function performDayReset(isManual) {
   const yd = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
   const ydDow = (yesterday.getDay() + 6) % 7;
 
+  // дата долга — вчера при автосбросе, сегодня при ручном
+  const debtDate = isManual ? today : yd;
+  const debtDow = isManual ? todayDowIndex() : ydDow;
+
   function wasActiveOn(q, dateStr, dow) {
+    if (q.startDate && q.startDate > dateStr) return false;
     if (!q.repeat || q.repeat.type === 'daily') return true;
-    if (q.repeat.type === 'once') return !q.deadline || dateStr <= q.deadline;
+    // для "один раз" — в долг только если дедлайн совпадает с датой долга
+    if (q.repeat.type === 'once') return q.deadline === dateStr;
     if (q.repeat.type === 'weekly') return (q.repeat.days || []).includes(dow);
     return true;
   }
 
-  // долги за вчера (при автосбросе) или за сегодня (при ручном — пользователь закрывает день)
-  const debtDate = isManual ? today : yd;
-  const debtDow = isManual ? todayDowIndex() : ydDow;
-
+  // добавляем долги только без дублей (проверка по имени + дата долга)
+  const existingDebts = getDebts();
   passes.forEach(p => {
     (p.quests || []).forEach(q => {
       if (!q || q.frozen) return;
       if (!wasActiveOn(q, debtDate, debtDow)) return;
-      if (q.trackDebt && (q.current || 0) < q.max) {
-        addDebt(q, p.name);
-      }
+      if (!q.trackDebt) return;
+      if ((q.current || 0) >= q.max) return; // выполнен — не долг
+      // проверка дубля по имени и дате
+      const isDupe = existingDebts.some(d => d.name === q.name && d.date === debtDate);
+      if (!isDupe) addDebt(q, p.name, debtDate);
     });
   });
 
-  // сброс всех активных на сегодня квестов
+  // сброс активных квестов
   passes.forEach(p => {
     (p.quests || []).forEach(q => {
       if (!q || q.frozen) return;
@@ -3096,7 +3102,7 @@ function skipDayReset() {
 function getDebts() { return load('passit_debts', []); }
 function saveDebts(d) { save('passit_debts', d); }
 
-function addDebt(quest, passName) {
+function addDebt(quest, passName, date) {
   const debts = getDebts();
   debts.push({
     id: Date.now() + Math.random(),
@@ -3105,7 +3111,7 @@ function addDebt(quest, passName) {
     current: quest.current || 0,
     max: quest.max,
     passName: passName,
-    date: todayStr()
+    date: date || todayStr()
   });
   saveDebts(debts);
   updateDebtBadge();
@@ -3465,6 +3471,16 @@ function showMergeModal(localPasses, cloudPasses, cloudCurId) {
     var merged = [...cloudPasses];
     localPasses.forEach(function(lp) { if (!merged.find(function(cp) { return cp.name === lp.name; })) merged.push(lp); });
     initPasses({ passes: merged, currentPassId: cloudCurId || merged[0].id });
+    // если сегодня уже был сброс — применяем нулевые значения из локальных данных
+    const today = todayStr();
+    if (load('lastAutoReset', null) === today) {
+      passes.forEach(p => {
+        (p.quests || []).forEach(q => {
+          if (!q || q.frozen) return;
+          if (isQuestActiveToday(q)) q.current = 0;
+        });
+      });
+    }
     savePasses(); document.getElementById('mergeModal').style.display = 'none'; render(); showToast('✅ Данные объединены!');
   };
   document.getElementById('mergeModal').style.display = 'flex';
