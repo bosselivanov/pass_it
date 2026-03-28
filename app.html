@@ -62,8 +62,8 @@ body {
 
 /* AUTHOR HEADER MODE */
 .header.author-mode {
-  background: linear-gradient(135deg, #FFF8E7, #FFF0C8);
-  border-bottom-color: rgba(180,120,0,0.25);
+  background: linear-gradient(135deg, #FDF5E0, #F5EAC0);
+  border-bottom-color: rgba(160,110,0,0.2);
   transition: background 0.4s, border-color 0.4s;
 }
 .header.author-mode .header-title { color: #8B5E00; letter-spacing: 4px; }
@@ -76,7 +76,7 @@ body {
 }
 .screens-wrap.author-shown ~ * .pass-switch-wrap,
 .pass-switch-wrap.author-mode {
-  background: linear-gradient(135deg, #FFF8E7, #FFF0C8);
+  background: linear-gradient(135deg, #FDF5E0, #F5EAC0);
 }
 .pass-switch-btn {
   display: flex; align-items: center; gap: 6px;
@@ -127,13 +127,17 @@ body {
   padding: 10px 24px 12px; overflow: hidden;
 }
 .author-col-wrap { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-.author-col-hdr { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #8B5E00; padding-bottom: 6px; border-bottom: 1px solid rgba(232,150,10,0.2); flex-shrink: 0; }
-.author-quest-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }
-.author-quest-card { background: rgba(255,255,255,0.6); border: 1px solid rgba(180,120,0,0.25); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
-.author-quest-name { font-size: 12px; font-weight: 700; color: #4A2E00; }
-.author-quest-bar-bg { height: 3px; background: rgba(180,120,0,0.15); border-radius: 3px; overflow: hidden; }
-.author-quest-bar-fill { height: 100%; background: linear-gradient(90deg,#E8960A,#F5C842); border-radius: 3px; transition: width 0.4s; }
-.author-quest-meta { font-size: 10px; color: #9B6E10; }
+/* AUTHOR QUEST CARDS — same size as regular */
+.author-quest-card { background: rgba(255,255,255,0.75); border: 1.5px solid rgba(180,120,0,0.3); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+.author-quest-name { font-size: 15px; font-weight: 800; color: #3A2000; line-height: 1.2; }
+.author-quest-bar-bg { height: 4px; background: rgba(180,120,0,0.15); border-radius: 3px; overflow: hidden; margin-top: 2px; }
+.author-quest-bar-fill { height: 100%; background: linear-gradient(90deg,#C07800,#E8B400); border-radius: 3px; transition: width 0.4s; }
+.author-quest-meta { font-size: 11px; color: #7A4E00; font-weight: 600; }
+
+/* XP BADGE COLORS */
+.xp-common { background: rgba(74,144,217,0.12); color: #2a70b0; }
+.xp-rare { background: rgba(167,139,250,0.15); color: #6040c0; }
+.xp-epic { background: rgba(232,150,10,0.15); color: #b06000; }
 .pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
 .pass-menu-card {
   border: 1.5px solid var(--border); border-radius: 16px;
@@ -746,7 +750,7 @@ body {
   </div>
 
   <!-- SCREEN 2: АВТОРСКИЙ ПАСС -->
-  <div class="screen" id="screenAuthor" style="background:linear-gradient(180deg,#FFFAED 0%,#FFF3CC 50%,#FFECAA 100%);">
+  <div class="screen" id="screenAuthor" style="background:linear-gradient(180deg,#FDF6E3 0%,#FAF0CC 50%,#F5E6A8 100%);">
     <!-- PASS BAR -->
     <div class="author-pass-area">
       <div class="pass-container-wrap" style="flex:1;">
@@ -1917,7 +1921,7 @@ function renderQuests() {
             <div class="quest-card-top">
               <span class="quest-emoji">${q.emoji}${frozen ? '❄️' : ''}</span>
               <div style="flex:1;min-width:0;"><div class="quest-name">${q.name}</div><div class="quest-sub">${q.sub}</div></div>
-              <span class="quest-xp-badge">${q.xp}XP</span>
+              <span class="quest-xp-badge ${q.xp >= 500 ? 'xp-epic' : q.xp >= 250 ? 'xp-rare' : 'xp-common'}">${q.xp}XP</span>
               <button class="quest-freeze-btn" onclick="toggleFreezeQuest(${globalSnakeIdx})" title="${frozen ? 'Разморозить' : 'Заморозить'}" ondragstart="event.stopPropagation()">${frozen ? '🔥' : '❄️'}</button>
               <button class="quest-freeze-btn" onclick="copyQuest(${globalSnakeIdx})" title="Копировать квест" ondragstart="event.stopPropagation()">📋</button>
               <button class="quest-edit" onclick="openEditQuest(${globalSnakeIdx})" ondragstart="event.stopPropagation()">✏️</button>
