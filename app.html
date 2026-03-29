@@ -42,11 +42,12 @@ body {
 /* HEADER */
 .header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 24px; background: var(--surface);
+  padding: 10px 16px; background: var(--surface);
   border-bottom: 1px solid var(--border); flex-shrink: 0;
   overflow: visible; position: relative; z-index: 10;
+  gap: 4px; min-width: 0;
 }
-.header-title { font-size: 14px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
+.header-title { font-size: 13px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; white-space: nowrap; }
 .header-btn {
   background: none; border: none; cursor: pointer;
   font-size: 20px; color: var(--text2); padding: 4px 8px;
@@ -162,9 +163,7 @@ body {
 .author-quest-meta { font-size: 11px; color: #7A4E00; font-weight: 600; }
 
 /* XP BADGE COLORS */
-.xp-common { background: rgba(74,144,217,0.12); color: #2a70b0; }
-.xp-rare { background: rgba(167,139,250,0.15); color: #6040c0; }
-.xp-epic { background: rgba(232,150,10,0.15); color: #b06000; }
+/* XP badge colors defined with quest-xp-badge above */
 .pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
 .pass-menu-card {
   border: 1.5px solid var(--border); border-radius: 16px;
@@ -375,8 +374,14 @@ body {
 .quest-emoji { font-size: 17px; flex-shrink: 0; }
 .quest-name { font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.2; }
 .quest-sub { font-size: 12px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.quest-xp-badge { font-size: 10px; font-weight: 700; background: var(--bar-bg); color: var(--accent); padding: 2px 6px; border-radius: 6px; flex-shrink: 0; }
-.quest-bottom { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
+.quest-xp-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; flex-shrink: 0; }
+.quest-xp-badge.xp-common { background: rgba(74,144,217,0.15); color: #2a70b0; border: 1px solid rgba(74,144,217,0.25); }
+.quest-xp-badge.xp-rare { background: rgba(167,139,250,0.15); color: #6040c0; border: 1px solid rgba(167,139,250,0.25); }
+.quest-xp-badge.xp-epic { background: rgba(232,150,10,0.18); color: #b06000; border: 1px solid rgba(232,150,10,0.3); }
+.daily-xp-counter { font-size: 10px; font-weight: 700; color: var(--text2); margin-left: auto; flex-shrink: 0; }
+.mq-xp-counter { font-size: 10px; font-weight: 700; color: var(--accent); margin-top: 2px; }
+.emoji-more-btn { font-size: 14px !important; letter-spacing: 2px; color: var(--text2); background: var(--bar-bg) !important; }
+.emoji-more-btn:hover { background: var(--border) !important; }
 .quest-metric { font-size: 13px; font-weight: 700; color: var(--text); display: flex; gap: 2px; align-items: center; }
 .quest-empty { border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 11px; opacity: 0.5; transition: opacity 0.15s, border-color 0.15s; }
 .quest-empty:hover { opacity: 0.85; border-color: var(--accent); }
@@ -755,8 +760,9 @@ body {
       <!-- PASS LEVELS -->
       <div class="pass-container-wrap">
         <div class="pass-container">
-          <div class="pass-top-row">
+          <div class="pass-top-row" style="display:flex;align-items:center;justify-content:space-between;">
             <div class="pass-title" id="passTitle">Battle Pass</div>
+            <div class="daily-xp-counter" id="dailyXpCounter">0 / 0 XP сегодня</div>
           </div>
           <div class="pass-levels-wrap" id="passLevels"></div>
         </div>
@@ -800,7 +806,7 @@ body {
           <div class="pass-levels-wrap" style="overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;">
             <div id="authorCirclesRow" style="display:flex;align-items:center;min-width:max-content;gap:0;padding:2px 0;"></div>
           </div>
-          <div style="font-size:10px;color:#9B6E10;text-align:right;margin-top:2px;">Ур. <span id="authorLevelNum">0</span>/90 · <span id="authorXPTotalNum">0</span> XP</div>
+          <div style="font-size:10px;color:#9B6E10;text-align:right;margin-top:2px;">Ур. <span id="authorLevelNum">0</span>/150 · <span id="authorXPTotalNum">0</span> XP</div>
         </div>
       </div>
     </div>
@@ -1387,7 +1393,10 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-const EMOJIS = ['💻','📚','🏃','🧠','🎯','✏️','📋','💪','🔵','⚡','🌐','🏋️','🎮','💰','🔥','📖','🎨','🏆','⭐','🚀'];
+const EMOJIS_COMMON = ['💻','📚','🏃','🧠','🎯','✏️','📋','💪','🔥','📖','🎨','🏆','⭐','🚀','🎮','🌐','🏋️','💰','⚡','🔵'];
+const EMOJIS_ALL = [...EMOJIS_COMMON,'🧘','🎵','🎸','🎹','🏊','🚴','🧗','⚽','🏀','🎾','🏐','🧩','🎲','🃏','🎭','🍎','🥗','💊','🧪','🔬','🌱','🌍','✈️','🏠','📊','📈','💼','🔑','🛡️','⚔️','🏅','🥇','🎖️','🌟','💫','✨','🎉','🪄','🦁','🦊','🐺','🦅','🐉','🌙','☀️','⛅','🌈','❄️','🌊','🏔️','🌲'];
+const EMOJIS = EMOJIS_ALL;
+let emojiShowMore = {};
 
 // ====== PASSES DATA STRUCTURE ======
 // passes = [ { id, name, emoji, quests[], megaQuests[] }, ... ]
@@ -1796,9 +1805,29 @@ function nextActiveDay(q) {
 // ====== EMOJI GRID ======
 function renderEmojiGrid(gridId, current, onPick) {
   const grid = document.getElementById(gridId);
-  grid.innerHTML = EMOJIS.map(e => `
-    <div class="emoji-opt ${e === current ? 'selected' : ''}" onclick="(${onPick.toString()})(this,'${e}')">${e}</div>
-  `).join('');
+  const showAll = emojiShowMore[gridId] || false;
+  const list = showAll ? EMOJIS_ALL : EMOJIS_COMMON;
+  grid.innerHTML = list.map(e =>
+    `<div class="emoji-opt ${e === current ? 'selected' : ''}" onclick="(${onPick.toString()})(this,'${e}')">${e}</div>`
+  ).join('') +
+  `<div class="emoji-opt emoji-more-btn" onclick="toggleEmojiMore('${gridId}')" title="${showAll ? 'Меньше' : 'Ещё'}">${showAll ? '▲' : '···'}</div>`;
+}
+
+function toggleEmojiMore(gridId) {
+  emojiShowMore[gridId] = !emojiShowMore[gridId];
+  // перерисовываем — находим текущий выбранный эмодзи
+  const grid = document.getElementById(gridId);
+  const sel = grid.querySelector('.emoji-opt.selected:not(.emoji-more-btn)');
+  const current = sel ? sel.textContent : EMOJIS_COMMON[0];
+  // находим onPick по gridId
+  const pickFns = {
+    'questEmojiGrid': pickQuestEmoji,
+    'editQuestEmojiGrid': (el,e) => { editQuestEmoji = e; document.querySelectorAll('#editQuestEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); },
+    'megaEmojiGrid': pickMegaEmoji,
+    'editMegaEmojiGrid': (el,e) => { editMegaEmoji = e; document.querySelectorAll('#editMegaEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); },
+  };
+  const fn = pickFns[gridId] || ((el,e) => {});
+  renderEmojiGrid(gridId, current, fn);
 }
 
 let selectedQuestEmoji = EMOJIS[0];
@@ -1814,6 +1843,14 @@ function updatePass() {
   const totalMaxXP = quests.reduce((s, q) => s + q.xp, 0);
   const totalEarnedXP = quests.reduce((s, q) => s + (Math.min(q.current || 0, q.max) / q.max) * q.xp, 0);
   const pct = totalMaxXP > 0 ? Math.min((totalEarnedXP / totalMaxXP) * 100, 100) : 0;
+
+  // обновляем счётчик XP дня
+  const xpEl = document.getElementById('dailyXpCounter');
+  if (xpEl) {
+    const earned = Math.round(totalEarnedXP);
+    const pctClass = earned === totalMaxXP && totalMaxXP > 0 ? 'color:var(--accent);font-weight:800;' : '';
+    xpEl.innerHTML = `<span style="${pctClass}">${earned}</span> / ${totalMaxXP} XP`;
+  }
 
   const container = document.getElementById('passLevels');
   container.innerHTML = '';
@@ -2198,14 +2235,25 @@ function renderMqList() {
   const listEl = document.getElementById('mqList');
   listEl.innerHTML = megaQuests.map((mq, i) => {
     const pc = mqPct(mq);
-    return `<div class="mq-row" onclick="mqOpenFocus(${i})">
+    const xp = Math.round(300 + 700 * (mq.max / (mq.max + 100)));
+    const earnedXp = Math.round(xp * pc / 100);
+    return `<div class="mq-row" draggable="true" data-mqi="${i}"
+      ondragstart="mqDragStart(event,${i})"
+      ondragover="mqDragOver(event)"
+      ondrop="mqDrop(event,${i})"
+      ondragleave="mqDragLeave(event)"
+      onclick="mqOpenFocus(${i})">
+      <div class="mq-row-emoji" style="cursor:grab;">⠿</div>
       <div class="mq-row-emoji">${mq.emoji}</div>
       <div class="mq-row-info">
         <div class="mq-row-name">${mq.name}</div>
         <div class="mq-row-pct">${pc}% — ${mq.current || 0}/${mq.max} ${mq.unit || 'ед.'}</div>
         <div class="mq-row-bar"><div class="mq-row-fill" style="width:${pc}%"></div></div>
       </div>
-      <div class="mq-row-arrow">›</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
+        <div class="mq-row-arrow">›</div>
+        <div class="mq-xp-counter">${earnedXp}/${xp} XP</div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -2266,7 +2314,10 @@ function renderMqFocus(i) {
         </div>
       </div>
       <div class="progress-bar-bg"><div class="progress-bar-fill" id="mbar-${i}" style="width:${pc}%"></div></div>
-      <button class="change-metric-btn" style="margin-top:4px;" onclick="openChangeMetric('mega',${i})">изменить прогресс</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
+        <button class="change-metric-btn" onclick="openChangeMetric('mega',${i})">изменить прогресс</button>
+        <div class="mq-xp-counter" style="font-size:11px;">${Math.round((300 + 700 * (maxVal / (maxVal + 100))) * pc / 100)} / ${Math.round(300 + 700 * (maxVal / (maxVal + 100)))} XP</div>
+      </div>
     </div>`;
 
   const rest = megaQuests.filter((_, j) => j !== i);
@@ -2728,6 +2779,25 @@ function saveMetricChange() {
     closePopup('changeMetricOverlay');
     renderMqFocus(changeMetricIndex);
   }
+}
+
+// ====== MEGAQUEST DRAG REORDER ======
+let mqDragSrc = null;
+function mqDragStart(e, i) { mqDragSrc = i; e.dataTransfer.effectAllowed = 'move'; e.currentTarget.style.opacity = '0.5'; }
+function mqDragOver(e) { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--accent)'; }
+function mqDragLeave(e) { e.currentTarget.style.borderColor = ''; }
+function mqDrop(e, i) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = '';
+  e.currentTarget.style.opacity = '';
+  if (mqDragSrc === null || mqDragSrc === i) return;
+  const p = getCurrentPass();
+  const mqs = p.megaQuests;
+  const dragged = mqs.splice(mqDragSrc, 1)[0];
+  mqs.splice(i, 0, dragged);
+  mqDragSrc = null;
+  savePasses();
+  renderMega();
 }
 
 // ====== MENU ======
@@ -3412,40 +3482,44 @@ function getWeeklyXPValue() {
 
 // --- КВЕСТ НЕДЕЛИ ---
 function getQuestOfWeek() {
-  // находит самый редко выполняемый активный квест за последние 7 дней
-  // используем простую статистику: квест с наименьшим current/max ratio
-  const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
   const weekStart = getCurrentWeekStart();
-  const stats = load('passit_quest_stats', {});
-  // обновляем weekStart если нужно
   const savedWeek = load('passit_qow_week', null);
   if (savedWeek !== weekStart) {
     save('passit_qow_week', weekStart);
     save('passit_qow_name', null);
+    save('passit_qow_pass', null);
   }
-  const saved = load('passit_qow_name', null);
-  if (saved) {
-    const found = allQuests.find(q => q.name === saved);
-    if (found) return found;
+  const savedName = load('passit_qow_name', null);
+  const savedPass = load('passit_qow_pass', null);
+
+  // ищем по всем пассам
+  const allWithPass = passes.flatMap(p =>
+    (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)).map(q => ({ q, passName: p.name }))
+  );
+  if (!allWithPass.length) return null;
+
+  if (savedName) {
+    const found = allWithPass.find(({ q }) => q.name === savedName);
+    if (found) return { ...found.q, passName: found.passName };
   }
-  // выбираем квест с наименьшим процентом выполнения
-  const active = allQuests.filter(q => isQuestActiveToday(q));
-  if (!active.length) return null;
-  const sorted = [...active].sort((a, b) => {
-    const ra = (a.current || 0) / a.max;
-    const rb = (b.current || 0) / b.max;
+
+  // выбираем с наименьшим процентом выполнения
+  const sorted = [...allWithPass].sort((a, b) => {
+    const ra = (a.q.current || 0) / a.q.max;
+    const rb = (b.q.current || 0) / b.q.max;
     return ra - rb;
   });
   const chosen = sorted[0];
-  save('passit_qow_name', chosen.name);
-  return chosen;
+  save('passit_qow_name', chosen.q.name);
+  save('passit_qow_pass', chosen.passName);
+  return { ...chosen.q, passName: chosen.passName };
 }
 
 function getQuestOfWeekProgress() {
   const q = getQuestOfWeek();
-  if (!q) return { done: 0, target: 3 };
+  if (!q) return { done: 0, target: 3, name: 'Квест недели', emoji: '🎯', passName: '' };
   const done = load('passit_qow_done_' + getCurrentWeekStart(), 0);
-  return { done, target: 3, name: q.name, emoji: q.emoji };
+  return { done, target: 3, name: q.name, emoji: q.emoji, passName: q.passName || '' };
 }
 
 // вызывается при каждом выполнении квеста
@@ -3468,7 +3542,7 @@ function saveAuthorPassLevel(l) {
 
 function tryAddAuthorLevel(count) {
   const current = getAuthorPassLevel();
-  const newLevel = Math.min(current + count, 90);
+  const newLevel = Math.min(current + count, 150);
   if (newLevel > current) {
     saveAuthorPassLevel(newLevel);
     if (authorScreenOpen) updateAuthorPassUI();
@@ -3511,7 +3585,7 @@ function addAuthorXP(xp) {
   const current = getAuthorXP();
   const newXP = current + xp;
   save('passit_author_xp', newXP);
-  const newLevel = Math.min(Math.floor(newXP / XP_PER_LEVEL), 90);
+  const newLevel = Math.min(Math.floor(newXP / XP_PER_LEVEL), 150);
   const oldLevel = getAuthorPassLevel();
   if (newLevel > oldLevel) saveAuthorPassLevel(newLevel);
   if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newXP);
@@ -3527,7 +3601,7 @@ function renderAuthorCircles() {
   const pctInLevel = xpInLevel / XP_PER_LEVEL;
 
   let html = '';
-  for (let i = 0; i <= 90; i++) {
+  for (let i = 0; i <= 150; i++) {
     const filled = i < level;
     const current = i === level;
     const isMilestone = i > 0 && i % 5 === 0;
@@ -3613,7 +3687,7 @@ function updateAuthorPassUI() {
   const awq1 = document.getElementById('awq1bar');
   const awq1name = document.getElementById('awq1name');
   const awq1meta = document.getElementById('awq1meta');
-  if (awq1name) awq1name.textContent = `Выполни: ${qow.emoji || '🎯'} ${qow.name || 'Квест недели'}`;
+  if (awq1name) awq1name.textContent = `Выполни: ${qow.emoji || '🎯'} ${qow.name || 'Квест недели'}${qow.passName ? ' (' + qow.passName + ')' : ''}`;
   if (awq1) awq1.style.width = Math.round((qow.done / qow.target) * 100) + '%';
   if (awq1meta) awq1meta.textContent = `${qow.done} / ${qow.target} раза · +1000 XP`;
   const awq1card = awq1?.closest('.author-quest-card');
