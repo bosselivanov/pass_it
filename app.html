@@ -718,6 +718,7 @@ body {
     <div class="header-title" id="headerTitle">Your Daily Pass</div>
   </div>
   <button class="header-btn" onclick="toggleAuthorScreen()" data-tooltip="Авторский пасс" id="authorPassBtn">🏆</button>
+  <button class="header-btn" id="shopBtn" onclick="openShop()" data-tooltip="Обменять коины" style="display:none;">🛒</button>
   <div class="header-btn-wrap" id="headerDebtWrap">
     <button class="header-btn" onclick="openDebts()" data-tooltip="Долговая книга" id="debtBtn">📋</button>
     <div class="debt-badge" id="debtBadge"></div>
@@ -828,11 +829,20 @@ body {
 
     <!-- MAIN LAYOUT -->
     <div class="main-layout">
-      <!-- LEFT: место под будущее -->
-      <div class="flangs-section" style="display:flex;align-items:center;justify-content:center;opacity:0.25;">
-        <div style="text-align:center;color:#C07800;">
-          <div style="font-size:32px;margin-bottom:8px;">🔮</div>
-          <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Скоро</div>
+      <!-- LEFT: магазин (скоро) -->
+      <div class="flangs-section" style="display:flex;flex-direction:column;overflow:hidden;">
+        <!-- место под картинку сезона -->
+        <div id="shopSeasonImage" style="flex-shrink:0;height:120px;background:linear-gradient(135deg,rgba(232,150,10,0.15),rgba(245,200,66,0.1));border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;border:1px dashed rgba(180,120,0,0.2);">
+          <div style="text-align:center;opacity:0.4;">
+            <div style="font-size:28px;">🖼️</div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B5E00;margin-top:4px;">Арт сезона</div>
+          </div>
+        </div>
+        <!-- магазин -->
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:12px;">
+          <div style="font-size:28px;margin-bottom:8px;">🛒</div>
+          <div style="font-size:12px;font-weight:800;color:#6B4400;margin-bottom:4px;">Магазин</div>
+          <div style="font-size:10px;color:#9B6E10;line-height:1.5;">Скоро здесь будет магазин,<br>но покупать пока нечего 🙃</div>
         </div>
       </div>
 
@@ -1220,71 +1230,26 @@ body {
             </div>
             <div class="cos-footer"><div class="cos-name">HUNTRIX / H</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#A78BFA;"></div></div></div>
           </div>
-          <div class="cos-card locked" data-pieces="8" data-collected="0">
-            <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#f5e6ff 40%,#e94560 100%);"></div>
-              <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
-              <div class="cos-preview-btn">Предпросмотр</div>
-            </div>
-            <div class="cos-footer"><div class="cos-name">Ночной город</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#e94560;"></div></div></div>
-          </div>
         </div>
       </div>
 
-      <!-- RIGHT: ИЗОБРАЖЕНИЯ НА ФОНЕ -->
+      <!-- RIGHT: СЕЗОННЫЕ -->
       <div class="cos-col">
-        <div class="cos-col-title">Изображения на фоне</div>
+        <div class="cos-col-title">Сезонные</div>
 
-        <div class="rarity-badge rarity-common">Обычный</div>
+        <div class="rarity-badge rarity-common" style="background:rgba(232,150,10,0.12);color:#8B5E00;border-color:rgba(180,120,0,0.3);">Сезон 1</div>
         <div class="cos-grid">
-          <div class="cos-card locked" data-pieces="4" data-collected="0">
-            <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#e8f5e9 40%,#66bb6a 100%);"></div>
-              <div class="cos-pieces" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);"></div>
+          <div class="cos-card locked" style="opacity:0.4;">
+            <div class="cos-preview" style="background:linear-gradient(160deg,#FDF5E0 40%,#E8960A 100%);">
+              <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cos-footer"><div class="cos-name">Весенний луг</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#66bb6a;"></div></div></div>
-          </div>
-          <div class="cos-card locked" data-pieces="4" data-collected="0">
-            <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#fff3e0 40%,#ffa726 100%);"></div>
-              <div class="cos-pieces" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);"></div>
-              <div class="cos-preview-btn">Предпросмотр</div>
-            </div>
-            <div class="cos-footer"><div class="cos-name">Закат</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#ffa726;"></div></div></div>
+            <div class="cos-footer"><div class="cos-name">Скоро...</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#E8960A;"></div></div></div>
           </div>
         </div>
 
-        <div class="rarity-badge rarity-rare">Редкий</div>
-        <div class="cos-grid">
-          <div class="cos-card locked" data-pieces="6" data-collected="0">
-            <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#e3f0fb 40%,#1b6ca8 100%);"></div>
-              <div class="cos-pieces" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);"></div>
-              <div class="cos-preview-btn">Предпросмотр</div>
-            </div>
-            <div class="cos-footer"><div class="cos-name">Глубокий океан</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#1b6ca8;"></div></div></div>
-          </div>
-          <div class="cos-card locked" data-pieces="6" data-collected="0">
-            <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#ede0ff 40%,#8e24aa 100%);"></div>
-              <div class="cos-pieces" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);"></div>
-              <div class="cos-preview-btn">Предпросмотр</div>
-            </div>
-            <div class="cos-footer"><div class="cos-name">Галактика</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#8e24aa;"></div></div></div>
-          </div>
-        </div>
-
-        <div class="rarity-badge rarity-legendary">Легендарный</div>
-        <div class="cos-grid">
-          <div class="cos-card locked" data-pieces="14" data-collected="0">
-            <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#ede0ff 40%,#7b2ff7 100%);"></div>
-              <div class="cos-pieces" style="grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(2,1fr);"></div>
-              <div class="cos-preview-btn">Предпросмотр</div>
-            </div>
-            <div class="cos-footer"><div class="cos-name">Стадион HUNTRIX</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#7b2ff7;"></div></div></div>
-          </div>
+        <div style="margin-top:16px;padding:12px;background:rgba(180,120,0,0.06);border-radius:10px;border:1px dashed rgba(180,120,0,0.2);">
+          <div style="font-size:10px;font-weight:700;color:#9B6E10;line-height:1.6;">Сезонные темы выходят с каждым новым сезоном авторского пасса. Фармить их можно только пока сезон активен.</div>
         </div>
       </div>
 
@@ -2828,6 +2793,10 @@ function mqDrop(e, i) {
   renderMega();
 }
 
+function openShop() {
+  showToast('🛒 Магазин скоро откроется!');
+}
+
 // ====== COMPLETED MEGAQUESTS BOOK ======
 function getCompletedMegas() { return load('passit_completed_megas', []); }
 function saveCompletedMegas(arr) {
@@ -3432,6 +3401,7 @@ function toggleAuthorScreen() {
     themeBtn.style.display = 'none';
     cosmeticsBtn.style.display = 'none';
     document.getElementById('streakWidget').style.display = 'flex';
+    document.getElementById('shopBtn').style.display = '';
     updateAuthorPassUI();
   } else {
     icon.textContent = '▲';
@@ -3441,6 +3411,7 @@ function toggleAuthorScreen() {
     themeBtn.style.display = '';
     cosmeticsBtn.style.display = '';
     document.getElementById('streakWidget').style.display = 'none';
+    document.getElementById('shopBtn').style.display = 'none';
   }
 }
 
@@ -3718,13 +3689,13 @@ function renderAuthorCircles() {
 
     if (i < 90) {
       const lineColor = filled ? '#E8960A' : 'rgba(180,120,0,0.15)';
-      html += `<div style="width:10px;height:4px;background:${lineColor};flex-shrink:0;"></div>`;
+      html += `<div style="width:28px;height:4px;background:${lineColor};border-radius:2px;flex-shrink:0;transition:background 0.3s;"></div>`;
     }
   }
   row.innerHTML = html;
 
-  const circleWidth = 40 + 10;
-  const scrollTo = Math.max(0, level * circleWidth - 100);
+  const circleWidth = 40 + 28;
+  const scrollTo = Math.max(0, level * circleWidth - 150);
   row.parentElement.scrollLeft = scrollTo;
 }
 function updateAuthorPassUI() {
