@@ -4358,14 +4358,22 @@ firebase.auth().onAuthStateChanged(function(user) {
 
       var localHasData = passes.some(p => (p.quests||[]).length > 0 || (p.megaQuests||[]).length > 0);
       var cloudHasData = cloudPasses && cloudPasses.some(p => (p.quests||[]).filter(q=>q).length > 0 || (p.megaQuests||[]).length > 0);
+      var isReturningUser = !!load('lastAutoReset', null) || !!load('lastNewDay', null);
 
       if (localHasData && !cloudHasData) {
-        cloudSave(); render(); showToast('☁️ Локальные данные сохранены в облако!');
+        cloudSave(); render(); showToast('☁️ Данные сохранены в облако!');
       } else if (localHasData && cloudHasData) {
-        showMergeModal(passes, cloudPasses, cloudCurId);
+        if (isReturningUser) {
+          // возвращающийся пользователь — тихо берём облако
+          initPasses({ passes: cloudPasses, currentPassId: cloudCurId });
+          render();
+        } else {
+          // новый пользователь с локальными данными — показываем выбор
+          showMergeModal(passes, cloudPasses, cloudCurId);
+        }
       } else if (!localHasData && cloudHasData) {
         initPasses({ passes: cloudPasses, currentPassId: cloudCurId });
-        render(); showToast('☁️ Загружено из облака!');
+        render();
       } else {
         render();
       }
