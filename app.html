@@ -89,6 +89,12 @@ body {
 .streak-day-dot.frozen { background: rgba(100,160,240,0.2); border-color: rgba(80,120,200,0.4); color: #4070c0; }
 .streak-hint { font-size: 10px; color: #8B5E00; }
 .streak-freeze-info { font-size: 10px; color: #9B6E10; font-weight: 600; }
+.pv-quest-card { background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 8px; font-size: 18px; display: flex; flex-direction: column; gap: 4px; transition: box-shadow 0.3s, border-color 0.3s; }
+.pv-quest-name { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.8); }
+.pv-quest-bar { height: 3px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; margin-top: 2px; }
+.pv-quest-fill { height: 100%; border-radius: 3px; background: rgba(255,255,255,0.5); transition: width 0.3s; } border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.cos-filter-tag:hover { border-color: var(--accent); color: var(--text); }
+.cos-filter-tag.active { background: var(--accent); border-color: var(--accent); color: white; }
 .header.author-mode {
   background: linear-gradient(135deg, #FDF5E0, #F5EAC0);
   border-bottom-color: rgba(160,110,0,0.2);
@@ -593,10 +599,12 @@ body {
 .cos-preview { height: 75px; position: relative; overflow: hidden; }
 .cos-light { position: absolute; inset: 0; clip-path: polygon(0% 0%, 100% 0%, 0% 100%); }
 .cos-dark  { position: absolute; inset: 0; clip-path: polygon(100% 0%, 100% 100%, 0% 100%); }
-.cos-pieces { position: absolute; inset: 0; display: grid; gap: 3px; padding: 7px; }
-.cos-piece { border-radius: 3px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); }
-.cos-piece.got { background: rgba(255,255,255,0.4); border-color: rgba(255,255,255,0.6); }
-.cos-preview-btn { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; padding: 2px 6px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.85); cursor: not-allowed; }
+.cos-pieces { position: absolute; inset: 0; display: grid; gap: 2px; padding: 5px; background: rgba(0,0,0,0.55); border-radius: 4px; }
+.cos-piece { border-radius: 2px; background: rgba(0,0,0,0.6); border: 1.5px solid rgba(255,255,255,0.08); }
+.cos-piece.got { background: transparent; border-color: rgba(255,255,255,0.5); box-shadow: inset 0 0 6px rgba(255,255,255,0.15); }
+.cos-preview-btn { position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; padding: 2px 6px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.85); cursor: not-allowed; z-index: 3; pointer-events: all; }
+.cos-preview-btn.clickable { cursor: pointer; }
+.cos-preview-btn.clickable:hover { background: rgba(0,0,0,0.75); }
 .cos-footer { padding: 6px 8px; background: var(--card-bg); }
 .cos-name { font-size: 11px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cos-bar { height: 3px; background: var(--bar-bg); border-radius: 3px; margin-top: 4px; overflow: hidden; }
@@ -719,6 +727,7 @@ body {
   </div>
   <button class="header-btn" onclick="toggleAuthorScreen()" data-tooltip="Авторский пасс" id="authorPassBtn">🏆</button>
   <button class="header-btn" id="shopBtn" onclick="openShop()" data-tooltip="Обменять коины" style="display:none;">🛒</button>
+  <button class="header-btn" id="achievementsBtn" onclick="openAchievements()" data-tooltip="Достижения">🎖️</button>
   <div class="header-btn-wrap" id="headerDebtWrap">
     <button class="header-btn" onclick="openDebts()" data-tooltip="Долговая книга" id="debtBtn">📋</button>
     <div class="debt-badge" id="debtBadge"></div>
@@ -852,16 +861,13 @@ body {
           <div class="section-header" style="color:#8B5E00;">⚡ Задания</div>
         </div>
         <div class="quests-scroll-wrap">
-          <div class="quests-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="quests-grid" style="grid-template-columns:repeat(2,1fr);gap:10px;">
             <div class="author-quest-card" id="adq0"><div class="author-quest-name" id="adq0name">Выполни квесты</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq0meta">0 / ? · +200 XP</div></div>
             <div class="author-quest-card" id="adq1"><div class="author-quest-name" id="adq1name">Выполни больше</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq1meta">0 / ? · +200 XP</div></div>
             <div class="author-quest-card" id="adq2"><div class="author-quest-name" id="adq2name">Выполни все</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq2bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq2meta">0 / ? · +200 XP</div></div>
-            <div class="author-quest-card"><div class="author-quest-name" id="awq0name">XP за неделю</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq0meta">0 / ? XP · +3 ур.</div></div>
-            <div class="author-quest-card"><div class="author-quest-name" id="awq1name">Квест недели</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq1meta">0 / 3 раза · +2 ур.</div></div>
-            <div class="author-quest-card"><div class="author-quest-name" id="awq2name">🔥 Стрик</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq2bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq2meta">0 / 3 дней · +2 ур.</div></div>
-            <div class="author-quest-card" style="opacity:0.2;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="font-size:14px;">🔒</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B6E10;">Скоро</div></div>
-            <div class="author-quest-card" style="opacity:0.2;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="font-size:14px;">🔒</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B6E10;">Скоро</div></div>
-            <div class="author-quest-card" style="opacity:0.2;display:flex;align-items:center;justify-content:center;gap:8px;"><div style="font-size:14px;">🔒</div><div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B6E10;">Скоро</div></div>
+            <div class="author-quest-card"><div class="author-quest-name" id="awq0name">XP за неделю</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq0meta">0 / ? XP · +1500 XP</div></div>
+            <div class="author-quest-card"><div class="author-quest-name" id="awq1name">Квест недели</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq1meta">0 / 3 раза · +1000 XP</div></div>
+            <div class="author-quest-card"><div class="author-quest-name" id="awq2name">🔥 Продли стрик</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq2bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq2meta">0 / 4 дней · +1000 XP</div></div>
           </div>
         </div>
       </div>
@@ -1189,6 +1195,19 @@ body {
     </div>
     <div id="cosmeticCodeMsg" style="font-size:11px;font-weight:700;min-height:14px;text-align:right;margin-top:-6px;"></div>
 
+    <!-- ФИЛЬТР -->
+    <div style="flex-shrink:0;">
+      <button onclick="toggleCosFilter()" id="cosFilterBtn" style="display:flex;align-items:center;gap:6px;background:var(--bar-bg);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span>🔍 Фильтр</span><span id="cosFilterArrow">▾</span>
+      </button>
+      <div id="cosFilterPanel" style="display:none;margin-top:8px;display:none;flex-wrap:wrap;gap:6px;">
+        <button class="cos-filter-tag active" data-filter="all" onclick="setCosFilter(this,'all')">Все</button>
+        <button class="cos-filter-tag" data-filter="owned" onclick="setCosFilter(this,'owned')">Мои</button>
+        <button class="cos-filter-tag" data-filter="basic" onclick="setCosFilter(this,'basic')">Базовые</button>
+        <button class="cos-filter-tag" data-filter="seasonal" onclick="setCosFilter(this,'seasonal')">Сезонные</button>
+      </div>
+    </div>
+
     <!-- TWO COLUMNS -->
     <div class="cos-cols">
 
@@ -1235,24 +1254,109 @@ body {
 
       <!-- RIGHT: СЕЗОННЫЕ -->
       <div class="cos-col">
-        <div class="cos-col-title">Сезонные</div>
+        <div class="cos-col-title">Сезон 1 · KPDH</div>
 
-        <div class="rarity-badge rarity-common" style="background:rgba(232,150,10,0.12);color:#8B5E00;border-color:rgba(180,120,0,0.3);">Сезон 1</div>
+        <div class="rarity-badge rarity-common" style="background:rgba(50,200,80,0.12);color:#1a8a30;border-color:rgba(50,200,80,0.3);">Обычный</div>
         <div class="cos-grid">
-          <div class="cos-card locked" style="opacity:0.4;">
-            <div class="cos-preview" style="background:linear-gradient(160deg,#FDF5E0 40%,#E8960A 100%);">
-              <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
+          <div class="cos-card locked" data-theme="mira" data-pieces="4" data-collected="0" data-season="1" data-rarity="common">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#e8f5ff 40%,#4aa8e0 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cos-footer"><div class="cos-name">Скоро...</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#E8960A;"></div></div></div>
+            <div class="cos-footer">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="cos-name">Мира</div>
+                <div style="font-size:9px;color:var(--text2);">0/22 🧩</div>
+              </div>
+              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#4aa8e0;"></div></div>
+            </div>
           </div>
         </div>
 
-        <div style="margin-top:16px;padding:12px;background:rgba(180,120,0,0.06);border-radius:10px;border:1px dashed rgba(180,120,0,0.2);">
-          <div style="font-size:10px;font-weight:700;color:#9B6E10;line-height:1.6;">Сезонные темы выходят с каждым новым сезоном авторского пасса. Фармить их можно только пока сезон активен.</div>
+        <div class="rarity-badge rarity-rare" style="margin-top:8px;">Редкий</div>
+        <div class="cos-grid">
+          <div class="cos-card locked" data-theme="zoi" data-pieces="6" data-collected="0" data-season="1" data-rarity="rare">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#f0e8ff 40%,#9b5de5 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
+            </div>
+            <div class="cos-footer">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="cos-name">Зои</div>
+                <div style="font-size:9px;color:var(--text2);">0/30 🧩</div>
+              </div>
+              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#9b5de5;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rarity-badge rarity-legendary" style="margin-top:8px;">Легендарный</div>
+        <div class="cos-grid">
+          <div class="cos-card locked" data-theme="rumi" data-pieces="8" data-collected="0" data-season="1" data-rarity="legendary">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#fff3e0 40%,#E8960A 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
+            </div>
+            <div class="cos-footer">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div class="cos-name">Руми ✦</div>
+                <div style="font-size:9px;color:var(--text2);">0/44 🧩</div>
+              </div>
+              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#E8960A;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;padding:10px 12px;background:rgba(180,120,0,0.06);border-radius:10px;border:1px dashed rgba(180,120,0,0.2);">
+          <div style="font-size:10px;font-weight:700;color:#9B6E10;line-height:1.6;">Каждая тема открывается поэтапно: цвет → градиент → рамки → эффект+статус. Фармить только пока сезон активен.</div>
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS POPUP -->
+<div class="popup-overlay" id="achievementsOverlay" onmousedown="if(event.target===this)closePopup('achievementsOverlay')">
+  <div class="popup" onmousedown="event.stopPropagation()" style="width:520px;max-height:75vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="popup-title">🎖️ Достижения</div>
+      <button class="popup-btn secondary" onclick="closePopup('achievementsOverlay')" style="flex:0;padding:6px 12px;font-size:12px;">✕</button>
+    </div>
+    <div id="achievementsList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- THEME PREVIEW POPUP -->
+<div class="popup-overlay" id="themePreviewOverlay" onmousedown="if(event.target===this)closePopup('themePreviewOverlay')" style="z-index:350;">
+  <div class="popup" onmousedown="event.stopPropagation()" style="width:520px;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="popup-title" id="themePreviewTitle">Предпросмотр</div>
+      <button class="popup-btn secondary" onclick="closePopup('themePreviewOverlay')" style="flex:0;padding:6px 12px;font-size:12px;">✕</button>
+    </div>
+
+  <!-- TOGGLES -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;" id="themePreviewToggles"></div>
+    <button id="pvDarkToggle" onclick="togglePvDark()" style="background:var(--bar-bg);border:1.5px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;flex-shrink:0;">🌙 Тёмная</button>
+  </div>
+
+    <!-- PREVIEW AREA -->
+    <div id="themePreviewArea" style="margin-top:16px;border-radius:16px;overflow:hidden;position:relative;padding:16px;min-height:200px;">
+      <!-- Pass bar mockup -->
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;opacity:0.6;margin-bottom:8px;" id="pvPassTitle">MY PASS</div>
+      <div style="height:4px;border-radius:4px;background:rgba(255,255,255,0.15);margin-bottom:16px;overflow:hidden;">
+        <div id="pvPassBar" style="height:100%;width:60%;border-radius:4px;background:var(--accent);transition:width 0.5s;"></div>
+      </div>
+      <!-- Quest cards mockup -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="pvQuestGrid">
+        <div class="pv-quest-card">📖<div class="pv-quest-name">Читать</div><div class="pv-quest-bar"><div class="pv-quest-fill" style="width:80%"></div></div></div>
+        <div class="pv-quest-card">🏃<div class="pv-quest-name">Бег</div><div class="pv-quest-bar"><div class="pv-quest-fill" style="width:100%"></div></div></div>
+        <div class="pv-quest-card">💻<div class="pv-quest-name">Код</div><div class="pv-quest-bar"><div class="pv-quest-fill" style="width:40%"></div></div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -2290,7 +2394,7 @@ function renderMqFocus(i) {
         <button class="mega-tasks-toggle" onclick="toggleTasksPanel(${i})">📋 Задачи <span id="task-count-${i}">(${tasks.length})</span> ▾</button>
         <button class="mega-task-clear-btn" onclick="clearTasks(${i})">Очистить</button>
       </div>
-      <div class="mega-tasks-panel" id="tasks-panel-${i}">
+      <div class="mega-tasks-panel open" id="tasks-panel-${i}">
         ${taskItems}
         <div class="mega-task-add">
           <input class="mega-task-input" id="task-input-${i}" placeholder="Новая задача..." maxlength="50" onkeydown="if(event.key==='Enter') addTask(${i})">
@@ -2793,8 +2897,264 @@ function mqDrop(e, i) {
   renderMega();
 }
 
+// ====== THEME PREVIEW ======
+const THEME_PREVIEW_DATA = {
+  huntrxh: {
+    name: 'HUNTRIX / H',
+    steps: ['color', 'gradient', 'border'],
+    stepLabels: ['Цвет', 'Градиент', 'Рамки'],
+    dark: {
+      bg: '#0e0b1f',
+      accent: '#A78BFA',
+      text: '#EDE9FF',
+      cardBg: 'rgba(45,40,100,0.4)',
+      borderColor: 'rgba(167,139,250,0.2)',
+      mesh: 'radial-gradient(ellipse at 20% 50%, rgba(123,47,247,0.3) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.2) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(167,139,250,0.2) 0%, transparent 50%)',
+      glowBorder: 'rgba(167,139,250,0.6)',
+      glowShadow: '0 4px 20px rgba(167,139,250,0.3), 0 0 0 1px rgba(167,139,250,0.3)',
+    },
+    light: {
+      bg: '#F0EEFF',
+      accent: '#7B6FD4',
+      text: '#1a1540',
+      cardBg: 'rgba(255,255,255,0.75)',
+      borderColor: 'rgba(123,111,212,0.2)',
+      mesh: 'radial-gradient(ellipse at 20% 50%, rgba(123,111,212,0.15) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.12) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(167,139,250,0.15) 0%, transparent 50%)',
+      glowBorder: 'rgba(123,111,212,0.5)',
+      glowShadow: '0 4px 20px rgba(123,111,212,0.2), 0 0 0 1px rgba(123,111,212,0.25)',
+    }
+  }
+};
+
+let pvActiveSteps = {};
+
+function openThemePreview(themeId) {
+  const data = THEME_PREVIEW_DATA[themeId];
+  if (!data) { showToast('Предпросмотр скоро будет доступен!'); return; }
+
+  pvActiveSteps = {};
+  data.steps.forEach(s => pvActiveSteps[s] = true);
+
+  pvIsDark = true;
+  document.getElementById('pvDarkToggle').textContent = '🌙 Тёмная';
+  const titleEl = document.getElementById('themePreviewTitle');
+  titleEl.textContent = `Предпросмотр · ${data.name}`;
+  titleEl.dataset.themeId = themeId;
+  renderThemePreviewToggles(themeId);
+  applyThemePreview(themeId);
+  document.getElementById('themePreviewOverlay').classList.add('open');
+}
+
+function renderThemePreviewToggles(themeId) {
+  const data = THEME_PREVIEW_DATA[themeId];
+  const container = document.getElementById('themePreviewToggles');
+  container.innerHTML = data.steps.map((s, i) => `
+    <div class="repeat-tab ${pvActiveSteps[s] ? 'active' : ''}"
+      onclick="togglePvStep('${themeId}','${s}',this)"
+      style="cursor:pointer;user-select:none;">
+      ${data.stepLabels[i]}
+    </div>`).join('');
+}
+
+let pvIsDark = true;
+
+function togglePvDark() {
+  pvIsDark = !pvIsDark;
+  const btn = document.getElementById('pvDarkToggle');
+  btn.textContent = pvIsDark ? '🌙 Тёмная' : '☀️ Светлая';
+  const themeId = document.getElementById('themePreviewTitle').dataset.themeId;
+  if (themeId) applyThemePreview(themeId);
+}
+
+function togglePvStep(themeId, step, el) {
+  pvActiveSteps[step] = !pvActiveSteps[step];
+  el.classList.toggle('active', pvActiveSteps[step]);
+  applyThemePreview(themeId);
+}
+
+function applyThemePreview(themeId) {
+  const data = THEME_PREVIEW_DATA[themeId];
+  const area = document.getElementById('themePreviewArea');
+  const cards = area.querySelectorAll('.pv-quest-card');
+  const bar = document.getElementById('pvPassBar');
+  const title = document.getElementById('pvPassTitle');
+
+  const palette = pvIsDark ? data.dark : data.light;
+
+  // step 1: color
+  if (pvActiveSteps['color']) {
+    area.style.background = palette.bg;
+    area.style.backgroundImage = '';
+    title.style.color = palette.text;
+    bar.style.background = palette.accent;
+    cards.forEach(c => {
+      c.style.background = palette.cardBg;
+      c.style.borderColor = palette.borderColor;
+      c.style.boxShadow = '';
+      c.querySelectorAll('.pv-quest-name').forEach(n => n.style.color = palette.text);
+      c.querySelectorAll('.pv-quest-fill').forEach(f => f.style.background = palette.accent);
+    });
+  } else {
+    area.style.background = 'var(--surface)';
+    area.style.backgroundImage = '';
+    title.style.color = 'var(--text)';
+    bar.style.background = 'var(--accent)';
+    cards.forEach(c => {
+      c.style.background = 'var(--card-bg)';
+      c.style.borderColor = 'var(--border)';
+      c.style.boxShadow = '';
+      c.querySelectorAll('.pv-quest-name').forEach(n => n.style.color = 'var(--text)');
+      c.querySelectorAll('.pv-quest-fill').forEach(f => f.style.background = 'var(--accent)');
+    });
+  }
+
+  // step 2: gradient mesh
+  if (pvActiveSteps['gradient'] && pvActiveSteps['color']) {
+    area.style.backgroundImage = palette.mesh;
+  }
+
+  // step 3: border glow
+  cards.forEach(c => {
+    if (pvActiveSteps['border'] && pvActiveSteps['color']) {
+      c.style.borderColor = palette.glowBorder;
+      c.style.boxShadow = palette.glowShadow;
+    } else if (pvActiveSteps['color']) {
+      c.style.borderColor = palette.borderColor;
+      c.style.boxShadow = '';
+    }
+  });
+}
+
+// ====== SEASONAL THEMES SYSTEM ======
+const SEASONAL_THEMES = {
+  mira: {
+    name: 'Мира', season: 1, rarity: 'common',
+    accentLight: '#4aa8e0', accentDark: '#1a6fa0',
+    steps: [4, 5, 6, 7], // кусочков на каждый шаг
+    stepNames: ['Цвет', 'Градиент', 'Рамки', 'Статус'],
+    totalPieces: 22
+  },
+  zoi: {
+    name: 'Зои', season: 1, rarity: 'rare',
+    accentLight: '#9b5de5', accentDark: '#5a1fa0',
+    steps: [6, 7, 8, 9],
+    stepNames: ['Цвет', 'Градиент', 'Рамки', 'Статус'],
+    totalPieces: 30
+  },
+  rumi: {
+    name: 'Руми', season: 1, rarity: 'legendary',
+    accentLight: '#E8960A', accentDark: '#8B5E00',
+    steps: [8, 10, 12, 14],
+    stepNames: ['Цвет', 'Градиент', 'Рамки', 'Эффект + Статус'],
+    totalPieces: 44
+  }
+};
+
+function getThemePieces(themeId) {
+  return load(`passit_theme_pieces_${themeId}`, 0);
+}
+
+function addThemePieces(themeId, count) {
+  const current = getThemePieces(themeId);
+  const newVal = current + count;
+  save(`passit_theme_pieces_${themeId}`, newVal);
+  if (currentUser) fbdb.ref(`passit_users/${currentUser.uid}/themePieces/${themeId}`).set(newVal);
+  return newVal;
+}
+
+function getThemeStep(themeId) {
+  // возвращает текущий разблокированный шаг (0 = ничего, 1-4 = шаги)
+  const theme = SEASONAL_THEMES[themeId];
+  if (!theme) return 0;
+  const pieces = getThemePieces(themeId);
+  let total = 0;
+  for (let i = 0; i < theme.steps.length; i++) {
+    total += theme.steps[i];
+    if (pieces < total) return i; // шаг i ещё не разблокирован
+  }
+  return theme.steps.length; // все шаги разблокированы
+}
+
+function getThemeStepProgress(themeId) {
+  // прогресс к следующему шагу
+  const theme = SEASONAL_THEMES[themeId];
+  if (!theme) return { current: 0, needed: 1, step: 0 };
+  const pieces = getThemePieces(themeId);
+  const step = getThemeStep(themeId);
+  if (step >= theme.steps.length) return { current: pieces, needed: pieces, step };
+  let totalBefore = theme.steps.slice(0, step).reduce((a,b) => a+b, 0);
+  return {
+    current: pieces - totalBefore,
+    needed: theme.steps[step],
+    step,
+    stepName: theme.stepNames[step]
+  };
+}
+
+// ====== ACHIEVEMENTS ======
+const ACHIEVEMENTS = [
+  { id: 'first_quest', emoji: '⚡', name: 'Первый квест', desc: 'Выполни любой квест', reward: '🎁 Бокс', check: () => {
+    return passes.some(p => (p.quests||[]).some(q => q && (q.current||0) >= q.max));
+  }},
+  { id: 'first_mega', emoji: '🏆', name: 'Мегастарт', desc: 'Заверши первый мегаквест', reward: '🎁 Бокс', check: () => {
+    return getCompletedMegas().length >= 1;
+  }},
+  { id: 'streak_3', emoji: '🔥', name: 'Огонёк', desc: 'Продли стрик 3 дня подряд', reward: '💰 100 монет', check: () => {
+    return getStreakCount() >= 3;
+  }},
+  { id: 'streak_7', emoji: '🌟', name: 'Неделя силы', desc: 'Продли стрик 7 дней подряд', reward: '🎁 Редкий бокс', check: () => {
+    return getStreakCount() >= 7;
+  }},
+  { id: 'all_quests', emoji: '💯', name: 'Идеальный день', desc: 'Выполни все квесты за один день', reward: '💰 200 монет', check: () => {
+    const allQ = passes.flatMap(p=>(p.quests||[]).filter(q=>q&&!q.frozen&&isQuestActiveToday(q)));
+    return allQ.length > 0 && allQ.every(q=>(q.current||0)>=q.max);
+  }},
+  { id: 'full_pass', emoji: '🎯', name: 'Заполни пасс', desc: 'Создай 9 квестов в одном пассе', reward: '💰 150 монет', check: () => {
+    return passes.some(p=>(p.quests||[]).filter(q=>q).length>=9);
+  }},
+];
+
+function getUnlockedAchievements() { return load('passit_achievements', []); }
+function saveUnlockedAchievements(arr) { save('passit_achievements', arr); }
+
+function checkAchievements() {
+  const unlocked = getUnlockedAchievements();
+  ACHIEVEMENTS.forEach(a => {
+    if (unlocked.includes(a.id)) return;
+    if (a.check()) {
+      unlocked.push(a.id);
+      saveUnlockedAchievements(unlocked);
+      showToast(`🎖️ Достижение: ${a.name}!`);
+    }
+  });
+}
+
+function openAchievements() {
+  checkAchievements();
+  const unlocked = getUnlockedAchievements();
+  const list = document.getElementById('achievementsList');
+  list.innerHTML = ACHIEVEMENTS.map(a => {
+    const done = unlocked.includes(a.id);
+    return `<div style="background:var(--card-bg);border:1.5px solid ${done ? 'var(--accent)' : 'var(--border)'};border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;opacity:${done?'1':'0.6'};">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:22px;">${a.emoji}</span>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--text);">${a.name}</div>
+          <div style="font-size:10px;color:var(--text2);">${a.desc}</div>
+        </div>
+        ${done ? '<span style="margin-left:auto;font-size:16px;">✓</span>' : ''}
+      </div>
+      <div style="font-size:10px;font-weight:700;color:var(--accent);">Награда: ${a.reward}</div>
+      <div style="height:3px;background:var(--bar-bg);border-radius:3px;overflow:hidden;"><div style="height:100%;background:var(--accent);width:${done?'100':'0'}%;border-radius:3px;"></div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('achievementsOverlay').classList.add('open');
+}
+
 function openShop() {
-  showToast('🛒 Магазин скоро откроется!');
+  const coins = load('passit_coins', 0);
+  const boxPieces = load('passit_box_pieces', 0);
+  showToast(`🛒 Скоро! Монет: ${coins} · Кусочков боксов: ${boxPieces}`);
 }
 
 // ====== COMPLETED MEGAQUESTS BOOK ======
@@ -3190,6 +3550,49 @@ function renderPiecesGrids() {
   });
 }
 
+let cosFilterOpen = false;
+let cosFilterActive = 'all';
+
+function toggleCosFilter() {
+  cosFilterOpen = !cosFilterOpen;
+  const panel = document.getElementById('cosFilterPanel');
+  const arrow = document.getElementById('cosFilterArrow');
+  panel.style.display = cosFilterOpen ? 'flex' : 'none';
+  arrow.textContent = cosFilterOpen ? '▴' : '▾';
+}
+
+function setCosFilter(el, filter) {
+  cosFilterActive = filter;
+  document.querySelectorAll('.cos-filter-tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  applyCosFilter();
+}
+
+function applyCosFilter() {
+  const cols = document.querySelector('.cos-cols');
+  if (!cols) return;
+  const leftCol = cols.children[0];  // базовые
+  const rightCol = cols.children[1]; // сезонные
+
+  if (cosFilterActive === 'all') {
+    leftCol.style.display = ''; rightCol.style.display = '';
+  } else if (cosFilterActive === 'basic') {
+    leftCol.style.display = ''; rightCol.style.display = 'none';
+  } else if (cosFilterActive === 'seasonal') {
+    leftCol.style.display = 'none'; rightCol.style.display = '';
+  } else if (cosFilterActive === 'owned') {
+    // показываем только разблокированные карточки
+    leftCol.style.display = ''; rightCol.style.display = '';
+    document.querySelectorAll('.cos-card').forEach(card => {
+      const isOwned = !card.classList.contains('locked');
+      card.style.display = isOwned ? '' : 'none';
+    });
+    return;
+  }
+  // сброс видимости карточек
+  document.querySelectorAll('.cos-card').forEach(card => card.style.display = '');
+}
+
 function openThemePicker() {
   renderPiecesGrids();
   document.querySelectorAll('.cos-card[data-theme]').forEach(card => {
@@ -3203,10 +3606,27 @@ function openThemePicker() {
         card.setAttribute('onclick', `selectTheme('${themeId}')`);
       }
     }
+    // предпросмотр доступен всегда — и для locked и для разблокированных
+    const prevBtn = card.querySelector('.cos-preview-btn');
+    if (prevBtn && THEME_PREVIEW_DATA[themeId]) {
+      prevBtn.classList.add('clickable');
+      prevBtn.style.pointerEvents = 'all';
+      prevBtn.onclick = (e) => { e.stopPropagation(); openThemePreview(themeId); };
+    }
   });
   updateSwatchSelected();
   document.getElementById('cosmeticCodeInput').value = '';
   document.getElementById('cosmeticCodeMsg').textContent = '';
+  // сбрасываем фильтр
+  cosFilterOpen = false;
+  const fp = document.getElementById('cosFilterPanel');
+  if (fp) fp.style.display = 'none';
+  const fa = document.getElementById('cosFilterArrow');
+  if (fa) fa.textContent = '▾';
+  document.querySelectorAll('.cos-filter-tag').forEach(t => t.classList.toggle('active', t.dataset.filter === 'all'));
+  cosFilterActive = 'all';
+  document.querySelectorAll('.cos-card').forEach(c => c.style.display = '');
+  document.querySelectorAll('.cos-col').forEach(c => c.style.display = '');
   document.getElementById('themePickerOverlay').classList.add('open');
 }
 function closeThemePicker() { document.getElementById('themePickerOverlay').classList.remove('open'); }
@@ -3402,6 +3822,7 @@ function toggleAuthorScreen() {
     cosmeticsBtn.style.display = 'none';
     document.getElementById('streakWidget').style.display = 'flex';
     document.getElementById('shopBtn').style.display = '';
+    document.getElementById('achievementsBtn').style.display = 'none';
     updateAuthorPassUI();
   } else {
     icon.textContent = '▲';
@@ -3412,6 +3833,7 @@ function toggleAuthorScreen() {
     cosmeticsBtn.style.display = '';
     document.getElementById('streakWidget').style.display = 'none';
     document.getElementById('shopBtn').style.display = 'none';
+    document.getElementById('achievementsBtn').style.display = '';
   }
 }
 
@@ -3592,6 +4014,7 @@ function onQuestCompleted(questName) {
     const key = 'passit_qow_done_' + getCurrentWeekStart();
     save(key, Math.min((load(key, 0) + 1), 3));
   }
+  checkAchievements();
   if (authorScreenOpen) updateAuthorPassUI();
 }
 
@@ -3768,9 +4191,9 @@ function updateAuthorPassUI() {
   const awq2 = document.getElementById('awq2bar');
   const awq2name = document.getElementById('awq2name');
   const awq2meta = document.getElementById('awq2meta');
-  const streakTarget = 3;
+  const streakTarget = 4;
   const streakProgress = Math.min(streakCount, streakTarget);
-  if (awq2name) awq2name.textContent = `🔥 Стрик ${streakCount} дн.`;
+  if (awq2name) awq2name.textContent = `🔥 Продли стрик (${streakCount} дн.)`;
   if (awq2) awq2.style.width = Math.round((streakProgress / streakTarget) * 100) + '%';
   if (awq2meta) awq2meta.textContent = `${streakProgress} / ${streakTarget} дней · +1000 XP`;
   const awq2card = awq2?.closest('.author-quest-card');
