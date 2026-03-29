@@ -1260,7 +1260,7 @@ body {
         <div class="cos-grid">
           <div class="cos-card locked" data-theme="mira" data-pieces="4" data-collected="0" data-season="1" data-rarity="common">
             <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#e8f5ff 40%,#4aa8e0 100%);"></div>
+              <div class="cos-light" style="background:linear-gradient(160deg,#fff0f4 40%,#CF5C86 100%);"></div>
               <div class="cos-pieces" style="grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
@@ -1269,7 +1269,7 @@ body {
                 <div class="cos-name">Мира</div>
                 <div style="font-size:9px;color:var(--text2);">0/22 🧩</div>
               </div>
-              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#4aa8e0;"></div></div>
+              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#CF5C86;"></div></div>
             </div>
           </div>
         </div>
@@ -1278,7 +1278,7 @@ body {
         <div class="cos-grid">
           <div class="cos-card locked" data-theme="zoi" data-pieces="6" data-collected="0" data-season="1" data-rarity="rare">
             <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#f0e8ff 40%,#9b5de5 100%);"></div>
+              <div class="cos-light" style="background:linear-gradient(160deg,#eef2ff 40%,#4566BB 100%);"></div>
               <div class="cos-pieces" style="grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
@@ -1287,7 +1287,7 @@ body {
                 <div class="cos-name">Зои</div>
                 <div style="font-size:9px;color:var(--text2);">0/30 🧩</div>
               </div>
-              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#9b5de5;"></div></div>
+              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#4566BB;"></div></div>
             </div>
           </div>
         </div>
@@ -1296,7 +1296,7 @@ body {
         <div class="cos-grid">
           <div class="cos-card locked" data-theme="rumi" data-pieces="8" data-collected="0" data-season="1" data-rarity="legendary">
             <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#fff3e0 40%,#E8960A 100%);"></div>
+              <div class="cos-light" style="background:linear-gradient(160deg,#f4f2ff 40%,#867DCE 100%);"></div>
               <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
@@ -1305,7 +1305,7 @@ body {
                 <div class="cos-name">Руми ✦</div>
                 <div style="font-size:9px;color:var(--text2);">0/44 🧩</div>
               </div>
-              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#E8960A;"></div></div>
+              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#867DCE;"></div></div>
             </div>
           </div>
         </div>
@@ -2900,29 +2900,24 @@ function mqDrop(e, i) {
 // ====== THEME PREVIEW ======
 const THEME_PREVIEW_DATA = {
   huntrxh: {
-    name: 'HUNTRIX / H',
-    steps: ['color', 'gradient', 'border'],
-    stepLabels: ['Цвет', 'Градиент', 'Рамки'],
-    dark: {
-      bg: '#0e0b1f',
-      accent: '#A78BFA',
-      text: '#EDE9FF',
-      cardBg: 'rgba(45,40,100,0.4)',
-      borderColor: 'rgba(167,139,250,0.2)',
-      mesh: 'radial-gradient(ellipse at 20% 50%, rgba(123,47,247,0.3) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.2) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(167,139,250,0.2) 0%, transparent 50%)',
-      glowBorder: 'rgba(167,139,250,0.6)',
-      glowShadow: '0 4px 20px rgba(167,139,250,0.3), 0 0 0 1px rgba(167,139,250,0.3)',
-    },
-    light: {
-      bg: '#F0EEFF',
-      accent: '#7B6FD4',
-      text: '#1a1540',
-      cardBg: 'rgba(255,255,255,0.75)',
-      borderColor: 'rgba(123,111,212,0.2)',
-      mesh: 'radial-gradient(ellipse at 20% 50%, rgba(123,111,212,0.15) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.12) 0%, transparent 50%), radial-gradient(ellipse at 60% 80%, rgba(167,139,250,0.15) 0%, transparent 50%)',
-      glowBorder: 'rgba(123,111,212,0.5)',
-      glowShadow: '0 4px 20px rgba(123,111,212,0.2), 0 0 0 1px rgba(123,111,212,0.25)',
-    }
+    name: 'HUNTRIX / H', steps: ['color','gradient','border'], stepLabels: ['Цвет','Градиент','Рамки'],
+    dark: { bg:'#0e0b1f', accent:'#A78BFA', text:'#EDE9FF', cardBg:'rgba(45,40,100,0.4)', borderColor:'rgba(167,139,250,0.2)', mesh:'radial-gradient(ellipse at 20% 50%, rgba(123,47,247,0.3) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.2) 0%, transparent 50%)', glowBorder:'rgba(167,139,250,0.6)', glowShadow:'0 4px 20px rgba(167,139,250,0.3), 0 0 0 1px rgba(167,139,250,0.3)' },
+    light: { bg:'#F0EEFF', accent:'#7B6FD4', text:'#1a1540', cardBg:'rgba(255,255,255,0.75)', borderColor:'rgba(123,111,212,0.2)', mesh:'radial-gradient(ellipse at 20% 50%, rgba(123,111,212,0.15) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.12) 0%, transparent 50%)', glowBorder:'rgba(123,111,212,0.5)', glowShadow:'0 4px 20px rgba(123,111,212,0.2), 0 0 0 1px rgba(123,111,212,0.25)' }
+  },
+  zoi: {
+    name: 'Зои', steps: ['color','gradient','border'], stepLabels: ['Цвет','Градиент','Рамки'],
+    dark: { bg:'#080d1a', accent:'#4566BB', text:'#dde8ff', cardBg:'rgba(27,67,108,0.4)', borderColor:'rgba(69,102,187,0.25)', mesh:'radial-gradient(ellipse at 25% 40%, rgba(69,102,187,0.35) 0%, transparent 55%), radial-gradient(ellipse at 75% 70%, rgba(210,125,164,0.25) 0%, transparent 50%)', glowBorder:'rgba(69,102,187,0.65)', glowShadow:'0 4px 20px rgba(69,102,187,0.35), 0 0 0 1px rgba(69,102,187,0.35)' },
+    light: { bg:'#eef2ff', accent:'#4566BB', text:'#0d1a3a', cardBg:'rgba(255,255,255,0.8)', borderColor:'rgba(69,102,187,0.2)', mesh:'radial-gradient(ellipse at 25% 40%, rgba(69,102,187,0.12) 0%, transparent 55%), radial-gradient(ellipse at 75% 70%, rgba(210,125,164,0.1) 0%, transparent 50%)', glowBorder:'rgba(69,102,187,0.45)', glowShadow:'0 4px 18px rgba(69,102,187,0.2), 0 0 0 1px rgba(69,102,187,0.25)' }
+  },
+  mira: {
+    name: 'Мира', steps: ['color','gradient','border'], stepLabels: ['Цвет','Градиент','Рамки'],
+    dark: { bg:'#160810', accent:'#CF5C86', text:'#ffe8ef', cardBg:'rgba(74,28,41,0.45)', borderColor:'rgba(207,92,134,0.25)', mesh:'radial-gradient(ellipse at 30% 50%, rgba(207,92,134,0.32) 0%, transparent 55%), radial-gradient(ellipse at 70% 25%, rgba(244,185,190,0.2) 0%, transparent 50%)', glowBorder:'rgba(207,92,134,0.65)', glowShadow:'0 4px 20px rgba(207,92,134,0.35), 0 0 0 1px rgba(207,92,134,0.35)' },
+    light: { bg:'#fff0f4', accent:'#CF5C86', text:'#3a0a17', cardBg:'rgba(255,255,255,0.8)', borderColor:'rgba(207,92,134,0.2)', mesh:'radial-gradient(ellipse at 30% 50%, rgba(207,92,134,0.1) 0%, transparent 55%), radial-gradient(ellipse at 70% 25%, rgba(244,185,190,0.15) 0%, transparent 50%)', glowBorder:'rgba(207,92,134,0.45)', glowShadow:'0 4px 18px rgba(207,92,134,0.2), 0 0 0 1px rgba(207,92,134,0.25)' }
+  },
+  rumi: {
+    name: 'Руми ✦', steps: ['color','gradient','border'], stepLabels: ['Цвет','Градиент','Рамки'],
+    dark: { bg:'#0d0c18', accent:'#867DCE', text:'#ede8ff', cardBg:'rgba(64,62,114,0.4)', borderColor:'rgba(134,125,206,0.25)', mesh:'radial-gradient(ellipse at 20% 60%, rgba(134,125,206,0.3) 0%, transparent 55%), radial-gradient(ellipse at 75% 25%, rgba(174,109,166,0.25) 0%, transparent 50%), radial-gradient(ellipse at 50% 90%, rgba(232,150,10,0.15) 0%, transparent 40%)', glowBorder:'rgba(232,180,60,0.7)', glowShadow:'0 4px 24px rgba(232,150,10,0.3), 0 0 0 1px rgba(232,180,60,0.5)' },
+    light: { bg:'#f4f2ff', accent:'#867DCE', text:'#1a1540', cardBg:'rgba(255,255,255,0.8)', borderColor:'rgba(134,125,206,0.2)', mesh:'radial-gradient(ellipse at 20% 60%, rgba(134,125,206,0.12) 0%, transparent 55%), radial-gradient(ellipse at 75% 25%, rgba(174,109,166,0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 90%, rgba(232,150,10,0.08) 0%, transparent 40%)', glowBorder:'rgba(200,160,40,0.55)', glowShadow:'0 4px 20px rgba(200,160,40,0.2), 0 0 0 1px rgba(200,160,40,0.4)' }
   }
 };
 
