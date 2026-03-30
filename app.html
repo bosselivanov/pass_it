@@ -2184,6 +2184,11 @@ function gridToSnake(row, col, cols) {
   return (row % 2 === 0) ? row * cols + col : row * cols + (cols - 1 - col);
 }
 
+function updateAuthorIfOpen() {
+  checkStreakToday();
+  const levelChanged = syncAuthorLevel();
+  if (authorScreenOpen) updateAuthorPassUI();
+}
 function renderQuests() {
   const quests = getCurrentPass()?.quests || [];
   const grid = document.getElementById('questsGrid');
@@ -3031,16 +3036,13 @@ function saveMetricChange() {
     const oldPct = Math.min(1, (q.current || 0) / q.max);
     q.current = val;
     const newPct = Math.min(1, val / q.max);
-    // добавляем авторский XP пропорционально дельте прогресса
     const delta = newPct - oldPct;
-    if (delta > 0) {
-      const xpDelta = Math.round(delta * (q.xp || 100));
-      if (xpDelta > 0) addAuthorXP(xpDelta);
-    }
+    // XP теперь считается live через getTotalAuthorXP()
     if (val >= q.max) onQuestCompleted(q.name);
     savePasses();
     closePopup('changeMetricOverlay');
     renderQuests();
+    updateAuthorIfOpen();
   } else {
     p.megaQuests[changeMetricIndex].current = val;
     savePasses();
@@ -4790,7 +4792,9 @@ function toggleAuthorScreen() {
     document.getElementById('streakWidget').style.display = 'flex';
     document.getElementById('shopBtn').style.display = '';
     document.getElementById('achievementsBtn').style.display = 'none';
+    checkStreakToday();
     updateAuthorPassUI();
+    syncAuthorLevel();
     checkAuthorOnboarding();
   } else {
     icon.textContent = '▲';
@@ -4819,30 +4823,53 @@ function getWeekDayLabel(dateStr) {
 function checkStreakToday() {
   const today = todayStr();
   const streak = getStreak();
-  if (streak.lastDate === today) return streak;
 
   const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
   const activeToday = allQuests.filter(q => isQuestActiveToday(q));
   const streakMet = activeToday.some(q => (q.current || 0) >= q.max * 0.5);
+
+  // если стрик был засчитан сегодня но условие больше не выполняется — убираем
+  if (!streakMet && streak.lastDate === today) {
+    const weekStart = getCurrentWeekStart();
+    const weekDays = (streak.freezeWeek === weekStart) ? { ...(streak.weekDays || {}) } : {};
+    delete weekDays[today];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yd = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+    const newStreak = {
+      count: streak.count > 0 ? streak.count - 1 : 0,
+      lastDate: streak.count > 1 ? yd : null,
+      weekDays, freezesUsed: (streak.freezeWeek === weekStart) ? (streak.freezesUsed || 0) : 0,
+      freezeWeek: weekStart
+    };
+    saveStreak(newStreak);
+    if (authorScreenOpen) renderStreakWidget();
+    return newStreak;
+  }
+
+  if (!streakMet) return streak;
+
+  // уже засчитан сегодня — не перезаписываем счётчик
+  if (streak.lastDate === today) return streak;
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yd = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
 
   const weekStart = getCurrentWeekStart();
-  const weekDays = (streak.freezeWeek === weekStart) ? (streak.weekDays || {}) : {};
+  // всегда берём weekDays текущей недели
+  const weekDays = (streak.freezeWeek === weekStart) ? { ...(streak.weekDays || {}) } : {};
   const freezesUsed = (streak.freezeWeek === weekStart) ? (streak.freezesUsed || 0) : 0;
 
-  if (streakMet) {
-    weekDays[today] = 'done';
-    const newStreak = {
-      count: (streak.lastDate === yd || streak.lastDate === today) ? streak.count + 1 : 1,
-      lastDate: today, weekDays, freezesUsed, freezeWeek: weekStart
-    };
-    saveStreak(newStreak);
-    return newStreak;
-  }
-  return streak;
+  weekDays[today] = 'done';
+  const prevCount = streak.count || 0;
+  const newStreak = {
+    count: (streak.lastDate === yd) ? prevCount + 1 : 1,
+    lastDate: today, weekDays, freezesUsed, freezeWeek: weekStart
+  };
+  saveStreak(newStreak);
+  if (authorScreenOpen) renderStreakWidget();
+  return newStreak;
 }
 
 function applyStreakFreeze() {
@@ -4853,7 +4880,9 @@ function applyStreakFreeze() {
   const freezesUsed = (streak.freezeWeek === weekStart) ? (streak.freezesUsed || 0) : 0;
 
   if (freezesUsed < 3 && streak.count > 0) {
-    const weekDays = (streak.freezeWeek === weekStart) ? (streak.weekDays || {}) : {};
+    // weekDays: берём если та же неделя ИЛИ если freezeWeek не установлен но lastDate сегодня
+  const weekDays = (streak.freezeWeek === weekStart) ? (streak.weekDays || {}) :
+    (streak.weekDays && streak.lastDate && streak.lastDate >= weekStart) ? streak.weekDays : {};
     weekDays[today] = 'frozen';
     saveStreak({ ...streak, freezesUsed: freezesUsed + 1, freezeWeek: weekStart, weekDays, lastDate: today });
     return true; // заморозка применена
@@ -4878,7 +4907,9 @@ function renderStreakWidget() {
   const weekStart = getCurrentWeekStart();
   const count = getStreakCount();
   const freezesUsed = (streak.freezeWeek === weekStart) ? (streak.freezesUsed || 0) : 0;
-  const weekDays = (streak.freezeWeek === weekStart) ? (streak.weekDays || {}) : {};
+  // weekDays: берём если та же неделя ИЛИ если freezeWeek не установлен но lastDate сегодня
+  const weekDays = (streak.freezeWeek === weekStart) ? (streak.weekDays || {}) :
+    (streak.weekDays && streak.lastDate && streak.lastDate >= weekStart) ? streak.weekDays : {};
 
   const countEl = document.getElementById('streakCount');
   const freezeEl = document.getElementById('streakFreezeCount');
@@ -4916,20 +4947,15 @@ function getCurrentWeekStart() {
 }
 
 function addXPToday(xp) {
-  const weekStart = getCurrentWeekStart();
-  const w = getWeeklyXP();
-  if (w.weekStart !== weekStart) {
-    saveWeeklyXP({ xp: xp, weekStart });
-  } else {
-    saveWeeklyXP({ xp: (w.xp || 0) + xp, weekStart });
-  }
+  // не нужна — weekly XP считается через getWeeklyXPValue
 }
 
 function getWeeklyXPValue() {
+  // weekly XP = только накопленный из прошлых дней (сохраняется при сбросе дня)
+  // сегодняшний день не засчитывается пока не будет сброса
   const weekStart = getCurrentWeekStart();
   const w = getWeeklyXP();
-  if (w.weekStart !== weekStart) return 0;
-  return w.xp || 0;
+  return (w.weekStart === weekStart) ? (w.xp || 0) : 0;
 }
 
 // --- КВЕСТ НЕДЕЛИ ---
@@ -5003,41 +5029,111 @@ function tryAddAuthorLevel(count) {
 }
 
 function processAuthorDailyReward() {
-  const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
-  const activeToday = allQuests.filter(q => isQuestActiveToday(q));
-  const total = activeToday.length;
-  if (!total) return;
-  const done = activeToday.reduce((sum, q) => {
-    return sum + Math.min(1, (q.current || 0) / q.max);
-  }, 0);
-  const t1 = Math.max(1, Math.ceil(total * 0.25));
-  const t2 = Math.max(1, Math.ceil(total * 0.5));
-  const t3 = total;
+  // При сбросе дня — фиксируем накопленный live XP в исторический
+  // чтобы после сброса квестов прогресс не потерялся
+  const todayXP = getTodayLiveXP();
 
-  // XP авторского пасса за ежедневки
-  let authorXP = 0;
-  if (done >= t3) authorXP = 500;       // 100% → +500 XP
-  else if (done >= t2) authorXP = 300;  // 50%  → +300 XP
-  else if (done >= t1) authorXP = 200;  // 25%  → +200 XP
+  // сохраняем в исторический XP авторского пасса
+  const stored = getAuthorXP();
+  save('passit_author_xp', stored + todayXP);
+  if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(stored + todayXP);
 
-  if (authorXP > 0) addAuthorXP(authorXP);
+  // синхронизируем уровень
+  syncAuthorLevel();
 
-  // стрик: проверяем был ли выполнен, иначе заморозка
+  // стрик
   const streakMet = checkStreakToday();
   if (!streakMet || streakMet.lastDate !== todayStr()) {
     applyStreakFreeze();
   }
 
-  // XP за квесты в личную статистику — пропорционально прогрессу
-  const todayXP = activeToday.reduce((sum, q) => {
+  // weekly XP — из ЛИЧНЫХ квестов (пропорционально прогрессу), не из ежедневок авторского
+  const personalQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
+  const personalXPToday = personalQuests.reduce((sum, q) => {
     const pct = Math.min(1, (q.current || 0) / q.max);
     return sum + Math.round(pct * (q.xp || 100));
   }, 0);
-  addXPToday(todayXP);
+  const weekStart = getCurrentWeekStart();
+  const w = getWeeklyXP();
+  const storedWeek = (w.weekStart === weekStart) ? (w.xp || 0) : 0;
+  saveWeeklyXP({ xp: storedWeek + personalXPToday, weekStart });
 }
 
 // --- АВТОР XP ---
 function getAuthorXP() { return load('passit_author_xp', 0); }
+
+// XP за сегодня — как в памятке:
+// процент выполнения каждого авторского квеста * его XP = вклад в прогресс
+// Ежедневки: +200, +300, +500 XP — пропорционально прогрессу каждой
+// Итого макс за день = 1000 XP = 2 уровня при полном выполнении
+function getTodayLiveXP() {
+  const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
+  const activeToday = allQuests.filter(q => {
+    if (!isQuestActiveToday(q)) return false;
+    if (q.deadline) {
+      const days = daysUntilDeadline(q.deadline);
+      if (days !== null && days > 7) return false;
+    }
+    return true;
+  });
+  const total = activeToday.length;
+  if (!total) return 0;
+
+  // done = сумма пропорционального прогресса (0..total)
+  const done = activeToday.reduce((sum, q) => sum + Math.min(1, (q.current || 0) / q.max), 0);
+  const t1 = Math.max(1, Math.ceil(total * 0.25));
+  const t2 = Math.max(1, Math.ceil(total * 0.5));
+
+  // каждая ежедневка: процент_выполнения * её XP
+  // adq0 (25% порог): pct = min(done/t1, 1) * 200
+  // adq1 (50% порог): pct = max(0, min((done-t1)/(t2-t1), 1)) * 300
+  // adq2 (100% порог): pct = max(0, min((done-t2)/(total-t2), 1)) * 500
+  const xp0 = Math.round(Math.min(done / t1, 1) * 200);
+  const xp1 = t2 > t1 ? Math.round(Math.min(Math.max(done - t1, 0) / (t2 - t1), 1) * 300) : (done >= t2 ? 300 : 0);
+  const xp2 = total > t2 ? Math.round(Math.min(Math.max(done - t2, 0) / (total - t2), 1) * 500) : (done >= total ? 500 : 0);
+
+  // + стрик пропорционально: streakCount/4 * 1000 XP
+  const streakCount = getStreakCount();
+  const streakTarget = 4;
+  const streakXP = Math.round(Math.min(streakCount / streakTarget, 1) * 1000);
+
+  // + еженедельный квест XP: личный XP прямо сейчас / цель недели * 1500 XP
+  const personalQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
+  const personalLiveXP = personalQuests.reduce((sum, q) => {
+    return sum + Math.round(Math.min(1, (q.current || 0) / q.max) * (q.xp || 100));
+  }, 0);
+  const allMegas = passes.flatMap(p => p.megaQuests || []);
+  const megaWeeklyBonus = allMegas.reduce((sum, mq) => {
+    return sum + Math.round(Math.round(300 + 700 * (mq.max / (mq.max + 100))) / 7);
+  }, 0);
+  const weekTarget = 500 * 3 + megaWeeklyBonus;
+  const weekXPstored = getWeeklyXPValue(); // из прошлых дней
+  const totalWeekXP = weekXPstored + personalLiveXP; // + сегодня живой
+  const weekPct = Math.min(totalWeekXP / weekTarget, 1);
+  const weeklyQuestXP = Math.round(weekPct * 1500);
+
+  return xp0 + xp1 + xp2 + streakXP + weeklyQuestXP;
+}
+
+// Полный XP = исторический + сегодняшний живой
+function getTotalAuthorXP() {
+  return getAuthorXP() + getTodayLiveXP();
+}
+
+// Синхронизирует уровень из live XP и выдаёт награды если уровень вырос
+function syncAuthorLevel() {
+  const totalXP = getTotalAuthorXP();
+  const newLevel = Math.min(Math.floor(totalXP / 500), 150);
+  const oldLevel = getAuthorPassLevel();
+  if (newLevel > oldLevel) {
+    saveAuthorPassLevel(newLevel);
+    for (let l = oldLevel + 1; l <= newLevel; l++) {
+      processLevelRewards(l);
+    }
+    showToast(`⬆️ Уровень ${newLevel}!`);
+  }
+  return newLevel;
+}
 function addAuthorXP(xp) {
   const XP_PER_LEVEL = 500;
   const current = getAuthorXP();
@@ -5058,8 +5154,8 @@ function addAuthorXP(xp) {
 function renderAuthorCircles() {
   const row = document.getElementById('authorCirclesRow');
   if (!row) return;
-  const level = getAuthorPassLevel();
-  const totalXP = getAuthorXP();
+  const totalXP = getTotalAuthorXP();
+  const level = syncAuthorLevel(); // синхронизируем и берём актуальный уровень
   const XP_PER_LEVEL = 500;
   const xpInLevel = totalXP % XP_PER_LEVEL;
   const pctInLevel = xpInLevel / XP_PER_LEVEL;
@@ -5068,41 +5164,49 @@ function renderAuthorCircles() {
   for (let i = 0; i <= 150; i++) {
     const filled = i < level;
     const current = i === level;
-    const isBox = i > 0 && i % 5 === 0;       // каждый 5й → бокс
-    const isPiece = i > 0 && i % 3 === 0 && !isBox; // каждый 3й → кусочек (не совпадает с боксом)
-    const isMilestone = isBox;
-    const size = isMilestone ? 52 : 40;
-    const fontSize = isMilestone ? 13 : 11;
+    const isBox = i > 0 && i % 5 === 0;
+    const isPiece = i > 0 && i % 3 === 0 && !isBox;
+    const size = isBox ? 52 : 40;
 
-    let bg, border, color;
+    let bg, border, color, shadow = '';
     if (filled) {
       bg = 'linear-gradient(135deg,#E8960A,#F5C842)';
       border = '#C07800'; color = 'white';
+      if (isBox) shadow = 'box-shadow:0 0 10px rgba(232,150,10,0.5);';
     } else if (current) {
-      bg = `conic-gradient(#E8960A ${Math.round(pctInLevel*360)}deg, rgba(180,120,0,0.15) 0deg)`;
+      bg = 'rgba(255,255,255,0.7)';
       border = '#E8960A'; color = '#6B4400';
+      shadow = 'box-shadow:0 0 0 3px rgba(232,150,10,0.2);';
     } else {
-      bg = 'rgba(255,255,255,0.4)';
-      border = 'rgba(180,120,0,0.25)'; color = 'rgba(120,70,0,0.4)';
+      bg = 'rgba(255,255,255,0.3)';
+      border = 'rgba(180,120,0,0.2)'; color = 'rgba(120,70,0,0.35)';
     }
 
     let inner = '';
     if (isBox) inner = `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;"><span style="font-size:9px;font-weight:800;color:${color};">${i}</span><span style="font-size:${filled?12:10}px;line-height:1;">📦</span></div>`;
     else if (isPiece) inner = `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;"><span style="font-size:9px;font-weight:800;color:${color};">${i}</span><span style="font-size:${filled?9:8}px;line-height:1;">🧩</span></div>`;
-    else inner = `<span style="font-size:${fontSize}px;font-weight:800;color:${color};">${i}</span>`;
+    else inner = `<span style="font-size:${current?13:11}px;font-weight:800;color:${color};">${i}</span>`;
 
-    html += `<div class="ap-node-circle" data-tip="${isBox ? '📦 Бокс' : isPiece ? '🧩 Кусочек' : 'Ур. ' + i}" style="width:${size}px;height:${size}px;border-radius:50%;border:${filled||current?'2.5px':'1.5px'} solid ${border};background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;${isBox?'box-shadow:0 0 8px rgba(232,150,10,0.35);':''}">${inner}</div>`;
+    html += `<div class="ap-node-circle" data-tip="${isBox ? '📦 Бокс' : isPiece ? '🧩 Кусочек' : 'Ур. ' + i}" style="width:${size}px;height:${size}px;border-radius:50%;border:${filled?'2.5px':current?'3px':'1.5px'} solid ${border};background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;${shadow}">${inner}</div>`;
 
     if (i < 150) {
-      const lineColor = filled ? '#E8960A' : 'rgba(180,120,0,0.15)';
-      html += `<div style="width:28px;height:4px;background:${lineColor};border-radius:2px;flex-shrink:0;transition:background 0.3s;"></div>`;
+      // линия: заполнена если уровень пройден, частично если текущий
+      let lineBg;
+      if (filled) {
+        lineBg = '#E8960A';
+      } else if (current) {
+        const p = Math.round(pctInLevel * 100);
+        lineBg = `linear-gradient(to right, #E8960A ${p}%, rgba(180,120,0,0.15) ${p}%)`;
+      } else {
+        lineBg = 'rgba(180,120,0,0.15)';
+      }
+      html += `<div style="width:28px;height:4px;background:${lineBg};border-radius:2px;flex-shrink:0;"></div>`;
     }
   }
   row.innerHTML = html;
 
-  const circleWidth = 40 + 28;
-  const scrollTo = Math.max(0, level * circleWidth - 150);
-  const scrollEl = document.getElementById('authorCirclesScroll'); if (scrollEl) scrollEl.scrollLeft = scrollTo;
+  const scrollEl = document.getElementById('authorCirclesScroll');
+  if (scrollEl) scrollEl.scrollLeft = Math.max(0, level * 68 - 150);
 }
 function updateAuthorPassUI() {
   const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
@@ -5141,21 +5245,24 @@ function updateAuthorPassUI() {
     if (!el) continue;
     document.getElementById(`adq${i}name`).textContent = dailyNames[i];
     document.getElementById(`adq${i}bar`).style.width = pct + '%';
-    document.getElementById(`adq${i}meta`).textContent = `${done.toFixed(1)} / ${targets[i]} · +${[200,300,500][i]} XP`;
+    document.getElementById(`adq${i}meta`).textContent = `${Math.floor(done)} / ${targets[i]} · +${[200,300,500][i]} XP`;
     el.style.opacity = isDone ? '1' : '0.75';
     el.style.borderColor = isDone ? 'rgba(200,140,0,0.6)' : '';
   }
 
   // ЕЖЕНЕДЕЛЬНЫЕ — XP
-  const weekXP = getWeeklyXPValue();
+  const weekXPstored = getWeeklyXPValue();
+  const personalQuestsLive = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
+  const personalLiveToday = personalQuestsLive.reduce((sum, q) => sum + Math.round(Math.min(1, (q.current||0)/q.max) * (q.xp||100)), 0);
+  const weekXP = weekXPstored + personalLiveToday;
   // цель = XP от 3 полных дней (все активные квесты × 3) + 1/7 XP мегаквестов × число мегаквестов
-  const fullDayXP = activeToday.reduce((sum, q) => sum + (q.xp || 100), 0) || 500;
+  // цель = 3 дня с максимальной ежедневкой (500 XP) + 1/7 XP мегаквестов
   const allMegas = passes.flatMap(p => p.megaQuests || []);
   const megaWeeklyBonus = allMegas.reduce((sum, mq) => {
     const mxp = Math.round(300 + 700 * (mq.max / (mq.max + 100)));
     return sum + Math.round(mxp / 7);
   }, 0);
-  const weekTarget = fullDayXP * 3 + megaWeeklyBonus;
+  const weekTarget = 500 * 3 + megaWeeklyBonus;
   const weekPct = Math.min(100, Math.round((weekXP / weekTarget) * 100));
   const weekDone = weekXP >= weekTarget;
   const awq0 = document.getElementById('awq0bar');
@@ -5198,8 +5305,8 @@ function updateAuthorPassUI() {
     awq2card.style.borderColor = streakCount >= streakTarget ? 'rgba(200,140,0,0.6)' : '';
   }
 
-  const level = getAuthorPassLevel();
-  const totalXP = getAuthorXP();
+  const totalXP = getTotalAuthorXP();
+  const level = Math.min(Math.floor(totalXP / 500), 150);
   const levelNum = document.getElementById('authorLevelNum');
   const xpNum = document.getElementById('authorXPTotalNum');
   if (levelNum) levelNum.textContent = level;
