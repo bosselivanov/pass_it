@@ -71,6 +71,7 @@ body {
   white-space: nowrap; z-index: 10; pointer-events: none;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+.streak-widget {
   position: relative; display: flex; align-items: center; gap: 4px;
   cursor: default;
 }
@@ -5193,7 +5194,7 @@ function updateAuthorPassUI() {
   if (awq2meta) awq2meta.textContent = `${streakProgress} / ${streakTarget} дней · +1000 XP`;
   const awq2card = awq2?.closest('.author-quest-card');
   if (awq2card) {
-    awq2card.style.opacity = '1';
+    awq2card.style.opacity = streakCount >= streakTarget ? '1' : '0.75';
     awq2card.style.borderColor = streakCount >= streakTarget ? 'rgba(200,140,0,0.6)' : '';
   }
 
