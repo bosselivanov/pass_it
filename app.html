@@ -852,7 +852,10 @@ body {
           <div class="pass-levels-wrap" style="overflow:visible;position:relative;">
             <div style="overflow-x:auto;overflow-y:visible;scrollbar-width:thin;padding-bottom:32px;margin-bottom:-28px;" id="authorCirclesScroll"><div id="authorCirclesRow" style="display:flex;align-items:center;min-width:max-content;gap:0;padding:2px 0;"></div></div>
           </div>
-          <div style="font-size:10px;color:#9B6E10;text-align:right;margin-top:2px;">Ур. <span id="authorLevelNum">0</span>/150 · <span id="authorXPTotalNum">0</span> XP</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+            <div style="font-size:10px;color:#9B6E10;" id="seasonDaysLeft">75 дн. до конца сезона</div>
+            <div style="font-size:10px;color:#9B6E10;">Ур. <span id="authorLevelNum">0</span>/150 · <span id="authorXPTotalNum">0</span> XP</div>
+          </div>
         </div>
       </div>
     </div>
@@ -3533,6 +3536,8 @@ const AUTHOR_ONBOARDING_IMAGES = {
 let authorOnboardingStep = 0;
 
 function checkAuthorOnboarding() {
+  // не запускать если идёт основной онбординг
+  if (document.getElementById('onboardingOverlay').style.display !== 'none') return;
   if (!load('passit_author_onboarding_done', false)) {
     setTimeout(showAuthorOnboarding, 600);
   }
@@ -5178,6 +5183,18 @@ function updateAuthorPassUI() {
   const xpNum = document.getElementById('authorXPTotalNum');
   if (levelNum) levelNum.textContent = level;
   if (xpNum) xpNum.textContent = totalXP;
+
+  // счётчик дней до конца сезона
+  const seasonDaysEl = document.getElementById('seasonDaysLeft');
+  if (seasonDaysEl) {
+    const start = new Date('2026-03-30');
+    const end = new Date(start);
+    end.setDate(end.getDate() + 75);
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const daysLeft = Math.max(0, Math.round((end - now) / 86400000));
+    seasonDaysEl.textContent = daysLeft > 0 ? `${daysLeft} дн. до конца сезона` : 'Сезон завершён';
+  }
 
   renderStreakWidget();
   renderAuthorCircles();
