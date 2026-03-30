@@ -3026,8 +3026,17 @@ function saveMetricChange() {
       renderDebtList();
     }
   } else if (changeMetricType === 'quest') {
-    p.quests[changeMetricIndex].current = val;
-    if (val >= p.quests[changeMetricIndex].max) onQuestCompleted(p.quests[changeMetricIndex].name);
+    const q = p.quests[changeMetricIndex];
+    const oldPct = Math.min(1, (q.current || 0) / q.max);
+    q.current = val;
+    const newPct = Math.min(1, val / q.max);
+    // добавляем авторский XP пропорционально дельте прогресса
+    const delta = newPct - oldPct;
+    if (delta > 0) {
+      const xpDelta = Math.round(delta * (q.xp || 100));
+      if (xpDelta > 0) addAuthorXP(xpDelta);
+    }
+    if (val >= q.max) onQuestCompleted(q.name);
     savePasses();
     closePopup('changeMetricOverlay');
     renderQuests();
@@ -4054,8 +4063,9 @@ function completeMega(i) {
   });
   saveCompletedMegas(completed);
 
-  // добавляем XP в еженедельную статистику
+  // добавляем XP и в еженедельную статистику и в авторский пасс
   addXPToday(xp);
+  addAuthorXP(Math.round(xp * 0.5)); // мегаквест даёт 50% своего XP в авторский пасс
 
   // удаляем из пасса
   p.megaQuests.splice(i, 1);
@@ -4996,7 +5006,9 @@ function processAuthorDailyReward() {
   const activeToday = allQuests.filter(q => isQuestActiveToday(q));
   const total = activeToday.length;
   if (!total) return;
-  const done = activeToday.filter(q => (q.current || 0) >= q.max).length;
+  const done = activeToday.reduce((sum, q) => {
+    return sum + Math.min(1, (q.current || 0) / q.max);
+  }, 0);
   const t1 = Math.max(1, Math.ceil(total * 0.25));
   const t2 = Math.max(1, Math.ceil(total * 0.5));
   const t3 = total;
@@ -5015,8 +5027,11 @@ function processAuthorDailyReward() {
     applyStreakFreeze();
   }
 
-  // XP за квесты в личную статистику
-  const todayXP = activeToday.reduce((sum, q) => sum + (q.current >= q.max ? (q.xp || 100) : 0), 0);
+  // XP за квесты в личную статистику — пропорционально прогрессу
+  const todayXP = activeToday.reduce((sum, q) => {
+    const pct = Math.min(1, (q.current || 0) / q.max);
+    return sum + Math.round(pct * (q.xp || 100));
+  }, 0);
   addXPToday(todayXP);
 }
 
@@ -5100,7 +5115,12 @@ function updateAuthorPassUI() {
     return true;
   });
   const total = activeToday.length;
-  const done = activeToday.filter(q => (q.current || 0) >= q.max).length;
+  // done = сумма пропорционального прогресса по всем квестам
+  // квест на 50% = 0.5, на 100% = 1.0
+  const done = activeToday.reduce((sum, q) => {
+    const pct = Math.min(1, (q.current || 0) / q.max);
+    return sum + pct;
+  }, 0);
 
   // ЕЖЕДНЕВКИ — пороги 25/50/100%
   const targets = [
@@ -5120,7 +5140,7 @@ function updateAuthorPassUI() {
     if (!el) continue;
     document.getElementById(`adq${i}name`).textContent = dailyNames[i];
     document.getElementById(`adq${i}bar`).style.width = pct + '%';
-    document.getElementById(`adq${i}meta`).textContent = `${done} / ${targets[i]} · +${[200,300,500][i]} XP`;
+    document.getElementById(`adq${i}meta`).textContent = `${done.toFixed(1)} / ${targets[i]} · +${[200,300,500][i]} XP`;
     el.style.opacity = isDone ? '1' : '0.75';
     el.style.borderColor = isDone ? 'rgba(200,140,0,0.6)' : '';
   }
