@@ -5779,31 +5779,33 @@ function getTodayLiveXP() {
     return true;
   });
   const total = activeToday.length;
-
-  // ── ЕЖЕДНЕВКИ (adq0/1/2) — от личного пасса ──
-  // done = сумма пропорционального прогресса
   const done = total ? activeToday.reduce((s, q) => s + Math.min(1, (q.current||0)/q.max), 0) : 0;
+
   const t1 = Math.max(1, Math.ceil(total * 0.25));
   const t2 = Math.max(1, Math.ceil(total * 0.5));
-  const xp0 = total ? Math.round(Math.min(done / t1, 1) * 200) : 0;
-  const xp1 = total && t2 > t1 ? Math.round(Math.min(Math.max(done-t1,0)/(t2-t1),1)*300) : (done>=t2?300:0);
-  const xp2 = total && total > t2 ? Math.round(Math.min(Math.max(done-t2,0)/(total-t2),1)*500) : (done>=total&&total?500:0);
+  const t3 = total || 1;
 
-  // ── СТРИК (awq2) — streakCount/4 * 1000 ──
+  // adq0: прогресс / цель × 200
+  const xp0 = Math.round(Math.min(done / t1, 1) * 200);
+  // adq1: прогресс / цель × 300
+  const xp1 = Math.round(Math.min(done / t2, 1) * 300);
+  // adq2: прогресс / цель × 500
+  const xp2 = Math.round(Math.min(done / t3, 1) * 500);
+
+  // awq2: стрик — streakCount/4 × 1000
   const streakXP = Math.round(Math.min(getStreakCount() / 4, 1) * 1000);
 
-  // ── XP ЗА НЕДЕЛЮ (awq0) — личный накопленный XP / цель * 1500 ──
-  // Цель = 500 XP * 3 дня + 1/7 от XP мегаквестов
-  const weekStored = getWeeklyXPValue(); // из прошлых дней этой недели
+  // awq0: XP за неделю — (накопленный + живой) / цель × 1500
+  const weekStored = getWeeklyXPValue();
   const personalLive = activeToday.reduce((s, q) => s + Math.round(Math.min(1,(q.current||0)/q.max)*(q.xp||100)), 0);
   const megaBonus = passes.flatMap(p => p.megaQuests||[]).reduce((s,mq) =>
     s + Math.round(Math.round(300+700*(mq.max/(mq.max+100)))/7), 0);
   const weekTarget = 500*3 + megaBonus;
   const weeklyXPtaskXP = Math.round(Math.min((weekStored + personalLive) / weekTarget, 1) * 1500);
 
-  // ── КВЕСТ НЕДЕЛИ (awq1) — QOW done/3 * 1000 ──
+  // awq1: квест недели — done/3 × 1000
   const qowProg = qowGetProgress();
-  const qowXP = Math.round((qowProg.done / qowProg.target) * 1000);
+  const qowXP = Math.round(Math.min(qowProg.done / qowProg.target, 1) * 1000);
 
   return xp0 + xp1 + xp2 + streakXP + weeklyXPtaskXP + qowXP;
 }
