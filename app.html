@@ -5611,7 +5611,12 @@ function getCurrentWeekStart() {
 }
 
 function addXPToday(xp) {
-  // не нужна — weekly XP считается через getWeeklyXPValue
+  // вызывается при завершении мегаквеста — сохраняем сразу в weekly
+  if (!xp || xp <= 0) return;
+  const weekStart = getCurrentWeekStart();
+  const w = getWeeklyXP();
+  const stored = (w.weekStart === weekStart) ? (w.xp || 0) : 0;
+  saveWeeklyXP({ xp: stored + xp, weekStart });
 }
 
 function getWeeklyXPValue() {
@@ -5798,9 +5803,10 @@ function getTodayLiveXP() {
   // awq0: XP за неделю — (накопленный + живой) / цель × 1500
   const weekStored = getWeeklyXPValue();
   const personalLive = activeToday.reduce((s, q) => s + Math.round(Math.min(1,(q.current||0)/q.max)*(q.xp||100)), 0);
-  const megaBonus = passes.flatMap(p => p.megaQuests||[]).reduce((s,mq) =>
-    s + Math.round(Math.round(300+700*(mq.max/(mq.max+100)))/7), 0);
-  const weekTarget = 500*3 + megaBonus;
+  // цель недели = сумма XP всех личных квестов × 3 дня
+  const allPersonalQuests = passes.flatMap(p => (p.quests||[]).filter(q => q && !q.frozen));
+  const maxDayXP = allPersonalQuests.reduce((s, q) => s + (q.xp || 100), 0) || 500;
+  const weekTarget = maxDayXP * 3;
   const weeklyXPtaskXP = Math.round(Math.min((weekStored + personalLive) / weekTarget, 1) * 1500);
 
   // awq1: квест недели — done/3 × 1000
@@ -5950,14 +5956,9 @@ function updateAuthorPassUI() {
   const personalQuestsLive = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
   const personalLiveToday = personalQuestsLive.reduce((sum, q) => sum + Math.round(Math.min(1, (q.current||0)/q.max) * (q.xp||100)), 0);
   const weekXP = weekXPstored + personalLiveToday;
-  // цель = XP от 3 полных дней (все активные квесты × 3) + 1/7 XP мегаквестов × число мегаквестов
-  // цель = 3 дня с максимальной ежедневкой (500 XP) + 1/7 XP мегаквестов
-  const allMegas = passes.flatMap(p => p.megaQuests || []);
-  const megaWeeklyBonus = allMegas.reduce((sum, mq) => {
-    const mxp = Math.round(300 + 700 * (mq.max / (mq.max + 100)));
-    return sum + Math.round(mxp / 7);
-  }, 0);
-  const weekTarget = 500 * 3 + megaWeeklyBonus;
+  // цель = сумма XP всех личных квестов × 3 дня
+  const allPersonalQ = passes.flatMap(p => (p.quests||[]).filter(q => q && !q.frozen));
+  const weekTarget = Math.max(allPersonalQ.reduce((s, q) => s + (q.xp||100), 0), 500) * 3;
   const weekPct = Math.min(100, Math.round((weekXP / weekTarget) * 100));
   const weekDone = weekXP >= weekTarget;
   const awq0 = document.getElementById('awq0bar');
