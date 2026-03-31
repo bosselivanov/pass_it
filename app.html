@@ -724,10 +724,10 @@ body {
 
 <div class="toast" id="toast"></div>
 <div class="update-banner" id="updateBanner" style="display:none;">
-  <div style="font-size:20px;">🔧</div>
+  <div style="font-size:20px;">🎉</div>
   <div class="update-banner-text">
-    Фикс авторского пасса
-    <div class="update-banner-sub" id="updateBannerText">Исправлена ошибка из-за которой прогресс квеста недели мог не засчитываться. Теперь всё работает корректно!</div>
+    Новое обновление!
+    <div class="update-banner-sub" id="updateBannerText">Нажми на пустую ячейку — сразу создаст квест. Прогресс теперь выделяется автоматически при открытии!</div>
   </div>
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
@@ -2547,7 +2547,7 @@ function getRepeatFromPopup(tabsId) {
   return type === 'weekly' ? { type, days } : { type };
 }
 
-const CURRENT_VERSION = 'v2.1';
+const CURRENT_VERSION = 'v2.0';
 function checkUpdateBanner() {
   const seen = load('lastSeenVersion', null);
   if (seen !== CURRENT_VERSION) {
@@ -2985,12 +2985,6 @@ function bindQuestEditables() {
       if (bar) bar.style.width = ((val / p.quests[i].max) * 100) + '%';
       this.closest('.quest-card').classList.toggle('done', val >= p.quests[i].max);
       updatePass();
-      // FIXED: был пропущен вызов авторского пасса при прямом вводе цифры
-      if (val >= p.quests[i].max) {
-        onQuestCompleted(p.quests[i].name);
-      } else {
-        updateAuthorIfOpen();
-      }
     });
     el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
   });
@@ -3581,14 +3575,11 @@ function saveMetricChange() {
     const newPct = Math.min(1, val / q.max);
     const delta = newPct - oldPct;
     // XP теперь считается live через getTotalAuthorXP()
-    savePasses(); // FIXED: сохраняем ДО вызова onQuestCompleted, чтобы qowCheck видел актуальные данные
+    if (val >= q.max) onQuestCompleted(q.name);
+    savePasses();
     closePopup('changeMetricOverlay');
     renderQuests();
-    if (val >= q.max) {
-      onQuestCompleted(q.name); // FIXED: onQuestCompleted уже вызывает qowCheck и обновляет UI
-    } else {
-      updateAuthorIfOpen(); // FIXED: только если квест НЕ завершён — иначе двойной qowCheck
-    }
+    updateAuthorIfOpen();
   } else {
     p.megaQuests[changeMetricIndex].current = val;
     savePasses();
@@ -5633,29 +5624,6 @@ function getWeeklyXPValue() {
 
 // --- КВЕСТ НЕДЕЛИ ---
 
-// Считает сколько раз квест активен на текущей неделе (пн–вс)
-// daily/once — считаем 7 дней (всегда >= 3)
-// weekly — считаем пересечение repeat.days с [0..6]
-function qowCountActiveDaysThisWeek(q) {
-  if (!q.repeat || q.repeat.type === 'daily') return 7;
-  if (q.repeat.type === 'once') return 7; // активен весь период до дедлайна
-  if (q.repeat.type === 'weekly') return (q.repeat.days || []).length;
-  return 7;
-}
-
-// Квест подходит для квеста недели если:
-// 1. Не заморожен
-// 2. startDate не в будущем
-// 3. Активен на этой неделе >= 3 дней
-function qowIsEligible(q) {
-  if (!q || q.frozen) return false;
-  const today = todayStr();
-  if (q.startDate && q.startDate > today) return false;
-  // для once — дедлайн должен быть не раньше сегодня
-  if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return false;
-  return qowCountActiveDaysThisWeek(q) >= 3;
-}
-
 function qowWeekKey() { return 'passit_qow_' + getCurrentWeekStart(); }
 function qowGetData() { return load(qowWeekKey(), { id: null, name: null, emoji: null, dates: [] }); }
 function qowSaveData(d) { save(qowWeekKey(), d); }
@@ -5681,16 +5649,15 @@ function qowInit() {
 
   const d = qowGetData();
 
-  // уже выбран — проверяем что квест подходит для квеста недели (>= 3 активных дня)
+  // уже выбран — проверяем что квест существует (не важно активен ли сегодня)
   if (d.id || d.name) {
     const found = qowFindQuest();
-    if (found && qowIsEligible(found)) return d; // FIXED: квест подходит — не меняем до следующей недели
-    // квест удалён или не набирает 3 активных дня — выбираем другой
+    if (found) return d; // квест жив — не меняем весь week
   }
 
-  // нет квеста или не подходит — выбираем среди подходящих (>= 3 активных дня на неделе)
+  // нет квеста или удалён — выбираем среди активных сегодня
   const all = passes.flatMap(p =>
-    (p.quests || []).filter(q => qowIsEligible(q))
+    (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q))
   );
   if (!all.length) return { id: null, name: null, emoji: null, dates: [] };
   const chosen = [...all].sort((a, b) => (a.current||0)/a.max - (b.current||0)/b.max)[0];
@@ -5702,7 +5669,7 @@ function qowInit() {
 }
 
 function qowCheck() {
-  const d = qowGetData(); // FIXED: было qowInit() — теперь просто читаем данные без побочных эффектов
+  const d = qowInit();
   if (!d.id && !d.name) return;
   const found = qowFindQuest();
   if (!found) return;
@@ -5724,7 +5691,7 @@ function qowCheck() {
 }
 
 function qowGetProgress() {
-  const d = qowGetData(); // FIXED: было qowInit() — читаем напрямую, без риска сброса квеста
+  const d = qowInit();
   const found = qowFindQuest();
   return {
     name: found?.name || d.name || 'Квест недели',
@@ -5812,31 +5779,33 @@ function getTodayLiveXP() {
     return true;
   });
   const total = activeToday.length;
-  if (!total) return 0;
 
-  // done = сумма пропорционального прогресса (0..total)
-  const done = activeToday.reduce((sum, q) => sum + Math.min(1, (q.current || 0) / q.max), 0);
+  // ── ЕЖЕДНЕВКИ (adq0/1/2) — от личного пасса ──
+  // done = сумма пропорционального прогресса
+  const done = total ? activeToday.reduce((s, q) => s + Math.min(1, (q.current||0)/q.max), 0) : 0;
   const t1 = Math.max(1, Math.ceil(total * 0.25));
   const t2 = Math.max(1, Math.ceil(total * 0.5));
+  const xp0 = total ? Math.round(Math.min(done / t1, 1) * 200) : 0;
+  const xp1 = total && t2 > t1 ? Math.round(Math.min(Math.max(done-t1,0)/(t2-t1),1)*300) : (done>=t2?300:0);
+  const xp2 = total && total > t2 ? Math.round(Math.min(Math.max(done-t2,0)/(total-t2),1)*500) : (done>=total&&total?500:0);
 
-  // каждая ежедневка: процент_выполнения * её XP
-  // adq0 (25% порог): pct = min(done/t1, 1) * 200
-  // adq1 (50% порог): pct = max(0, min((done-t1)/(t2-t1), 1)) * 300
-  // adq2 (100% порог): pct = max(0, min((done-t2)/(total-t2), 1)) * 500
-  const xp0 = Math.round(Math.min(done / t1, 1) * 200);
-  const xp1 = t2 > t1 ? Math.round(Math.min(Math.max(done - t1, 0) / (t2 - t1), 1) * 300) : (done >= t2 ? 300 : 0);
-  const xp2 = total > t2 ? Math.round(Math.min(Math.max(done - t2, 0) / (total - t2), 1) * 500) : (done >= total ? 500 : 0);
+  // ── СТРИК (awq2) — streakCount/4 * 1000 ──
+  const streakXP = Math.round(Math.min(getStreakCount() / 4, 1) * 1000);
 
-  // + стрик пропорционально: streakCount/4 * 1000 XP
-  const streakCount = getStreakCount();
-  const streakTarget = 4;
-  const streakXP = Math.round(Math.min(streakCount / streakTarget, 1) * 1000);
+  // ── XP ЗА НЕДЕЛЮ (awq0) — личный накопленный XP / цель * 1500 ──
+  // Цель = 500 XP * 3 дня + 1/7 от XP мегаквестов
+  const weekStored = getWeeklyXPValue(); // из прошлых дней этой недели
+  const personalLive = activeToday.reduce((s, q) => s + Math.round(Math.min(1,(q.current||0)/q.max)*(q.xp||100)), 0);
+  const megaBonus = passes.flatMap(p => p.megaQuests||[]).reduce((s,mq) =>
+    s + Math.round(Math.round(300+700*(mq.max/(mq.max+100)))/7), 0);
+  const weekTarget = 500*3 + megaBonus;
+  const weeklyXPtaskXP = Math.round(Math.min((weekStored + personalLive) / weekTarget, 1) * 1500);
 
-  // + еженедельный квест XP: прогресс выполнения / 3 * 1500 XP
+  // ── КВЕСТ НЕДЕЛИ (awq1) — QOW done/3 * 1000 ──
   const qowProg = qowGetProgress();
-  const weeklyQuestXP = Math.round((qowProg.done / qowProg.target) * 1500);
+  const qowXP = Math.round((qowProg.done / qowProg.target) * 1000);
 
-  return xp0 + xp1 + xp2 + streakXP + weeklyQuestXP;
+  return xp0 + xp1 + xp2 + streakXP + weeklyXPtaskXP + qowXP;
 }
 
 // Полный XP = исторический + сегодняшний живой
@@ -5969,7 +5938,7 @@ function updateAuthorPassUI() {
     if (!el) continue;
     document.getElementById(`adq${i}name`).textContent = dailyNames[i];
     document.getElementById(`adq${i}bar`).style.width = pct + '%';
-    document.getElementById(`adq${i}meta`).textContent = `${Math.floor(done)} / ${targets[i]} · +${[200,300,500][i]} XP`;
+    document.getElementById(`adq${i}meta`).textContent = `${Math.min(Math.floor(done), targets[i])} / ${targets[i]} · +${[200,300,500][i]} XP`;
     el.style.opacity = isDone ? '1' : '0.75';
     el.style.borderColor = isDone ? 'rgba(200,140,0,0.6)' : '';
   }
