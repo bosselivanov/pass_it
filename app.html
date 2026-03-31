@@ -724,10 +724,10 @@ body {
 
 <div class="toast" id="toast"></div>
 <div class="update-banner" id="updateBanner" style="display:none;">
-  <div style="font-size:20px;">🎉</div>
+  <div style="font-size:20px;">🔧</div>
   <div class="update-banner-text">
-    Новое обновление!
-    <div class="update-banner-sub" id="updateBannerText">Нажми на пустую ячейку — сразу создаст квест. Прогресс теперь выделяется автоматически при открытии!</div>
+    Фикс авторского пасса
+    <div class="update-banner-sub" id="updateBannerText">Исправлена ошибка из-за которой прогресс квеста недели мог не засчитываться. Теперь всё работает корректно!</div>
   </div>
   <button class="update-banner-close" onclick="dismissUpdate()">✕</button>
 </div>
@@ -912,7 +912,7 @@ body {
             <div class="author-quest-card" id="adq1"><div class="author-quest-name" id="adq1name">Выполни больше</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq1meta">0 / ? · +200 XP</div></div>
             <div class="author-quest-card" id="adq2"><div class="author-quest-name" id="adq2name">Выполни все</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="adq2bar" style="width:0%"></div></div><div class="author-quest-meta" id="adq2meta">0 / ? · +200 XP</div></div>
             <div class="author-quest-card"><div class="author-quest-name" id="awq0name">XP за неделю</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq0meta">0 / ? XP · +1500 XP</div></div>
-            <div class="author-quest-card"><div class="author-quest-name" id="awq1name">Квест недели</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq1meta">0 / 3 раза · +1000 XP</div></div>
+            <div class="author-quest-card" id="awq1card"><div class="author-quest-name" id="awq1name">Квест недели</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq1meta">0 / 3 · +1000 XP</div></div>
             <div class="author-quest-card"><div class="author-quest-name" id="awq2name">🔥 Продли стрик</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="awq2bar" style="width:0%"></div></div><div class="author-quest-meta" id="awq2meta">0 / 4 дней · +1000 XP</div></div>
           </div>
         </div>
@@ -1411,6 +1411,541 @@ body {
       <button id="shopBuyBox2" onclick="shopBuyBox(2)" class="popup-btn secondary" style="flex:1;">📦📦 2 бокса — 90 монет</button>
     </div>
   </div>
+</div>
+
+<!-- BOX OPENING OVERLAY -->
+<div id="boxOpenOverlay" style="display:none;position:fixed;inset:0;z-index:600;background:#0d0b1a;overflow:hidden;">
+  <style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.bo-hidden-body { background: #0d0b1a; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif; overflow: hidden; }
+@media (prefers-color-scheme: light) {
+  .bo-hidden-body { background: #f0eeff; }
+  .face { border-color: rgba(100,80,180,0.4) !important; background: rgba(120,100,220,0.06) !important; }
+  .box-glow { background: radial-gradient(circle, rgba(134,125,206,0.2) 0%, transparent 70%) !important; }
+  #boxHint { color: rgba(60,40,120,0.5) !important; }
+  .slots-title { color: rgba(60,40,120,0.5) !important; }
+  .slot { background: rgba(240,235,255,0.9) !important; border-color: rgba(134,125,206,0.3) !important; }
+  .restart-btn { background: rgba(134,125,206,0.1) !important; border-color: rgba(134,125,206,0.4) !important; color: rgba(60,40,140,0.9) !important; }
+  .result-item { background: rgba(240,235,255,0.95) !important; border-color: rgba(134,125,206,0.2) !important; }
+  .result-label { color: rgba(60,40,120,0.5) !important; }
+}
+
+.scene { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+/* PHASE 1: spinning box */
+#boxStage { position: absolute; display: flex; align-items: center; justify-content: center; width: 200px; height: 200px; perspective: 600px; cursor: pointer; transition: opacity 0.4s; }
+#boxStage:hover #boxHint { opacity: 1; }
+#boxHint { position: absolute; bottom: -32px; font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+
+.crystal-box {
+  width: 100px; height: 100px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: spinBox 6s linear infinite;
+}
+@keyframes spinBox {
+  from { transform: rotateY(0deg) rotateX(15deg); }
+  to   { transform: rotateY(360deg) rotateX(15deg); }
+}
+.crystal-box.fixing {
+  animation: fixBox 0.5s ease-out forwards;
+}
+@keyframes fixBox {
+  to { transform: rotateY(0deg) rotateX(0deg); }
+}
+
+.face {
+  position: absolute;
+  width: 100px; height: 100px;
+  border: 1.5px solid rgba(180,160,255,0.5);
+  background: rgba(120,100,220,0.08);
+  backdrop-filter: blur(2px);
+}
+.face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+}
+.front  { transform: translateZ(34px); }
+.back   { transform: translateZ(-34px) rotateY(180deg); }
+.left   { transform: translateX(-34px) rotateY(-90deg); }
+.right  { transform: translateX(34px) rotateY(90deg); }
+.top    { transform: translateY(-34px) rotateX(90deg); }
+.bottom { transform: translateY(34px) rotateX(-90deg); }
+
+/* glow */
+.box-glow {
+  position: absolute;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(134,125,206,0.3) 0%, transparent 70%);
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%,100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+/* PHASE 2: unfold + explosion */
+#unfoldStage { position: absolute; display: none; align-items: center; justify-content: center; }
+.unfold-cross {
+  position: relative;
+  width: 180px; height: 180px;
+}
+.unfold-face {
+  position: absolute;
+  width: 60px; height: 60px;
+  border: 1.5px solid rgba(180,160,255,0.6);
+  background: rgba(120,100,220,0.15);
+  opacity: 0;
+}
+.uf-center { top: 60px; left: 60px; }
+.uf-top    { top: 0; left: 60px; }
+.uf-bottom { top: 120px; left: 60px; }
+.uf-left   { top: 60px; left: 0; }
+.uf-right  { top: 60px; left: 120px; }
+
+.explosion {
+  position: absolute;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,180,255,0.9) 0%, rgba(134,125,206,0.4) 40%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* PHASE 3: slots */
+#slotsStage {
+  position: absolute;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  opacity: 0;
+}
+.slots-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+.slots-row { display: flex; gap: 12px; }
+
+.slot {
+  width: 90px; height: 90px;
+  border: 1.5px solid rgba(180,160,255,0.3);
+  border-radius: 12px;
+  background: rgba(20,16,40,0.8);
+  overflow: hidden;
+  position: relative;
+}
+.slot-inner {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  top: 0;
+}
+.slot-item {
+  width: 90px; height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.slot-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+.badge-common { background: rgba(50,180,80,0.2); color: #50d080; border: 1px solid rgba(50,180,80,0.3); }
+.badge-rare { background: rgba(69,102,187,0.2); color: #7090ee; border: 1px solid rgba(69,102,187,0.3); }
+.badge-legendary { background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.3); }
+.badge-coin { background: rgba(212,175,55,0.15); color: #d4af37; border: 1px solid rgba(212,175,55,0.25); }
+
+/* piece shapes */
+.piece-shape {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+}
+.piece-common    { background: linear-gradient(135deg, #CF5C86, #4A1C29); }
+.piece-rare      { background: linear-gradient(135deg, #4566BB, #1B436C); }
+.piece-legendary { background: linear-gradient(135deg, #d4af37, #867DCE); }
+
+/* coin */
+.coin-shape {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f5d060 0%, #d4af37 50%, #a07c10 100%);
+  border: 2px solid #b8860b;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 8px rgba(212,175,55,0.4);
+}
+.coin-letter {
+  font-size: 14px;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(100,60,0,0.7);
+  text-shadow: 0 1px 0 rgba(255,220,100,0.5);
+  user-select: none;
+}
+
+/* slot glow on win */
+.slot.winning {
+  border-color: rgba(212,175,55,0.8);
+  box-shadow: 0 0 20px rgba(212,175,55,0.4), inset 0 0 20px rgba(212,175,55,0.05);
+  animation: winPulse 0.6s ease-out;
+}
+@keyframes winPulse {
+  0% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* RESULT */
+#resultStage {
+  position: absolute;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  opacity: 0;
+}
+.result-items { display: flex; gap: 16px; }
+.result-item {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: rgba(30,24,60,0.8);
+  border: 1px solid rgba(180,160,255,0.2);
+  border-radius: 16px;
+  padding: 16px 20px;
+  min-width: 80px;
+}
+.result-item .piece-shape, .result-item .coin-shape { width: 44px; height: 44px; border-radius: 8px; }
+.result-item .coin-shape { border-radius: 50%; }
+.result-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; }
+
+.restart-btn {
+  background: rgba(134,125,206,0.15);
+  border: 1px solid rgba(134,125,206,0.4);
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(200,190,255,0.9);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.restart-btn:hover { background: rgba(134,125,206,0.3); }
+
+/* particles */
+.particle {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+  </style>
+  <div class="scene" id="boScene" id="scene">
+
+  <!-- PHASE 1: spinning crystal box -->
+  <div id="boBoxStage" onclick="boStartOpen()">
+    <div class="box-glow"></div>
+    <div class="crystal-box" id="boCrystalBox">
+      <div class="face front"></div>
+      <div class="face back"></div>
+      <div class="face left"></div>
+      <div class="face right"></div>
+      <div class="face top"></div>
+      <div class="face bottom"></div>
+    </div>
+    <div id="boBoxHint">нажми чтобы открыть</div>
+  </div>
+
+  <!-- PHASE 2: unfold -->
+  <div id="boUnfoldStage">
+    <div class="unfold-cross" id="boUnfoldCross">
+      <div class="unfold-face uf-center"></div>
+      <div class="unfold-face uf-top"></div>
+      <div class="unfold-face uf-bottom"></div>
+      <div class="unfold-face uf-left"></div>
+      <div class="unfold-face uf-right"></div>
+    </div>
+    <div class="explosion" id="boExplosion"></div>
+  </div>
+
+  <!-- PHASE 3: slots -->
+  <div id="boSlotsStage">
+    <div class="slots-title">Получаешь</div>
+    <div class="slots-row">
+      <div class="slot" id="slot0"><div class="slot-inner" id="inner0"></div></div>
+      <div class="slot" id="slot1"><div class="slot-inner" id="inner1"></div></div>
+      <div class="slot" id="slot2"><div class="slot-inner" id="inner2"></div></div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="boResultStage">
+    <div class="result-items" id="boResultItems"></div>
+    <button class="restart-btn" onclick="restart()">Открыть ещё раз</button>
+  </div>
+
+</div>
+
+<script>
+// ---- DATA ----
+const PIECES = [
+  { type:'common',    label:'Обычный', cls:'piece-common' },
+  { type:'rare',      label:'Редкий',  cls:'piece-rare' },
+  { type:'legendary', label:'Легенд.', cls:'piece-legendary' },
+];
+const COIN = { type:'coin', label:'Монеты +10' };
+
+// рандомный пул для слот-машины (много обычных, мало легендарных)
+function buildPool(includeCoin) {
+  let pool = [];
+  for (let i=0; i<8; i++) pool.push(PIECES[0]); // common
+  for (let i=0; i<4; i++) pool.push(PIECES[1]); // rare
+  for (let i=0; i<2; i++) pool.push(PIECES[2]); // legendary
+  if (includeCoin) for (let i=0; i<6; i++) pool.push(COIN);
+  // shuffle
+  for (let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  return pool;
+}
+
+function randomDrop(isThirdSlot) {
+  if (isThirdSlot) {
+    return Math.random() < 0.4 ? COIN : PIECES[Math.floor(Math.random()*3)];
+  }
+  const r = Math.random();
+  if (r < 0.6) return PIECES[0];
+  if (r < 0.85) return PIECES[1];
+  return PIECES[2];
+}
+
+function makePieceHTML(item) {
+  if (item.type === 'coin') {
+    return `<div class="coin-shape"><span class="coin-letter">H</span></div>
+            <div class="slot-badge badge-coin">монеты</div>`;
+  }
+  const badgeCls = {common:'badge-common', rare:'badge-rare', legendary:'badge-legendary'}[item.type];
+  return `<div class="piece-shape ${item.cls}"></div>
+          <div class="slot-badge ${badgeCls}">${item.label}</div>`;
+}
+
+function makeResultHTML(item) {
+  if (item.type === 'coin') {
+    return `<div class="result-item">
+      <div class="coin-shape" style="width:44px;height:44px;font-size:18px;"><span class="coin-letter">H</span></div>
+      <div class="result-label">+10 монет</div>
+    </div>`;
+  }
+  const badgeCls = {common:'badge-common', rare:'badge-rare', legendary:'badge-legendary'}[item.type];
+  return `<div class="result-item">
+    <div class="piece-shape ${item.cls}" style="width:44px;height:44px;border-radius:8px;"></div>
+    <div class="slot-badge ${badgeCls}" style="font-size:10px;">${item.label}</div>
+  </div>`;
+}
+
+// ---- PHASES ----
+let phase = 0;
+
+function boStartOpen() {
+  if (phase !== 0) return;
+  phase = 1;
+
+  const box = document.getElementById('boCrystalBox');
+  box.classList.add('fixing');
+
+  setTimeout(() => {
+    // fade out box, show unfold
+    document.getElementById('boBoxStage').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('boBoxStage').style.display = 'none';
+      boShowUnfold();
+    }, 400);
+  }, 500);
+}
+
+function boShowUnfold() {
+  const stage = document.getElementById('boUnfoldStage');
+  stage.style.display = 'flex';
+
+  const faces = stage.querySelectorAll('.unfold-face');
+  // появляются по очереди
+  faces.forEach((f, i) => {
+    setTimeout(() => {
+      f.style.opacity = '1';
+      f.style.transition = 'opacity 0.15s, transform 0.3s';
+    }, i * 80);
+  });
+
+  // разлёт граней
+  setTimeout(() => {
+    const offsets = [
+      {x:0,y:0}, {x:0,y:-70}, {x:0,y:70}, {x:-70,y:0}, {x:70,y:0}
+    ];
+    faces.forEach((f, i) => {
+      f.style.transition = 'transform 0.35s cubic-bezier(.4,0,.6,1), opacity 0.35s';
+      f.style.transform = `translate(${offsets[i].x}px, ${offsets[i].y}px)`;
+      f.style.opacity = '0.4';
+    });
+  }, 500);
+
+  // взрыв
+  setTimeout(() => boDoExplosion(), 750);
+}
+
+function boDoExplosion() {
+  const exp = document.getElementById('boExplosion');
+  exp.style.transition = 'none';
+  exp.style.opacity = '1';
+  exp.style.width = '0px'; exp.style.height = '0px';
+  exp.style.transform = 'translate(-50%,-50%)';
+
+  requestAnimationFrame(() => {
+    exp.style.transition = 'width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out';
+    exp.style.width = '400px'; exp.style.height = '400px';
+    exp.style.transform = 'translate(-200px,-200px)';
+  });
+
+  boSpawnParticles();
+
+  setTimeout(() => {
+    exp.style.opacity = '0';
+    document.getElementById('boUnfoldStage').style.display = 'none';
+    boShowSlots();
+  }, 600);
+}
+
+function boSpawnParticles() {
+  const scene = document.getElementById('scene');
+  const colors = ['#867DCE','#CF5C86','#4566BB','#d4af37','#ffffff'];
+  for (let i = 0; i < 24; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.left = '50%'; p.style.top = '50%';
+    const angle = Math.random()*360;
+    const dist = 80 + Math.random()*160;
+    const dx = Math.cos(angle*Math.PI/180)*dist;
+    const dy = Math.sin(angle*Math.PI/180)*dist;
+    p.style.transition = `transform ${0.5+Math.random()*0.4}s ease-out, opacity 0.6s`;
+    scene.appendChild(p);
+    requestAnimationFrame(() => {
+      p.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      p.style.opacity = '0';
+    });
+    setTimeout(() => p.remove(), 1200);
+  }
+}
+
+// ---- SLOTS ----
+const drops = [null, null, null];
+
+function boShowSlots() {
+  const stage = document.getElementById('boSlotsStage');
+  stage.style.display = 'flex';
+  stage.style.transition = 'opacity 0.3s';
+  requestAnimationFrame(() => { stage.style.opacity = '1'; });
+
+  // готовим дропы
+  for (let i=0;i<3;i++) drops[i] = randomDrop(i===2);
+
+  // запускаем слоты один за другим
+  setTimeout(() => boSpinSlot(0, drops[0], () => {
+    setTimeout(() => boSpinSlot(1, drops[1], () => {
+      setTimeout(() => boSpinSlot(2, drops[2], () => {
+        setTimeout(showResult, 700);
+      }), 300);
+    }), 300);
+  }), 300);
+}
+
+function boSpinSlot(idx, winItem, cb) {
+  const inner = document.getElementById('inner' + idx);
+  const slot = document.getElementById('slot' + idx);
+  const pool = buildPool(idx===2);
+
+  // строим список айтемов: пул + победитель в конце
+  const items = [];
+  for (let i=0;i<18;i++) items.push(pool[i % pool.length]);
+  items.push(winItem);
+
+  inner.innerHTML = items.map(item =>
+    `<div class="slot-item">${makePieceHTML(item)}</div>`
+  ).join('');
+
+  const itemH = 90 + 4; // height + gap
+  const totalItems = items.length;
+  const targetY = -(totalItems - 1) * itemH;
+
+  // быстрая прокрутка → замедление
+  inner.style.transition = 'none';
+  inner.style.transform = 'translateY(0)';
+
+  // фаза 1: быстро до -15 айтемов
+  requestAnimationFrame(() => {
+    inner.style.transition = `transform ${2.2 + idx*0.4}s cubic-bezier(0.15, 0.05, 0.05, 1.0)`;  // CS2-style: fast start, very slow crawl at end
+    inner.style.transform = `translateY(${targetY}px)`;
+  });
+
+  const duration = (2.2 + idx*0.4) * 1000;
+  setTimeout(() => {
+    slot.classList.add('winning');
+    if (cb) cb();
+  }, duration);
+}
+
+function boShowResult() {
+  document.getElementById('boSlotsStage').style.display = 'none';
+
+  const stage = document.getElementById('boResultStage');
+  const items = document.getElementById('boResultItems');
+  items.innerHTML = drops.map(d => makeResultHTML(d)).join('');
+
+  stage.style.display = 'flex';
+  stage.style.transition = 'opacity 0.4s';
+  requestAnimationFrame(() => { stage.style.opacity = '1'; });
+}
+
+function boRestart() {
+  phase = 0;
+  drops.fill(null);
+
+  // reset all stages
+  document.getElementById('boResultStage').style.display = 'none';
+  document.getElementById('boResultStage').style.opacity = '0';
+  document.getElementById('boSlotsStage').style.display = 'none';
+  document.getElementById('boSlotsStage').style.opacity = '0';
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('winning'));
+  for (let i=0;i<3;i++) {
+    document.getElementById('inner'+i).innerHTML = '';
+    document.getElementById('inner'+i).style.transform = '';
+    document.getElementById('inner'+i).style.transition = '';
+  }
+
+  // reset box
+  const box = document.getElementById('boCrystalBox');
+  box.classList.remove('fixing');
+  box.style.animation = 'none';
+  requestAnimationFrame(() => {
+    box.style.animation = '';
+    box.style.animationName = 'spinBox';
+  });
+
+  const boxStage = document.getElementById('boBoxStage');
+  boxStage.style.display = 'flex';
+  boxStage.style.opacity = '0';
+  boxStage.style.transition = 'opacity 0.4s';
+  requestAnimationFrame(() => { boxStage.style.opacity = '1'; });
+}
+</script>
 </div>
 
 <!-- ROADMAP POPUP -->
@@ -2012,7 +2547,7 @@ function getRepeatFromPopup(tabsId) {
   return type === 'weekly' ? { type, days } : { type };
 }
 
-const CURRENT_VERSION = 'v2.0';
+const CURRENT_VERSION = 'v2.1';
 function checkUpdateBanner() {
   const seen = load('lastSeenVersion', null);
   if (seen !== CURRENT_VERSION) {
@@ -2186,7 +2721,8 @@ function gridToSnake(row, col, cols) {
 
 function updateAuthorIfOpen() {
   checkStreakToday();
-  const levelChanged = syncAuthorLevel();
+  qowCheck();
+  syncAuthorLevel();
   if (authorScreenOpen) updateAuthorPassUI();
 }
 function renderQuests() {
@@ -2449,6 +2985,12 @@ function bindQuestEditables() {
       if (bar) bar.style.width = ((val / p.quests[i].max) * 100) + '%';
       this.closest('.quest-card').classList.toggle('done', val >= p.quests[i].max);
       updatePass();
+      // FIXED: был пропущен вызов авторского пасса при прямом вводе цифры
+      if (val >= p.quests[i].max) {
+        onQuestCompleted(p.quests[i].name);
+      } else {
+        updateAuthorIfOpen();
+      }
     });
     el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
   });
@@ -3033,16 +3575,20 @@ function saveMetricChange() {
     }
   } else if (changeMetricType === 'quest') {
     const q = p.quests[changeMetricIndex];
+    if (!q) { showToast('Ошибка: квест не найден'); return; }
     const oldPct = Math.min(1, (q.current || 0) / q.max);
     q.current = val;
     const newPct = Math.min(1, val / q.max);
     const delta = newPct - oldPct;
     // XP теперь считается live через getTotalAuthorXP()
-    if (val >= q.max) onQuestCompleted(q.name);
-    savePasses();
+    savePasses(); // FIXED: сохраняем ДО вызова onQuestCompleted, чтобы qowCheck видел актуальные данные
     closePopup('changeMetricOverlay');
     renderQuests();
-    updateAuthorIfOpen();
+    if (val >= q.max) {
+      onQuestCompleted(q.name); // FIXED: onQuestCompleted уже вызывает qowCheck и обновляет UI
+    } else {
+      updateAuthorIfOpen(); // FIXED: только если квест НЕ завершён — иначе двойной qowCheck
+    }
   } else {
     p.megaQuests[changeMetricIndex].current = val;
     savePasses();
@@ -3866,6 +4412,134 @@ function getStepForPieces(themeId, pieces) {
   return theme.steps.length;
 }
 
+
+// ====== BOX OPENING (from box_opening.html) ======
+
+// BO: open animation with app drops
+let boPhase = 0;
+function openBoxAnimation(boxDrops) {
+  const overlay = document.getElementById('boxOpenOverlay');
+  overlay.style.display = 'flex';
+  // reset state
+  _boDrops = boxDrops;
+  boPhase = 0;
+  const stage = document.getElementById('boBoxStage');
+  stage.style.display = 'flex';
+  stage.style.opacity = '1';
+  document.getElementById('boSlotsStage').style.display = 'none';
+  document.getElementById('boSlotsStage').style.opacity = '0';
+  document.getElementById('boResultStage').style.display = 'none';
+  document.getElementById('boResultStage').style.opacity = '0';
+  document.getElementById('boUnfoldStage').style.display = 'none';
+  const crystal = document.getElementById('boCrystalBox');
+  crystal.classList.remove('fixing');
+  crystal.style.opacity = '1';
+  crystal.style.animation = '';
+  requestAnimationFrame(() => { crystal.style.animationName = 'spinBox'; });
+}
+
+function boCloseAnimation() {
+  document.getElementById('boxOpenOverlay').style.display = 'none';
+}
+
+let _boDrops = [];
+
+
+// ---- DATA ----
+// ====== OLD BOX CODE (replaced) ======
+let _boxDrops = [];
+let _boxOpened = false;
+
+function showBoxOpeningPopup(boxDrops) { openBoxAnimation(boxDrops); return; } function _oldShowBoxOpeningPopup(boxDrops) {
+  _boxDrops = drops;
+  _boxOpened = false;
+  const overlay = document.getElementById('boxOpenOverlay');
+  overlay.style.display = 'flex';
+  document.getElementById('boxSlotsArea').style.display = 'none';
+  document.getElementById('boxOpenStage').style.display = 'flex';
+  document.getElementById('boxOpenHint').style.display = '';
+  const crystal = document.getElementById('boxCrystal');
+  crystal.style.animation = 'boxSpin 5s linear infinite';
+}
+
+function triggerBoxOpen() {
+  if (_boxOpened) return;
+  _boxOpened = true;
+  document.getElementById('boxOpenHint').style.display = 'none';
+  const crystal = document.getElementById('boxCrystal');
+  crystal.style.animation = 'none';
+  crystal.style.transition = 'transform 0.4s, opacity 0.4s';
+  crystal.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1.1)';
+  setTimeout(() => {
+    crystal.style.opacity = '0';
+    crystal.style.transform = 'scale(2)';
+  }, 300);
+  setTimeout(() => {
+    document.getElementById('boxOpenStage').style.display = 'none';
+    showBoxSlots();
+  }, 700);
+}
+
+function showBoxSlots() {
+  const area = document.getElementById('boxSlotsArea');
+  area.style.display = 'flex';
+  const slotsEl = document.getElementById('boxSlots');
+  const names = { mira: 'Мира', zoi: 'Зои', rumi: 'Руми ✦' };
+  const colors = { mira: 'linear-gradient(135deg,#F4B9BE,#CF5C86)', zoi: 'linear-gradient(135deg,#D27DA4,#4566BB)', rumi: 'linear-gradient(135deg,#d4af37,#867DCE)' };
+
+  slotsEl.innerHTML = _boxDrops.map((drop, idx) => `
+    <div class="box-slot" id="bslot${idx}">
+      <div class="box-slot-inner" id="binner${idx}"></div>
+    </div>`).join('');
+
+  _boxDrops.forEach((drop, idx) => {
+    setTimeout(() => spinBoxSlot(idx, drop), idx * 600);
+  });
+}
+
+function spinBoxSlot(idx, winDrop) {
+  const inner = document.getElementById(`binner${idx}`);
+  const slot = document.getElementById(`bslot${idx}`);
+  const names = { mira: 'Мира', zoi: 'Зои', rumi: 'Руми ✦' };
+  const colors = { mira: 'linear-gradient(135deg,#F4B9BE,#CF5C86)', zoi: 'linear-gradient(135deg,#D27DA4,#4566BB)', rumi: 'linear-gradient(135deg,#d4af37,#867DCE)' };
+
+  const pool = [
+    { type:'piece', themeId:'mira' }, { type:'piece', themeId:'zoi' },
+    { type:'piece', themeId:'rumi' }, { type:'coin' },
+    { type:'piece', themeId:'mira' }, { type:'piece', themeId:'zoi' },
+    { type:'piece', themeId:'rumi' }, { type:'coin' },
+    { type:'piece', themeId:'mira' }, { type:'piece', themeId:'zoi' },
+    { type:'piece', themeId:'rumi' }, { type:'coin' },
+    winDrop
+  ];
+
+  inner.innerHTML = pool.map(d => {
+    if (d.type === 'coin') return `<div class="box-slot-item"><div class="bsi-coin">H</div><div class="bsi-label" style="color:#d4af37;">монеты</div></div>`;
+    return `<div class="box-slot-item"><div class="bsi-piece" style="background:${colors[d.themeId]};"></div><div class="bsi-label" style="color:rgba(200,180,255,0.7);">${names[d.themeId]}</div></div>`;
+  }).join('');
+
+  const itemH = 80;
+  const targetY = -(pool.length - 1) * itemH;
+  inner.style.transform = 'translateY(0)';
+  inner.style.transition = 'none';
+  requestAnimationFrame(() => {
+    inner.style.transition = `transform ${1.8 + idx * 0.3}s cubic-bezier(0.15,0.05,0.05,1.0)`;
+    inner.style.transform = `translateY(${targetY}px)`;
+  });
+  setTimeout(() => {
+    slot.style.borderColor = 'rgba(212,175,55,0.8)';
+    slot.style.boxShadow = '0 0 16px rgba(212,175,55,0.3)';
+  }, (1.8 + idx * 0.3) * 1000);
+}
+
+function closeBoxOpening() {
+  document.getElementById('boxOpenOverlay').style.display = 'none';
+  const crystal = document.getElementById('boxCrystal');
+  crystal.style.opacity = '1';
+  crystal.style.transform = '';
+  crystal.style.transition = '';
+}
+
 // ====== SHOP POPUP ======
 function openShop() {
   updateShopUI();
@@ -3903,12 +4577,7 @@ function shopOpenBox() {
   const drops = openBoxAndGetDrops();
   applyBoxDrops(drops);
   updateShopUI();
-  // показываем что выпало
-  const names = { mira: 'Мира', zoi: 'Зои', rumi: 'Руми ✦' };
-  const desc = drops.map(d =>
-    d.type === 'piece' ? `🧩 ${names[d.themeId]}` : `💰 +${d.amount} монеток`
-  ).join(' · ');
-  showToast(`Выпало: ${desc}`);
+  showBoxOpeningPopup(drops);
 }
 
 // ====== SEASONAL THEMES SYSTEM ======
@@ -4139,6 +4808,9 @@ function performDayReset(isManual) {
     });
   });
 
+  // сохраняем прогресс авторского пасса ДО сброса квестов
+  processAuthorDailyReward();
+
   // сброс активных квестов
   passes.forEach(p => {
     (p.quests || []).forEach(q => {
@@ -4149,7 +4821,6 @@ function performDayReset(isManual) {
 
   save('lastAutoReset', today);
   save('lastNewDay', today);
-  processAuthorDailyReward();
   savePasses();
   cleanupExpiredQuests();
   renderQuests();
@@ -4795,6 +5466,8 @@ function toggleAuthorScreen() {
     checkStreakToday();
     updateAuthorPassUI();
     syncAuthorLevel();
+    // инициализируем квест недели при открытии
+    qowInit();
     checkAuthorOnboarding();
   } else {
     icon.textContent = '▲';
@@ -4959,58 +5632,116 @@ function getWeeklyXPValue() {
 }
 
 // --- КВЕСТ НЕДЕЛИ ---
-function getQuestOfWeek() {
-  const weekStart = getCurrentWeekStart();
-  const savedWeek = load('passit_qow_week', null);
-  if (savedWeek !== weekStart) {
-    save('passit_qow_week', weekStart);
-    save('passit_qow_name', null);
-    save('passit_qow_pass', null);
-  }
-  const savedName = load('passit_qow_name', null);
-  const savedPass = load('passit_qow_pass', null);
 
-  // ищем по всем пассам
-  const allWithPass = passes.flatMap(p =>
-    (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)).map(q => ({ q, passName: p.name }))
+// Считает сколько раз квест активен на текущей неделе (пн–вс)
+// daily/once — считаем 7 дней (всегда >= 3)
+// weekly — считаем пересечение repeat.days с [0..6]
+function qowCountActiveDaysThisWeek(q) {
+  if (!q.repeat || q.repeat.type === 'daily') return 7;
+  if (q.repeat.type === 'once') return 7; // активен весь период до дедлайна
+  if (q.repeat.type === 'weekly') return (q.repeat.days || []).length;
+  return 7;
+}
+
+// Квест подходит для квеста недели если:
+// 1. Не заморожен
+// 2. startDate не в будущем
+// 3. Активен на этой неделе >= 3 дней
+function qowIsEligible(q) {
+  if (!q || q.frozen) return false;
+  const today = todayStr();
+  if (q.startDate && q.startDate > today) return false;
+  // для once — дедлайн должен быть не раньше сегодня
+  if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return false;
+  return qowCountActiveDaysThisWeek(q) >= 3;
+}
+
+function qowWeekKey() { return 'passit_qow_' + getCurrentWeekStart(); }
+function qowGetData() { return load(qowWeekKey(), { id: null, name: null, emoji: null, dates: [] }); }
+function qowSaveData(d) { save(qowWeekKey(), d); }
+
+function qowFindQuest() {
+  const d = qowGetData();
+  if (!d.id && !d.name) return null;
+  for (const p of passes) {
+    for (const q of (p.quests || [])) {
+      if (!q) continue;
+      // ищем по id если есть, иначе по имени
+      if (d.id && q.id && String(q.id) === String(d.id)) return q;
+      if (!d.id && d.name && q.name === d.name) return q;
+    }
+  }
+  return null;
+}
+
+function qowInit() {
+  localStorage.removeItem('passit4_passit_qow_name');
+  localStorage.removeItem('passit4_passit_qow_pass');
+  localStorage.removeItem('passit4_passit_qow_week');
+
+  const d = qowGetData();
+
+  // уже выбран — проверяем что квест подходит для квеста недели (>= 3 активных дня)
+  if (d.id || d.name) {
+    const found = qowFindQuest();
+    if (found && qowIsEligible(found)) return d; // FIXED: квест подходит — не меняем до следующей недели
+    // квест удалён или не набирает 3 активных дня — выбираем другой
+  }
+
+  // нет квеста или не подходит — выбираем среди подходящих (>= 3 активных дня на неделе)
+  const all = passes.flatMap(p =>
+    (p.quests || []).filter(q => qowIsEligible(q))
   );
-  if (!allWithPass.length) return null;
+  if (!all.length) return { id: null, name: null, emoji: null, dates: [] };
+  const chosen = [...all].sort((a, b) => (a.current||0)/a.max - (b.current||0)/b.max)[0];
+  // убеждаемся что id есть — добавляем если нет
+  if (!chosen.id) chosen.id = Date.now() + Math.random();
+  const newD = { id: String(chosen.id), name: chosen.name, emoji: chosen.emoji || '🎯', dates: [] };
+  qowSaveData(newD);
+  return newD;
+}
 
-  if (savedName) {
-    const found = allWithPass.find(({ q }) => q.name === savedName);
-    if (found) return { ...found.q, passName: found.passName };
+function qowCheck() {
+  const d = qowGetData(); // FIXED: было qowInit() — теперь просто читаем данные без побочных эффектов
+  if (!d.id && !d.name) return;
+  const found = qowFindQuest();
+  if (!found) return;
+  // засчитываем только если квест активен сегодня
+  if (!isQuestActiveToday(found)) return;
+
+  const today = todayStr();
+  const isComplete = (found.current || 0) >= found.max;
+  const alreadyCounted = (d.dates || []).includes(today);
+
+  if (isComplete && !alreadyCounted) {
+    d.dates = [...(d.dates || []), today];
+    qowSaveData(d);
+    showToast('🎯 Квест недели: ' + d.dates.length + '/3');
+  } else if (!isComplete && alreadyCounted) {
+    d.dates = (d.dates || []).filter(dt => dt !== today);
+    qowSaveData(d);
   }
-
-  // выбираем с наименьшим процентом выполнения
-  const sorted = [...allWithPass].sort((a, b) => {
-    const ra = (a.q.current || 0) / a.q.max;
-    const rb = (b.q.current || 0) / b.q.max;
-    return ra - rb;
-  });
-  const chosen = sorted[0];
-  save('passit_qow_name', chosen.q.name);
-  save('passit_qow_pass', chosen.passName);
-  return { ...chosen.q, passName: chosen.passName };
 }
 
-function getQuestOfWeekProgress() {
-  const q = getQuestOfWeek();
-  if (!q) return { done: 0, target: 3, name: 'Квест недели', emoji: '🎯', passName: '' };
-  const done = load('passit_qow_done_' + getCurrentWeekStart(), 0);
-  return { done, target: 3, name: q.name, emoji: q.emoji, passName: q.passName || '' };
+function qowGetProgress() {
+  const d = qowGetData(); // FIXED: было qowInit() — читаем напрямую, без риска сброса квеста
+  const found = qowFindQuest();
+  return {
+    name: found?.name || d.name || 'Квест недели',
+    emoji: found?.emoji || d.emoji || '🎯',
+    done: (d.dates || []).length,
+    target: 3
+  };
 }
 
-// вызывается при каждом выполнении квеста
+// вызывается при каждом изменении квеста
 function onQuestCompleted(questName) {
   checkStreakToday();
-  const qow = getQuestOfWeek();
-  if (qow && qow.name === questName) {
-    const key = 'passit_qow_done_' + getCurrentWeekStart();
-    save(key, Math.min((load(key, 0) + 1), 3));
-  }
+  qowCheck();
   checkAchievements();
   if (authorScreenOpen) updateAuthorPassUI();
 }
+
 
 // --- УРОВНИ АВТОРСКОГО ПАССА ---
 function getAuthorPassLevel() { return load('passit_author_level', 0); }
@@ -5029,8 +5760,12 @@ function tryAddAuthorLevel(count) {
 }
 
 function processAuthorDailyReward() {
-  // При сбросе дня — фиксируем накопленный live XP в исторический
-  // чтобы после сброса квестов прогресс не потерялся
+  // Защита от дупа — сохраняем только один раз в день
+  const today = todayStr();
+  const lastSaved = load('passit_author_xp_date', null);
+  if (lastSaved === today) return; // уже сохранено сегодня
+  save('passit_author_xp_date', today);
+
   const todayXP = getTodayLiveXP();
 
   // сохраняем в исторический XP авторского пасса
@@ -5097,20 +5832,9 @@ function getTodayLiveXP() {
   const streakTarget = 4;
   const streakXP = Math.round(Math.min(streakCount / streakTarget, 1) * 1000);
 
-  // + еженедельный квест XP: личный XP прямо сейчас / цель недели * 1500 XP
-  const personalQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
-  const personalLiveXP = personalQuests.reduce((sum, q) => {
-    return sum + Math.round(Math.min(1, (q.current || 0) / q.max) * (q.xp || 100));
-  }, 0);
-  const allMegas = passes.flatMap(p => p.megaQuests || []);
-  const megaWeeklyBonus = allMegas.reduce((sum, mq) => {
-    return sum + Math.round(Math.round(300 + 700 * (mq.max / (mq.max + 100))) / 7);
-  }, 0);
-  const weekTarget = 500 * 3 + megaWeeklyBonus;
-  const weekXPstored = getWeeklyXPValue(); // из прошлых дней
-  const totalWeekXP = weekXPstored + personalLiveXP; // + сегодня живой
-  const weekPct = Math.min(totalWeekXP / weekTarget, 1);
-  const weeklyQuestXP = Math.round(weekPct * 1500);
+  // + еженедельный квест XP: прогресс выполнения / 3 * 1500 XP
+  const qowProg = qowGetProgress();
+  const weeklyQuestXP = Math.round((qowProg.done / qowProg.target) * 1500);
 
   return xp0 + xp1 + xp2 + streakXP + weeklyQuestXP;
 }
@@ -5276,14 +6000,14 @@ function updateAuthorPassUI() {
   }
 
   // КВЕСТ НЕДЕЛИ
-  const qow = getQuestOfWeekProgress();
+  const qow = qowGetProgress();
   const awq1 = document.getElementById('awq1bar');
   const awq1name = document.getElementById('awq1name');
   const awq1meta = document.getElementById('awq1meta');
-  if (awq1name) awq1name.textContent = `Выполни: ${qow.emoji || '🎯'} ${qow.name || 'Квест недели'}${qow.passName ? ' (' + qow.passName + ')' : ''}`;
+  if (awq1name) awq1name.textContent = `${qow.emoji} ${qow.name}`;
   if (awq1) awq1.style.width = Math.round((qow.done / qow.target) * 100) + '%';
-  if (awq1meta) awq1meta.textContent = `${qow.done} / ${qow.target} раза · +1000 XP`;
-  const awq1card = awq1?.closest('.author-quest-card');
+  if (awq1meta) awq1meta.textContent = `${qow.done} / ${qow.target} · +1000 XP`;
+  const awq1card = document.getElementById('awq1card');
   if (awq1card) {
     awq1card.style.opacity = qow.done >= qow.target ? '1' : '0.75';
     awq1card.style.borderColor = qow.done >= qow.target ? 'rgba(200,140,0,0.6)' : '';
