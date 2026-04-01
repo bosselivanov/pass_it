@@ -927,6 +927,7 @@ body {
   <div class="left-menu">
     <div class="menu-title">Меню</div>
     <button class="menu-btn" onclick="newDay()">🌅 Начать новый день</button>
+    <button class="menu-btn" onclick="openHistory()">📊 История активности</button>
     <button class="menu-btn" onclick="replayOnboarding()">📖 Повторить обучение</button>
     <button class="menu-btn" onclick="replayAuthorOnboarding()">✦ Обучение авторского пасса</button>
     <button class="menu-btn" onclick="openCompletedMegas()">📖 Книга мегаквестов</button>
@@ -1946,6 +1947,18 @@ function boRestart() {
   requestAnimationFrame(() => { boxStage.style.opacity = '1'; });
 }
 </script>
+</div>
+
+
+<!-- HISTORY OVERLAY -->
+<div class="popup-overlay" id="historyOverlay" onmousedown="if(event.target===this)closePopup('historyOverlay')">
+  <div class="popup" onmousedown="event.stopPropagation()" style="width:480px;max-height:80vh;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-shrink:0;">
+      <div class="popup-title">📊 История активности</div>
+      <button class="popup-btn secondary" onclick="closePopup('historyOverlay')" style="flex:0;padding:6px 12px;font-size:12px;">✕</button>
+    </div>
+    <div id="historyContent" style="overflow-y:auto;flex:1;padding-right:4px;"></div>
+  </div>
 </div>
 
 <!-- ROADMAP POPUP -->
@@ -3576,6 +3589,16 @@ function saveMetricChange() {
     const delta = newPct - oldPct;
     // XP теперь считается live через getTotalAuthorXP()
     if (val >= q.max) onQuestCompleted(q.name);
+    // логируем изменение
+    if (delta > 0) {
+      const p2 = getCurrentPass();
+      logActivity('quest', {
+        name: q.name,
+        passName: p2?.name || '',
+        xp: Math.round(delta * (q.xp || 100)),
+        detail: `${val}/${q.max} ${q.unit||''}`.trim(),
+      });
+    }
     savePasses();
     closePopup('changeMetricOverlay');
     renderQuests();
@@ -4729,6 +4752,8 @@ function completeMega(i) {
   // добавляем XP и в еженедельную статистику и в авторский пасс
   addXPToday(xp);
   addAuthorXP(Math.round(xp * 0.5)); // мегаквест даёт 50% своего XP в авторский пасс
+  const _mq = getCurrentPass()?.megaQuests?.[i];
+  if (_mq) logActivity('mega', { name: _mq.name, passName: getCurrentPass()?.name || '', xp });
 
   // удаляем из пасса
   p.megaQuests.splice(i, 1);
@@ -5278,7 +5303,7 @@ function cleanupExpiredQuests() {
     p.quests = p.quests.map(q => {
       if (!q) return null;
       if (q.frozen) return q;
-      if (q.repeat?.type === 'once' && q.deadline && q.deadline < today) return null;
+      if (q.repeat?.type === 'once' && q.deadline && q.deadline <= today) return null;
       return q;
     });
     // trim trailing nulls
@@ -5732,11 +5757,14 @@ function tryAddAuthorLevel(count) {
 }
 
 function processAuthorDailyReward() {
-  // Защита от дупа — сохраняем только один раз в день
+  // Защита от дупа — сохраняем для следующего дня (после сброса начинается новый день)
   const today = todayStr();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
   const lastSaved = load('passit_author_xp_date', null);
-  if (lastSaved === today) return; // уже сохранено сегодня
-  save('passit_author_xp_date', today);
+  if (lastSaved === today || lastSaved === tomorrowStr) return; // уже сохранено
+  save('passit_author_xp_date', tomorrowStr); // ставим завтра — защита до следующего сброса
 
   const todayXP = getTodayLiveXP();
 
@@ -5832,6 +5860,7 @@ function syncAuthorLevel() {
       processLevelRewards(l);
     }
     showToast(`⬆️ Уровень ${newLevel}!`);
+    logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
   }
   return newLevel;
 }
