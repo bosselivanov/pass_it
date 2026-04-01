@@ -5445,7 +5445,21 @@ function checkAndAutoReset() {
   const today = todayStr();
   const lastReset = load('lastAutoReset', null);
   if (lastReset === today) return;
-  // показываем попап с вопросом вместо автосброса
+
+  // проверяем стрик за пропущенные дни
+  // если не открывали приложение — нужно применить заморозку за каждый пропущенный день
+  if (lastReset && lastReset < today) {
+    const last = new Date(lastReset + 'T00:00:00');
+    const now = new Date(today + 'T00:00:00');
+    const missedDays = Math.round((now - last) / 86400000) - 1; // -1 т.к. сегодня ещё не сбросили
+    if (missedDays > 0) {
+      // применяем заморозку или сброс за каждый пропущенный день
+      for (let d = 0; d < missedDays; d++) {
+        applyStreakFreeze();
+      }
+    }
+  }
+
   showNewDayPopup();
 }
 
