@@ -1373,43 +1373,43 @@ body {
 
 <!-- SHOP POPUP -->
 <div class="popup-overlay" id="shopOverlay" style="z-index:500;" onmousedown="if(event.target===this)closePopup('shopOverlay')">
-  <div class="popup" onmousedown="event.stopPropagation()" style="width:440px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
+  <div class="popup" onmousedown="event.stopPropagation()" style="width:600px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <div class="popup-title">🛒 Магазин</div>
       <button class="popup-btn secondary" onclick="closePopup('shopOverlay')" style="flex:0;padding:6px 12px;font-size:12px;">✕</button>
     </div>
 
-    <!-- инвентарь -->
-    <div style="display:flex;gap:10px;margin-top:4px;margin-bottom:16px;">
-      <div style="flex:1;background:var(--bar-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center;">
-        <div style="font-size:18px;">💰</div>
-        <div style="font-size:16px;font-weight:800;color:var(--text);" id="shopCoins">0</div>
-        <div style="font-size:10px;color:var(--text2);">монеток</div>
+    <!-- инвентарь — одна строка -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--bar-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
+        <span style="font-size:20px;">💰</span>
+        <div><div style="font-size:15px;font-weight:800;color:var(--text);" id="shopCoins">0</div><div style="font-size:10px;color:var(--text2);">монет</div></div>
       </div>
-      <div style="flex:1;background:var(--bar-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center;">
-        <div style="font-size:18px;">📦</div>
-        <div style="font-size:16px;font-weight:800;color:var(--text);" id="shopBoxes">0</div>
-        <div style="font-size:10px;color:var(--text2);">боксов</div>
+      <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--bar-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
+        <span style="font-size:20px;">📦</span>
+        <div><div style="font-size:15px;font-weight:800;color:var(--text);" id="shopBoxes">0</div><div style="font-size:10px;color:var(--text2);">боксов</div></div>
       </div>
-      <div style="flex:1;background:var(--bar-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center;">
-        <div style="font-size:18px;">🧩</div>
-        <div style="font-size:16px;font-weight:800;color:var(--text);" id="shopPiecesCount">0/5</div>
-        <div style="font-size:10px;color:var(--text2);">кусочков бокса</div>
+      <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--bar-bg);border:1px solid var(--border);border-radius:10px;padding:10px 14px;">
+        <span style="font-size:20px;">🧩</span>
+        <div><div style="font-size:15px;font-weight:800;color:var(--text);" id="shopPiecesCount">0/5</div><div style="font-size:10px;color:var(--text2);">кусочков</div></div>
       </div>
     </div>
 
-    <!-- открыть бокс -->
-    <div style="background:linear-gradient(135deg,rgba(134,125,206,0.1),rgba(232,150,10,0.08));border:1.5px solid rgba(134,125,206,0.25);border-radius:14px;padding:16px;margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:4px;">📦 Открыть бокс</div>
-      <div style="font-size:11px;color:var(--text2);margin-bottom:12px;">3 слота · слот 1-2: кусочек темы · слот 3: кусочек (60%) или монетки (40%)</div>
-      <button id="shopOpenBox" onclick="shopOpenBox()" class="popup-btn primary" style="width:100%;">Открыть бокс</button>
+    <!-- действия — одна строка -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button id="shopOpenBox" onclick="shopOpenBox()" class="popup-btn primary" style="flex:2;">📦 Открыть бокс</button>
+      <button id="shopBuyBox1" onclick="shopBuyBox(1)" class="popup-btn secondary" style="flex:1;">+1 бокс · 50 монет</button>
+      <button id="shopBuyBox2" onclick="shopBuyBox(2)" class="popup-btn secondary" style="flex:1;">+2 бокса · 90 монет</button>
     </div>
 
-    <!-- купить боксы -->
-    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;">Купить за монетки</div>
-    <div style="display:flex;gap:8px;">
-      <button id="shopBuyBox1" onclick="shopBuyBox(1)" class="popup-btn secondary" style="flex:1;">📦 1 бокс — 50 монет</button>
-      <button id="shopBuyBox2" onclick="shopBuyBox(2)" class="popup-btn secondary" style="flex:1;">📦📦 2 бокса — 90 монет</button>
+    <!-- промокод -->
+    <div style="border-top:1px solid var(--border);padding-top:14px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:8px;">Промокод</div>
+      <div style="display:flex;gap:8px;">
+        <input id="promoInput" type="text" placeholder="Введи код..." style="flex:1;text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        <button onclick="redeemPromo()" class="popup-btn primary" style="flex:0;padding:8px 20px;">Применить</button>
+      </div>
+      <div id="promoResult" style="font-size:11px;margin-top:6px;min-height:16px;"></div>
     </div>
   </div>
 </div>
@@ -1855,14 +1855,20 @@ function boShowSlots() {
   stage.style.transition = 'opacity 0.3s';
   requestAnimationFrame(() => { stage.style.opacity = '1'; });
 
-  // готовим дропы
-  for (let i=0;i<3;i++) drops[i] = randomDrop(i===2);
+  // используем дропы из магазина (_boDrops) или рандомные
+  const boDropsToUse = [0,1,2].map(i => {
+    const d = _boDrops && _boDrops[i];
+    if (!d) return randomDrop(i===2);
+    if (d.type === 'coin') return COIN;
+    const rarity = d.themeId === 'rumi' ? 'legendary' : d.themeId === 'zoi' ? 'rare' : 'common';
+    return { type: rarity, label: {mira:'Мира', zoi:'Зои', rumi:'Руми ✦'}[d.themeId] || d.themeId, cls: 'piece-' + rarity };
+  });
+  drops[0] = boDropsToUse[0]; drops[1] = boDropsToUse[1]; drops[2] = boDropsToUse[2];
 
-  // запускаем слоты один за другим
   setTimeout(() => boSpinSlot(0, drops[0], () => {
     setTimeout(() => boSpinSlot(1, drops[1], () => {
       setTimeout(() => boSpinSlot(2, drops[2], () => {
-        setTimeout(showResult, 700);
+        setTimeout(boShowResult, 700);
       }), 300);
     }), 300);
   }), 300);
@@ -4552,6 +4558,64 @@ function closeBoxOpening() {
   crystal.style.opacity = '1';
   crystal.style.transform = '';
   crystal.style.transition = '';
+}
+
+// ====== ПРОМОКОДЫ (Firebase) ======
+function redeemPromo() {
+  const input = document.getElementById('promoInput');
+  const result = document.getElementById('promoResult');
+  const code = (input.value || '').trim().toUpperCase();
+  if (!code) { result.style.color = 'var(--text2)'; result.textContent = 'Введи код'; return; }
+
+  if (!currentUser) {
+    result.style.color = '#e04040';
+    result.textContent = '✕ Нужно войти в аккаунт';
+    return;
+  }
+
+  result.style.color = 'var(--text2)';
+  result.textContent = 'Проверяем...';
+
+  const uid = currentUser.uid;
+  const codeRef = fbdb.ref('promo_codes/' + code);
+  const usedRef = fbdb.ref('promo_used/' + code + '/' + uid);
+
+  // проверяем использовал ли уже этот юзер
+  usedRef.once('value', snap => {
+    if (snap.val()) {
+      result.style.color = '#e04040';
+      result.textContent = '✕ Ты уже использовал этот код';
+      return;
+    }
+
+    // читаем код из базы
+    codeRef.once('value', codeSnap => {
+      const promo = codeSnap.val();
+      if (!promo) {
+        result.style.color = '#e04040';
+        result.textContent = '✕ Неверный код';
+        return;
+      }
+      if (promo.maxUses && promo.usedCount >= promo.maxUses) {
+        result.style.color = '#e04040';
+        result.textContent = '✕ Код больше не активен';
+        return;
+      }
+
+      // атомарно увеличиваем счётчик и помечаем юзера
+      codeRef.child('usedCount').transaction(cur => (cur || 0) + 1);
+      usedRef.set(true);
+
+      // выдаём награду
+      if (promo.boxes) awardBoxes(promo.boxes);
+      if (promo.coins) addCoins(promo.coins);
+
+      input.value = '';
+      result.style.color = '#2a9a2a';
+      result.textContent = '✓ Получено: ' + (promo.label || `${promo.boxes||0} бокс(ов)`);
+      updateShopUI();
+    });
+  });
 }
 
 // ====== SHOP POPUP ======
