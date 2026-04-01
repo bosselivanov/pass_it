@@ -5782,16 +5782,21 @@ function processAuthorDailyReward() {
     applyStreakFreeze();
   }
 
-  // weekly XP — из ЛИЧНЫХ квестов (пропорционально прогрессу), не из ежедневок авторского
-  const personalQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
-  const personalXPToday = personalQuests.reduce((sum, q) => {
-    const pct = Math.min(1, (q.current || 0) / q.max);
-    return sum + Math.round(pct * (q.xp || 100));
-  }, 0);
-  const weekStart = getCurrentWeekStart();
-  const w = getWeeklyXP();
-  const storedWeek = (w.weekStart === weekStart) ? (w.xp || 0) : 0;
-  saveWeeklyXP({ xp: storedWeek + personalXPToday, weekStart });
+  // weekly XP — из ЛИЧНЫХ квестов, сохраняем один раз при сбросе дня
+  // используем отдельный guard по дате
+  const weeklyGuardKey = 'passit_weekly_saved_' + today;
+  if (!load(weeklyGuardKey, false)) {
+    save(weeklyGuardKey, true);
+    const personalQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
+    const personalXPToday = personalQuests.reduce((sum, q) => {
+      const pct = Math.min(1, (q.current || 0) / q.max);
+      return sum + Math.round(pct * (q.xp || 100));
+    }, 0);
+    const weekStart = getCurrentWeekStart();
+    const w = getWeeklyXP();
+    const storedWeek = (w.weekStart === weekStart) ? (w.xp || 0) : 0;
+    saveWeeklyXP({ xp: storedWeek + personalXPToday, weekStart });
+  }
 }
 
 // --- АВТОР XP ---
