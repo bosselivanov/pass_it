@@ -2988,14 +2988,30 @@ function bindQuestEditables() {
     el.addEventListener('blur', function() {
       const p = getCurrentPass();
       const i = parseInt(this.dataset.quest);
-      const val = Math.min(Math.max(parseInt(this.innerText) || 0, 0), p.quests[i].max);
+      const q = p.quests[i];
+      if (!q) return;
+      const val = Math.min(Math.max(parseInt(this.innerText) || 0, 0), q.max);
       this.innerText = val;
-      p.quests[i].current = val;
+      const oldVal = q.current || 0;
+      q.current = val;
       savePasses();
       const bar = document.getElementById('qbar-' + i);
-      if (bar) bar.style.width = ((val / p.quests[i].max) * 100) + '%';
-      this.closest('.quest-card').classList.toggle('done', val >= p.quests[i].max);
+      if (bar) bar.style.width = ((val / q.max) * 100) + '%';
+      this.closest('.quest-card').classList.toggle('done', val >= q.max);
       updatePass();
+      // логируем и проверяем QOW/стрик — так же как при изменении через попап
+      if (val !== oldVal) {
+        const oldPct = Math.min(1, oldVal / q.max);
+        const newPct = Math.min(1, val / q.max);
+        const delta = newPct - oldPct;
+        if (delta > 0) logActivity('quest', {
+          name: q.name, passName: p.name || '',
+          xp: Math.round(delta * (q.xp || 100)),
+          detail: `${val}/${q.max} ${q.unit||''}`.trim(),
+        });
+      }
+      if (val >= q.max) onQuestCompleted(q.name);
+      else updateAuthorIfOpen(); // обновить даже если не 100% — для снятия QOW дня
     });
     el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
   });
@@ -5939,17 +5955,8 @@ function processAuthorDailyReward() {
   save('passit_author_xp', newTotalXP);
   if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newTotalXP);
 
-  // синхронизируем уровень и выдаём награды
-  const oldLevel = getAuthorPassLevel();
-  const newLevel = Math.min(Math.floor(newTotalXP / 500), 150);
-  if (newLevel > oldLevel) {
-    saveAuthorPassLevel(newLevel);
-    for (let l = oldLevel + 1; l <= newLevel; l++) {
-      processLevelRewards(l);
-    }
-    showToast(`⬆️ Уровень ${newLevel}!`);
-    logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
-  }
+  // syncAuthorLevel сам выдаст награды и тост если уровень вырос
+  syncAuthorLevel();
 
   // стрик
   const streakMet = checkStreakToday();
@@ -6011,11 +6018,19 @@ function getTodayLiveXP() {
   // awq0: XP за неделю — (накопленный + живой) / цель × 1500
   const weekStored = getWeeklyXPValue();
   const personalLive = activeToday.reduce((s, q) => s + Math.round(Math.min(1,(q.current||0)/q.max)*(q.xp||100)), 0);
+  // вклад мегаквестов пропорционально прогрессу
+  const megaLive = passes.flatMap(p => (p.megaQuests || [])).reduce((s, mq) => {
+    if (!mq) return s;
+    const maxVal = mq.taskMode ? Math.max(mq.minMetric || 0, (mq.tasks || []).length) : (mq.max || 1);
+    const cur = mq.taskMode ? (mq.tasks || []).filter(t => t.done).length : (mq.current || 0);
+    const xp = Math.round(300 + 700 * (maxVal / (maxVal + 100)));
+    return s + Math.round(Math.min(1, cur / maxVal) * xp);
+  }, 0);
   // цель недели = сумма XP всех личных квестов × 3 дня
   const allPersonalQuests = passes.flatMap(p => (p.quests||[]).filter(q => q && !q.frozen));
   const maxDayXP = allPersonalQuests.reduce((s, q) => s + (q.xp || 100), 0) || 500;
   const weekTarget = maxDayXP * 3;
-  const weeklyXPtaskXP = Math.round(Math.min((weekStored + personalLive) / weekTarget, 1) * 1500);
+  const weeklyXPtaskXP = Math.round(Math.min((weekStored + personalLive + megaLive) / weekTarget, 1) * 1500);
 
   // awq1: квест недели — done/3 × 1000
   const qowProg = qowGetProgress();
@@ -6036,29 +6051,20 @@ function syncAuthorLevel() {
   const oldLevel = getAuthorPassLevel();
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
-    // processLevelRewards НЕ вызываем здесь — только в addAuthorXP и processAuthorDailyReward
-    // чтобы не было дупа наград при каждом рендере
-    showToast(`⬆️ Уровень ${newLevel}!`);
-    logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
-  }
-  return newLevel;
-}
-function addAuthorXP(xp) {
-  const XP_PER_LEVEL = 500;
-  const current = getAuthorXP();
-  const newXP = current + xp;
-  save('passit_author_xp', newXP);
-  const newLevel = Math.min(Math.floor(newXP / XP_PER_LEVEL), 150);
-  const oldLevel = getAuthorPassLevel();
-  if (newLevel > oldLevel) {
-    saveAuthorPassLevel(newLevel);
     for (let l = oldLevel + 1; l <= newLevel; l++) {
       processLevelRewards(l);
     }
     showToast(`⬆️ Уровень ${newLevel}!`);
     logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
   }
+  return newLevel;
+}
+function addAuthorXP(xp) {
+  const current = getAuthorXP();
+  const newXP = current + xp;
+  save('passit_author_xp', newXP);
   if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newXP);
+  syncAuthorLevel(); // syncAuthorLevel выдаёт награды и тост
 }
 
 function renderAuthorCircles() {
