@@ -1420,7 +1420,7 @@ body {
 
 /* BO = Box Opening — все селекторы с префиксом bo- чтобы не конфликтовать */
 #boxOpenOverlay { --bo-bg: #0d0b1a; --bo-text2: rgba(255,255,255,0.4); --bo-slot-bg: rgba(20,16,40,0.8); --bo-slot-border: rgba(180,160,255,0.3); --bo-result-bg: rgba(30,24,60,0.8); --bo-result-border: rgba(180,160,255,0.2); --bo-result-label: rgba(255,255,255,0.5); }
-body.light #boxOpenOverlay { --bo-bg: #f0eeff; --bo-text2: rgba(60,40,120,0.5); --bo-slot-bg: rgba(240,235,255,0.9); --bo-slot-border: rgba(134,125,206,0.3); --bo-result-bg: rgba(240,235,255,0.95); --bo-result-border: rgba(134,125,206,0.2); --bo-result-label: rgba(60,40,120,0.5); }
+body:not(.dark) #boxOpenOverlay { --bo-bg: #f0eeff; --bo-text2: rgba(60,40,120,0.5); --bo-slot-bg: rgba(240,235,255,0.9); --bo-slot-border: rgba(134,125,206,0.3); --bo-result-bg: rgba(240,235,255,0.95); --bo-result-border: rgba(134,125,206,0.2); --bo-result-label: rgba(60,40,120,0.5); }
 
 #boxOpenOverlay .bo-scene { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 
@@ -1453,7 +1453,7 @@ body.light #boxOpenOverlay { --bo-bg: #f0eeff; --bo-text2: rgba(60,40,120,0.5); 
   background: rgba(120,100,220,0.08);
   backdrop-filter: blur(2px);
 }
-body.light #boxOpenOverlay .face { border-color: rgba(100,80,180,0.4); background: rgba(120,100,220,0.06); }
+body:not(.dark) #boxOpenOverlay .face { border-color: rgba(100,80,180,0.4); background: rgba(120,100,220,0.06); }
 #boxOpenOverlay .face::after {
   content: '';
   position: absolute;
@@ -1632,7 +1632,7 @@ body.light #boxOpenOverlay .face { border-color: rgba(100,80,180,0.4); backgroun
   letter-spacing: 1px;
   transition: all 0.2s;
 }
-body.light #boxOpenOverlay .restart-btn { background: rgba(134,125,206,0.1); border-color: rgba(134,125,206,0.4); color: rgba(60,40,140,0.9); }
+body:not(.dark) #boxOpenOverlay .restart-btn { background: rgba(134,125,206,0.1); border-color: rgba(134,125,206,0.4); color: rgba(60,40,140,0.9); }
 #boxOpenOverlay .restart-btn:hover { background: rgba(134,125,206,0.3); }
 
 /* particles */
@@ -1685,7 +1685,10 @@ body.light #boxOpenOverlay .restart-btn { background: rgba(134,125,206,0.1); bor
   <!-- RESULT -->
   <div id="boResultStage">
     <div class="result-items" id="boResultItems"></div>
-    <button class="restart-btn" onclick="boRestart()">Открыть ещё раз</button>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="restart-btn" id="boRestartBtn" onclick="boRestart()" style="display:none;">Открыть ещё раз</button>
+      <button class="restart-btn" onclick="boCloseAnimation()">Закрыть</button>
+    </div>
   </div>
 
 </div>
@@ -1907,6 +1910,10 @@ function boShowResult() {
   const stage = document.getElementById('boResultStage');
   const items = document.getElementById('boResultItems');
   items.innerHTML = drops.map(d => makeResultHTML(d)).join('');
+
+  // показываем "Открыть ещё раз" только если есть боксы
+  const restartBtn = document.getElementById('boRestartBtn');
+  if (restartBtn) restartBtn.style.display = getPendingBoxes() > 0 ? '' : 'none';
 
   stage.style.display = 'flex';
   stage.style.transition = 'opacity 0.4s';
