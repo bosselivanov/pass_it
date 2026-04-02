@@ -4365,9 +4365,8 @@ function useBox() {
 function processLevelRewards(newLevel) {
   const isBox = newLevel > 0 && newLevel % 5 === 0;
   const isPiece = newLevel > 0 && newLevel % 3 === 0 && !isBox;
-  console.log(`[processLevelRewards] level=${newLevel} isBox=${isBox} isPiece=${isPiece} boxesBefore=${getPendingBoxes()} piecesBefore=${getBoxPieces()}`);
-  if (isBox) { awardBoxes(1); console.log(`[processLevelRewards] awarded box, boxesAfter=${getPendingBoxes()}`); }
-  else if (isPiece) { addBoxPieces(1); console.log(`[processLevelRewards] awarded piece, piecesAfter=${getBoxPieces()}`); }
+  if (isBox) { awardBoxes(1); }
+  else if (isPiece) { addBoxPieces(1); }
 }
 
 // Догоняет пропущенные награды если rewardsUpTo отстал от реального уровня
@@ -4375,7 +4374,6 @@ function recoverMissingRewards() {
   const currentLevel = getAuthorPassLevel();
   const rewardedUpTo = load('passit_rewards_up_to', 0);
   if (rewardedUpTo >= currentLevel) return;
-  console.log(`[recoverMissingRewards] currentLevel=${currentLevel} rewardedUpTo=${rewardedUpTo} — recovering ${currentLevel - rewardedUpTo} levels`);
   for (let l = rewardedUpTo + 1; l <= currentLevel; l++) {
     processLevelRewards(l);
   }
@@ -5718,8 +5716,38 @@ function renderDebtList() {
         <div class="debt-item-progress"><div class="debt-item-fill" style="width:${Math.round(((d.current||0)/d.max)*100)}%"></div></div>
         <div style="font-size:10px;color:var(--accent);margin-top:3px;cursor:pointer;font-weight:700;" onclick="openChangeDebt(${i})">${d.current||0} / ${d.max} — нажми чтобы изменить</div>
       </div>
-      <button class="debt-delete-btn" onclick="removeDebt(${i})" title="Закрыть долг">🗑️</button>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <button class="debt-delete-btn" onclick="addDebtToPass(${i})" title="Добавить в пасс" style="background:rgba(var(--accent-rgb,96,160,96),0.12);border-color:var(--accent);color:var(--accent);font-size:11px;padding:3px 7px;border-radius:8px;border:1px solid;cursor:pointer;font-weight:700;">+ В пасс</button>
+        <button class="debt-delete-btn" onclick="removeDebt(${i})" title="Закрыть долг">🗑️</button>
+      </div>
     </div>`).join('');
+}
+
+function addDebtToPass(i) {
+  const debts = getDebts();
+  const d = debts[i];
+  const p = getCurrentPass();
+  // проверяем нет ли уже такого квеста в пассе
+  const already = (p.quests || []).some(q => q && q.name === d.name);
+  if (already) { showToast('Квест уже есть в пассе'); return; }
+  // добавляем квест из долга с текущим прогрессом
+  const quest = {
+    id: uid(),
+    emoji: d.emoji,
+    name: d.name,
+    max: d.max,
+    current: d.current || 0,
+    unit: d.unit || 'ед.',
+    xp: d.xp || 100,
+    repeat: d.repeat || { type: 'once' },
+    trackDebt: true,
+  };
+  p.quests.push(quest);
+  savePasses();
+  renderQuests();
+  updateAuthorIfOpen();
+  showToast(`✅ «${d.name}» добавлен в пасс`);
+  renderDebtList();
 }
 
 let changeDebtIndex = -1;
@@ -6560,7 +6588,21 @@ firebase.auth().onAuthStateChanged(function(user) {
       if (cloudHasData) {
         // всегда берём облако если оно есть — без вопросов
         initPasses({ passes: cloudPasses, currentPassId: cloudCurId });
+        // восстанавливаем все важные данные из облака
+        if (cloudData.authorXP != null)        save('passit_author_xp', cloudData.authorXP);
+        if (cloudData.authorLevel != null)      save('passit_author_level', cloudData.authorLevel);
+        if (cloudData.authorXPDate != null)     save('passit_author_xp_date', cloudData.authorXPDate);
+        if (cloudData.rewardsUpTo != null)      save('passit_rewards_up_to', cloudData.rewardsUpTo);
+        if (cloudData.pendingBoxes != null)     save('passit_pending_boxes', cloudData.pendingBoxes);
+        if (cloudData.boxPieces != null)        save('passit_box_pieces', cloudData.boxPieces);
+        if (cloudData.coins != null)            save('passit_coins', cloudData.coins);
+        if (cloudData.themePiecesMira != null)  save('passit_theme_pieces_mira', cloudData.themePiecesMira);
+        if (cloudData.themePiecesZoi != null)   save('passit_theme_pieces_zoi', cloudData.themePiecesZoi);
+        if (cloudData.themePiecesRumi != null)  save('passit_theme_pieces_rumi', cloudData.themePiecesRumi);
+        if (cloudData.streak != null)           save('passit_streak', cloudData.streak);
+        if (cloudData.weeklyXP != null)         save('passit_weekly_xp', cloudData.weeklyXP);
         render();
+        recoverMissingRewards();
       } else if (localHasData && !cloudHasData) {
         // первый вход с локальными данными — тихо сохраняем в облако
         cloudSave(); render();
@@ -6615,7 +6657,24 @@ function cloudSave() {
   fbdb.ref('passit_users/' + currentUser.uid).update({
     passes, currentPassId,
     updated: readable,
-    updatedTs: now.getTime()
+    updatedTs: now.getTime(),
+    // авторский пасс
+    authorXP: load('passit_author_xp', 0),
+    authorLevel: load('passit_author_level', 0),
+    authorXPDate: load('passit_author_xp_date', null),
+    rewardsUpTo: load('passit_rewards_up_to', 0),
+    // боксы и монеты
+    pendingBoxes: load('passit_pending_boxes', 0),
+    boxPieces: load('passit_box_pieces', 0),
+    coins: load('passit_coins', 0),
+    // кусочки тем
+    themePiecesMira: load('passit_theme_pieces_mira', 0),
+    themePiecesZoi: load('passit_theme_pieces_zoi', 0),
+    themePiecesRumi: load('passit_theme_pieces_rumi', 0),
+    // стрик
+    streak: load('passit_streak', null),
+    // weekly XP
+    weeklyXP: load('passit_weekly_xp', null),
   });
 }
 
