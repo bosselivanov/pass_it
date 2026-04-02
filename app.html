@@ -1415,29 +1415,19 @@ body {
 </div>
 
 <!-- BOX OPENING OVERLAY -->
-<div id="boxOpenOverlay" style="display:none;position:fixed;inset:0;z-index:600;background:#0d0b1a;overflow:hidden;">
+<div id="boxOpenOverlay" style="display:none;position:fixed;inset:0;z-index:600;background:var(--bo-bg, #0d0b1a);overflow:hidden;">
   <style>
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-.bo-hidden-body { background: #0d0b1a; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: system-ui, sans-serif; overflow: hidden; }
-@media (prefers-color-scheme: light) {
-  .bo-hidden-body { background: #f0eeff; }
-  .face { border-color: rgba(100,80,180,0.4) !important; background: rgba(120,100,220,0.06) !important; }
-  .box-glow { background: radial-gradient(circle, rgba(134,125,206,0.2) 0%, transparent 70%) !important; }
-  #boxHint { color: rgba(60,40,120,0.5) !important; }
-  .slots-title { color: rgba(60,40,120,0.5) !important; }
-  .slot { background: rgba(240,235,255,0.9) !important; border-color: rgba(134,125,206,0.3) !important; }
-  .restart-btn { background: rgba(134,125,206,0.1) !important; border-color: rgba(134,125,206,0.4) !important; color: rgba(60,40,140,0.9) !important; }
-  .result-item { background: rgba(240,235,255,0.95) !important; border-color: rgba(134,125,206,0.2) !important; }
-  .result-label { color: rgba(60,40,120,0.5) !important; }
-}
+/* BO = Box Opening — все селекторы с префиксом bo- чтобы не конфликтовать */
+#boxOpenOverlay { --bo-bg: #0d0b1a; --bo-text2: rgba(255,255,255,0.4); --bo-slot-bg: rgba(20,16,40,0.8); --bo-slot-border: rgba(180,160,255,0.3); --bo-result-bg: rgba(30,24,60,0.8); --bo-result-border: rgba(180,160,255,0.2); --bo-result-label: rgba(255,255,255,0.5); }
+body.light #boxOpenOverlay { --bo-bg: #f0eeff; --bo-text2: rgba(60,40,120,0.5); --bo-slot-bg: rgba(240,235,255,0.9); --bo-slot-border: rgba(134,125,206,0.3); --bo-result-bg: rgba(240,235,255,0.95); --bo-result-border: rgba(134,125,206,0.2); --bo-result-label: rgba(60,40,120,0.5); }
 
-.scene { position: relative; width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center; }
+#boxOpenOverlay .bo-scene { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 
 /* PHASE 1: spinning box */
-#boxStage { position: absolute; display: flex; align-items: center; justify-content: center; width: 200px; height: 200px; perspective: 600px; cursor: pointer; transition: opacity 0.4s; }
-#boxStage:hover #boxHint { opacity: 1; }
-#boxHint { position: absolute; bottom: -32px; font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+#boBoxStage { position: absolute; display: flex; align-items: center; justify-content: center; width: 200px; height: 200px; perspective: 600px; cursor: pointer; transition: opacity 0.4s; }
+#boBoxStage:hover #boBoxHint { opacity: 1; }
+#boBoxHint { position: absolute; bottom: -32px; font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--bo-text2); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 
 .crystal-box {
   width: 100px; height: 100px;
@@ -1456,28 +1446,29 @@ body {
   to { transform: rotateY(0deg) rotateX(0deg); }
 }
 
-.face {
+#boxOpenOverlay .face {
   position: absolute;
   width: 100px; height: 100px;
   border: 1.5px solid rgba(180,160,255,0.5);
   background: rgba(120,100,220,0.08);
   backdrop-filter: blur(2px);
 }
-.face::after {
+body.light #boxOpenOverlay .face { border-color: rgba(100,80,180,0.4); background: rgba(120,100,220,0.06); }
+#boxOpenOverlay .face::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
 }
-.front  { transform: translateZ(34px); }
-.back   { transform: translateZ(-34px) rotateY(180deg); }
-.left   { transform: translateX(-34px) rotateY(-90deg); }
-.right  { transform: translateX(34px) rotateY(90deg); }
-.top    { transform: translateY(-34px) rotateX(90deg); }
-.bottom { transform: translateY(34px) rotateX(-90deg); }
+#boxOpenOverlay .front  { transform: translateZ(34px); }
+#boxOpenOverlay .back   { transform: translateZ(-34px) rotateY(180deg); }
+#boxOpenOverlay .left   { transform: translateX(-34px) rotateY(-90deg); }
+#boxOpenOverlay .right  { transform: translateX(34px) rotateY(90deg); }
+#boxOpenOverlay .top    { transform: translateY(-34px) rotateX(90deg); }
+#boxOpenOverlay .bottom { transform: translateY(34px) rotateX(-90deg); }
 
 /* glow */
-.box-glow {
+#boxOpenOverlay .box-glow {
   position: absolute;
   width: 160px; height: 160px;
   border-radius: 50%;
@@ -1490,25 +1481,25 @@ body {
 }
 
 /* PHASE 2: unfold + explosion */
-#unfoldStage { position: absolute; display: none; align-items: center; justify-content: center; }
-.unfold-cross {
+#boUnfoldStage { position: absolute; display: none; align-items: center; justify-content: center; }
+#boxOpenOverlay .unfold-cross {
   position: relative;
   width: 180px; height: 180px;
 }
-.unfold-face {
+#boxOpenOverlay .unfold-face {
   position: absolute;
   width: 60px; height: 60px;
   border: 1.5px solid rgba(180,160,255,0.6);
   background: rgba(120,100,220,0.15);
   opacity: 0;
 }
-.uf-center { top: 60px; left: 60px; }
-.uf-top    { top: 0; left: 60px; }
-.uf-bottom { top: 120px; left: 60px; }
-.uf-left   { top: 60px; left: 0; }
-.uf-right  { top: 60px; left: 120px; }
+#boxOpenOverlay .uf-center { top: 60px; left: 60px; }
+#boxOpenOverlay .uf-top    { top: 0; left: 60px; }
+#boxOpenOverlay .uf-bottom { top: 120px; left: 60px; }
+#boxOpenOverlay .uf-left   { top: 60px; left: 0; }
+#boxOpenOverlay .uf-right  { top: 60px; left: 120px; }
 
-.explosion {
+#boxOpenOverlay .explosion {
   position: absolute;
   width: 0; height: 0;
   border-radius: 50%;
@@ -1518,7 +1509,7 @@ body {
 }
 
 /* PHASE 3: slots */
-#slotsStage {
+#boSlotsStage {
   position: absolute;
   display: none;
   flex-direction: column;
@@ -1526,18 +1517,18 @@ body {
   gap: 24px;
   opacity: 0;
 }
-.slots-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.4); }
-.slots-row { display: flex; gap: 12px; }
+#boxOpenOverlay .slots-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--bo-text2); }
+#boxOpenOverlay .slots-row { display: flex; gap: 12px; }
 
-.slot {
+#boxOpenOverlay .bo-slot {
   width: 90px; height: 90px;
-  border: 1.5px solid rgba(180,160,255,0.3);
+  border: 1.5px solid var(--bo-slot-border);
   border-radius: 12px;
-  background: rgba(20,16,40,0.8);
+  background: var(--bo-slot-bg);
   overflow: hidden;
   position: relative;
 }
-.slot-inner {
+#boxOpenOverlay .bo-slot-inner {
   position: absolute;
   width: 100%;
   display: flex;
@@ -1546,7 +1537,7 @@ body {
   gap: 4px;
   top: 0;
 }
-.slot-item {
+#boxOpenOverlay .slot-item {
   width: 90px; height: 90px;
   display: flex;
   flex-direction: column;
@@ -1555,7 +1546,7 @@ body {
   gap: 6px;
   flex-shrink: 0;
 }
-.slot-badge {
+#boxOpenOverlay .slot-badge {
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -1563,22 +1554,22 @@ body {
   padding: 2px 7px;
   border-radius: 6px;
 }
-.badge-common { background: rgba(50,180,80,0.2); color: #50d080; border: 1px solid rgba(50,180,80,0.3); }
-.badge-rare { background: rgba(69,102,187,0.2); color: #7090ee; border: 1px solid rgba(69,102,187,0.3); }
-.badge-legendary { background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.3); }
-.badge-coin { background: rgba(212,175,55,0.15); color: #d4af37; border: 1px solid rgba(212,175,55,0.25); }
+#boxOpenOverlay .badge-common { background: rgba(50,180,80,0.2); color: #50d080; border: 1px solid rgba(50,180,80,0.3); }
+#boxOpenOverlay .badge-rare { background: rgba(69,102,187,0.2); color: #7090ee; border: 1px solid rgba(69,102,187,0.3); }
+#boxOpenOverlay .badge-legendary { background: rgba(212,175,55,0.2); color: #d4af37; border: 1px solid rgba(212,175,55,0.3); }
+#boxOpenOverlay .badge-coin { background: rgba(212,175,55,0.15); color: #d4af37; border: 1px solid rgba(212,175,55,0.25); }
 
 /* piece shapes */
-.piece-shape {
+#boxOpenOverlay .piece-shape {
   width: 32px; height: 32px;
   border-radius: 6px;
 }
-.piece-common    { background: linear-gradient(135deg, #CF5C86, #4A1C29); }
-.piece-rare      { background: linear-gradient(135deg, #4566BB, #1B436C); }
-.piece-legendary { background: linear-gradient(135deg, #d4af37, #867DCE); }
+#boxOpenOverlay .piece-common    { background: linear-gradient(135deg, #CF5C86, #4A1C29); }
+#boxOpenOverlay .piece-rare      { background: linear-gradient(135deg, #4566BB, #1B436C); }
+#boxOpenOverlay .piece-legendary { background: linear-gradient(135deg, #d4af37, #867DCE); }
 
 /* coin */
-.coin-shape {
+#boxOpenOverlay .coin-shape {
   width: 36px; height: 36px;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #f5d060 0%, #d4af37 50%, #a07c10 100%);
@@ -1587,7 +1578,7 @@ body {
   position: relative;
   box-shadow: inset 0 1px 3px rgba(255,255,255,0.3), 0 2px 8px rgba(212,175,55,0.4);
 }
-.coin-letter {
+#boxOpenOverlay .coin-letter {
   font-size: 14px;
   font-weight: 900;
   color: transparent;
@@ -1597,7 +1588,7 @@ body {
 }
 
 /* slot glow on win */
-.slot.winning {
+#boxOpenOverlay .bo-slot.winning {
   border-color: rgba(212,175,55,0.8);
   box-shadow: 0 0 20px rgba(212,175,55,0.4), inset 0 0 20px rgba(212,175,55,0.05);
   animation: winPulse 0.6s ease-out;
@@ -1608,7 +1599,7 @@ body {
 }
 
 /* RESULT */
-#resultStage {
+#boResultStage {
   position: absolute;
   display: none;
   flex-direction: column;
@@ -1616,20 +1607,20 @@ body {
   gap: 20px;
   opacity: 0;
 }
-.result-items { display: flex; gap: 16px; }
-.result-item {
+#boxOpenOverlay .result-items { display: flex; gap: 16px; }
+#boxOpenOverlay .result-item {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
-  background: rgba(30,24,60,0.8);
-  border: 1px solid rgba(180,160,255,0.2);
+  background: var(--bo-result-bg);
+  border: 1px solid var(--bo-result-border);
   border-radius: 16px;
   padding: 16px 20px;
   min-width: 80px;
 }
-.result-item .piece-shape, .result-item .coin-shape { width: 44px; height: 44px; border-radius: 8px; }
-.result-item .coin-shape { border-radius: 50%; }
-.result-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1px; text-transform: uppercase; }
+#boxOpenOverlay .result-item .piece-shape, #boxOpenOverlay .result-item .coin-shape { width: 44px; height: 44px; border-radius: 8px; }
+#boxOpenOverlay .result-item .coin-shape { border-radius: 50%; }
+#boxOpenOverlay .result-label { font-size: 10px; font-weight: 700; color: var(--bo-result-label); letter-spacing: 1px; text-transform: uppercase; }
 
-.restart-btn {
+#boxOpenOverlay .restart-btn {
   background: rgba(134,125,206,0.15);
   border: 1px solid rgba(134,125,206,0.4);
   border-radius: 12px;
@@ -1641,10 +1632,11 @@ body {
   letter-spacing: 1px;
   transition: all 0.2s;
 }
-.restart-btn:hover { background: rgba(134,125,206,0.3); }
+body.light #boxOpenOverlay .restart-btn { background: rgba(134,125,206,0.1); border-color: rgba(134,125,206,0.4); color: rgba(60,40,140,0.9); }
+#boxOpenOverlay .restart-btn:hover { background: rgba(134,125,206,0.3); }
 
 /* particles */
-.particle {
+#boxOpenOverlay .bo-particle {
   position: absolute;
   width: 6px; height: 6px;
   border-radius: 50%;
@@ -1652,10 +1644,10 @@ body {
 }
 
   </style>
-  <div class="scene" id="boScene" id="scene">
+  <div class="bo-scene" id="boScene">
 
   <!-- PHASE 1: spinning crystal box -->
-  <div id="boBoxStage" onclick="boStartOpen()" style="position:absolute;">
+  <div id="boBoxStage" onclick="boStartOpen()" style="position:absolute;display:flex;align-items:center;justify-content:center;width:200px;height:200px;perspective:600px;cursor:pointer;transition:opacity 0.4s;">
     <div class="box-glow"></div>
     <div class="crystal-box" id="boCrystalBox">
       <div class="face front"></div>
@@ -1669,7 +1661,7 @@ body {
   </div>
 
   <!-- PHASE 2: unfold -->
-  <div id="boUnfoldStage">
+  <div id="boUnfoldStage" style="position:absolute;display:none;align-items:center;justify-content:center;">
     <div class="unfold-cross" id="boUnfoldCross">
       <div class="unfold-face uf-center"></div>
       <div class="unfold-face uf-top"></div>
@@ -1684,16 +1676,16 @@ body {
   <div id="boSlotsStage">
     <div class="slots-title">Получаешь</div>
     <div class="slots-row">
-      <div class="slot" id="slot0"><div class="slot-inner" id="inner0"></div></div>
-      <div class="slot" id="slot1"><div class="slot-inner" id="inner1"></div></div>
-      <div class="slot" id="slot2"><div class="slot-inner" id="inner2"></div></div>
+      <div class="bo-slot" id="boSlot0"><div class="bo-slot-inner" id="boInner0"></div></div>
+      <div class="bo-slot" id="boSlot1"><div class="bo-slot-inner" id="boInner1"></div></div>
+      <div class="bo-slot" id="boSlot2"><div class="bo-slot-inner" id="boInner2"></div></div>
     </div>
   </div>
 
   <!-- RESULT -->
   <div id="boResultStage">
     <div class="result-items" id="boResultItems"></div>
-    <button class="restart-btn" onclick="restart()">Открыть ещё раз</button>
+    <button class="restart-btn" onclick="boRestart()">Открыть ещё раз</button>
   </div>
 
 </div>
@@ -1825,11 +1817,11 @@ function boDoExplosion() {
 }
 
 function boSpawnParticles() {
-  const scene = document.getElementById('boScene') || document.getElementById('scene');
+  const scene = document.getElementById('boScene');
   const colors = ['#867DCE','#CF5C86','#4566BB','#d4af37','#ffffff'];
   for (let i = 0; i < 24; i++) {
     const p = document.createElement('div');
-    p.className = 'particle';
+    p.className = 'bo-particle';
     p.style.background = colors[Math.floor(Math.random()*colors.length)];
     p.style.left = '50%'; p.style.top = '50%';
     const angle = Math.random()*360;
@@ -1875,8 +1867,8 @@ function boShowSlots() {
 }
 
 function boSpinSlot(idx, winItem, cb) {
-  const inner = document.getElementById('inner' + idx);
-  const slot = document.getElementById('slot' + idx);
+  const inner = document.getElementById('boInner' + idx);
+  const slot = document.getElementById('boSlot' + idx);
   const pool = buildPool(idx===2);
 
   // строим список айтемов: пул + победитель в конце
@@ -1922,7 +1914,7 @@ function boShowResult() {
 }
 
 function boRestart() {
-  phase = 0;
+  boPhase = 0;
   drops.fill(null);
 
   // reset all stages
@@ -1930,11 +1922,11 @@ function boRestart() {
   document.getElementById('boResultStage').style.opacity = '0';
   document.getElementById('boSlotsStage').style.display = 'none';
   document.getElementById('boSlotsStage').style.opacity = '0';
-  document.querySelectorAll('.slot').forEach(s => s.classList.remove('winning'));
+  document.querySelectorAll('#boxOpenOverlay .bo-slot').forEach(s => s.classList.remove('winning'));
   for (let i=0;i<3;i++) {
-    document.getElementById('inner'+i).innerHTML = '';
-    document.getElementById('inner'+i).style.transform = '';
-    document.getElementById('inner'+i).style.transition = '';
+    document.getElementById('boInner'+i).innerHTML = '';
+    document.getElementById('boInner'+i).style.transform = '';
+    document.getElementById('boInner'+i).style.transition = '';
   }
 
   // reset box
@@ -3254,7 +3246,7 @@ function addMega() {
   const taskMode = document.getElementById('megaTaskMode').checked;
   if (!name) { showToast('Заполни название!'); return; }
   if (!taskMode && (!metric || metric < 1)) { showToast('Заполни метрику!'); return; }
-  p.megaQuests.push({ emoji: selectedMegaEmoji, name, sub: sub || '', max: metric || 1, minMetric: metric || 0, unit: unit || (taskMode ? 'задач' : 'ед.'), current: 0, taskMode });
+  p.megaQuests.push({ id: uid(), emoji: selectedMegaEmoji, name, sub: sub || '', max: metric || 1, minMetric: metric || 0, unit: unit || (taskMode ? 'задач' : 'ед.'), current: 0, taskMode });
   savePasses();
   closePopup('megaPopupOverlay');
   mqFocused = p.megaQuests.length - 1;
@@ -4452,6 +4444,12 @@ function openBoxAnimation(boxDrops) {
   document.getElementById('boResultStage').style.display = 'none';
   document.getElementById('boResultStage').style.opacity = '0';
   document.getElementById('boUnfoldStage').style.display = 'none';
+  // сброс слотов
+  document.querySelectorAll('#boxOpenOverlay .bo-slot').forEach(s => s.classList.remove('winning'));
+  for (let i = 0; i < 3; i++) {
+    const inner = document.getElementById('boInner' + i);
+    if (inner) { inner.innerHTML = ''; inner.style.transform = ''; inner.style.transition = ''; }
+  }
   const crystal = document.getElementById('boCrystalBox');
   crystal.classList.remove('fixing');
   crystal.style.opacity = '1';
@@ -4804,19 +4802,25 @@ function saveCompletedMegas(arr) {
 
 function completeMega(i) {
   const p = getCurrentPass();
+  // перепроверяем что индекс актуален — рендер мог пересоздать кнопку со старым i
   const mq = p.megaQuests[i];
-  if (!mq) return;
+  if (!mq) { showToast('Мегаквест не найден, попробуй ещё раз'); renderMega(); return; }
+
   if (!confirm(`Завершить мегаквест «${mq.name}»? Он уйдёт в архив.`)) return;
 
   // считаем XP по формуле
-  const xp = Math.round(300 + 700 * (mq.max / (mq.max + 100)));
+  const maxVal = mq.taskMode ? Math.max(mq.minMetric || 0, (mq.tasks || []).length) : mq.max;
+  const xp = Math.round(300 + 700 * (maxVal / (maxVal + 100)));
+
+  // логируем ДО splice, пока mq ещё жив
+  logActivity('mega', { name: mq.name, passName: p.name, xp });
 
   const completed = getCompletedMegas();
   completed.unshift({
     emoji: mq.emoji,
     name: mq.name,
     sub: mq.sub || '',
-    max: mq.max,
+    max: maxVal,
     unit: mq.unit || '',
     xp,
     passName: p.name,
@@ -4824,11 +4828,9 @@ function completeMega(i) {
   });
   saveCompletedMegas(completed);
 
-  // добавляем XP и в еженедельную статистику и в авторский пасс
+  // добавляем XP
   addXPToday(xp);
-  addAuthorXP(Math.round(xp * 0.5)); // мегаквест даёт 50% своего XP в авторский пасс
-  const _mq = getCurrentPass()?.megaQuests?.[i];
-  if (_mq) logActivity('mega', { name: _mq.name, passName: getCurrentPass()?.name || '', xp });
+  addAuthorXP(Math.round(xp * 0.5));
 
   // удаляем из пасса
   p.megaQuests.splice(i, 1);
@@ -4971,6 +4973,78 @@ function saveAndClose() {
 }
 
 // ====== RENDER ALL ======
+// ====== ИСТОРИЯ АКТИВНОСТИ ======
+function getHistory() { return load('passit_history', []); }
+function saveHistory(arr) {
+  // храним только последние 500 записей
+  save('passit_history', arr.slice(0, 500));
+}
+
+function logActivity(type, data) {
+  try {
+    const arr = getHistory();
+    arr.unshift({
+      type,        // 'quest' | 'mega' | 'author_level'
+      date: todayStr(),
+      ts: Date.now(),
+      ...data
+    });
+    saveHistory(arr);
+  } catch(e) {
+    // логирование не должно ломать основную логику
+    console.warn('logActivity error:', e);
+  }
+}
+
+function openHistory() {
+  document.getElementById('menuOverlay').classList.remove('open');
+  const content = document.getElementById('historyContent');
+  const history = getHistory();
+
+  if (!history.length) {
+    content.innerHTML = '<div style="text-align:center;color:var(--text2);padding:32px;opacity:0.6;">История пока пуста</div>';
+    document.getElementById('historyOverlay').classList.add('open');
+    return;
+  }
+
+  // группируем по дням
+  const byDay = {};
+  history.forEach(entry => {
+    const d = entry.date || '?';
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(entry);
+  });
+
+  const typeIcon = { quest: '⚡', mega: '🏆', author_level: '⬆️' };
+  const typeLabel = { quest: 'Квест', mega: 'Мегаквест', author_level: 'Уровень' };
+
+  content.innerHTML = Object.entries(byDay).map(([date, entries]) => {
+    const totalXP = entries.reduce((s, e) => s + (e.xp || 0), 0);
+    const dateLabel = date === todayStr() ? 'Сегодня' : date;
+    const rows = entries.map(e => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:16px;width:24px;text-align:center;">${typeIcon[e.type] || '•'}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name || ''}</div>
+          <div style="font-size:10px;color:var(--text2);">${typeLabel[e.type] || e.type}${e.passName ? ' · ' + e.passName : ''}</div>
+        </div>
+        ${e.xp ? `<div class="quest-xp-badge xp-rare" style="flex-shrink:0;">+${e.xp} XP</div>` : ''}
+      </div>`).join('');
+    return `
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:11px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:1px;">${dateLabel}</div>
+          ${totalXP ? `<div style="font-size:11px;font-weight:700;color:var(--accent);">+${totalXP} XP</div>` : ''}
+        </div>
+        <div style="background:var(--card-bg);border:1.5px solid var(--border);border-radius:12px;padding:4px 12px;">
+          ${rows}
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('historyOverlay').classList.add('open');
+}
+
 function render() {
   updatePassMenuTrigger();
   renderMega();
@@ -5378,11 +5452,13 @@ function cleanupExpiredQuests() {
     p.quests = p.quests.map(q => {
       if (!q) return null;
       if (q.frozen) return q;
-      if (q.repeat?.type === 'once' && q.deadline && q.deadline <= today) return null;
+      if (q.repeat?.type !== 'once') return q;
+      // удаляем если просрочен по дедлайну (долг уже добавлен в performDayReset)
+      if (q.deadline && q.deadline < today) return null;
+      // удаляем если выполнен
+      if ((q.current || 0) >= q.max && q.max > 0) return null;
       return q;
-    });
-    // trim trailing nulls
-    while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
+    }).filter(q => q !== null); // убираем null из всего массива, не только с конца
     if (p.quests.length !== before) changed = true;
   });
   if (changed) { savePasses(); renderQuests(); showToast('🗑 Одноразовые квесты удалены'); }
@@ -5859,11 +5935,21 @@ function processAuthorDailyReward() {
 
   // сохраняем в исторический XP авторского пасса
   const stored = getAuthorXP();
-  save('passit_author_xp', stored + todayXP);
-  if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(stored + todayXP);
+  const newTotalXP = stored + todayXP;
+  save('passit_author_xp', newTotalXP);
+  if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newTotalXP);
 
-  // синхронизируем уровень
-  syncAuthorLevel();
+  // синхронизируем уровень и выдаём награды
+  const oldLevel = getAuthorPassLevel();
+  const newLevel = Math.min(Math.floor(newTotalXP / 500), 150);
+  if (newLevel > oldLevel) {
+    saveAuthorPassLevel(newLevel);
+    for (let l = oldLevel + 1; l <= newLevel; l++) {
+      processLevelRewards(l);
+    }
+    showToast(`⬆️ Уровень ${newLevel}!`);
+    logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
+  }
 
   // стрик
   const streakMet = checkStreakToday();
@@ -5950,9 +6036,8 @@ function syncAuthorLevel() {
   const oldLevel = getAuthorPassLevel();
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
-    for (let l = oldLevel + 1; l <= newLevel; l++) {
-      processLevelRewards(l);
-    }
+    // processLevelRewards НЕ вызываем здесь — только в addAuthorXP и processAuthorDailyReward
+    // чтобы не было дупа наград при каждом рендере
     showToast(`⬆️ Уровень ${newLevel}!`);
     logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
   }
@@ -5967,10 +6052,11 @@ function addAuthorXP(xp) {
   const oldLevel = getAuthorPassLevel();
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
-    // выдаём награды за каждый новый уровень
     for (let l = oldLevel + 1; l <= newLevel; l++) {
       processLevelRewards(l);
     }
+    showToast(`⬆️ Уровень ${newLevel}!`);
+    logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
   }
   if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newXP);
 }
