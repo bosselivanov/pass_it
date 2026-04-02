@@ -4358,8 +4358,9 @@ function useBox() {
 function processLevelRewards(newLevel) {
   const isBox = newLevel > 0 && newLevel % 5 === 0;
   const isPiece = newLevel > 0 && newLevel % 3 === 0 && !isBox;
-  if (isBox) { awardBoxes(1); }
-  else if (isPiece) { addBoxPieces(1); }
+  console.log(`[processLevelRewards] level=${newLevel} isBox=${isBox} isPiece=${isPiece} boxesBefore=${getPendingBoxes()} piecesBefore=${getBoxPieces()}`);
+  if (isBox) { awardBoxes(1); console.log(`[processLevelRewards] awarded box, boxesAfter=${getPendingBoxes()}`); }
+  else if (isPiece) { addBoxPieces(1); console.log(`[processLevelRewards] awarded piece, piecesAfter=${getBoxPieces()}`); }
 }
 
 // Theme piece drop from box — weighted random
@@ -6049,9 +6050,11 @@ function syncAuthorLevel() {
   const totalXP = getTotalAuthorXP();
   const newLevel = Math.min(Math.floor(totalXP / 500), 150);
   const oldLevel = getAuthorPassLevel();
+  console.log(`[syncAuthorLevel] totalXP=${totalXP} oldLevel=${oldLevel} newLevel=${newLevel}`);
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
     for (let l = oldLevel + 1; l <= newLevel; l++) {
+      console.log(`[syncAuthorLevel] calling processLevelRewards(${l})`);
       processLevelRewards(l);
     }
     showToast(`⬆️ Уровень ${newLevel}!`);
