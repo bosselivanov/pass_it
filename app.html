@@ -5507,11 +5507,17 @@ function openThemePicker() {
   renderPiecesGrids();
   document.querySelectorAll('.cos-card[data-theme]').forEach(card => {
     const themeId = card.dataset.theme;
+    const step = getThemeStep(themeId);
     if (isCosmeticUnlocked(themeId)) {
       card.classList.remove('locked');
       card.querySelector('.cos-pieces')?.remove();
       const fill = card.querySelector('.cos-bar-fill');
       if (fill) fill.style.width = '100%';
+    }
+    // onclick доступен если хотя бы 1 шаг разблокирован
+    if (step >= 1) {
+      card.classList.remove('locked');
+      card.style.opacity = '1';
       if (!card.getAttribute('onclick')) {
         card.setAttribute('onclick', `selectTheme('${themeId}')`);
       }
