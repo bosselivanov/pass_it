@@ -4363,6 +4363,18 @@ function processLevelRewards(newLevel) {
   else if (isPiece) { addBoxPieces(1); console.log(`[processLevelRewards] awarded piece, piecesAfter=${getBoxPieces()}`); }
 }
 
+// Догоняет пропущенные награды если rewardsUpTo отстал от реального уровня
+function recoverMissingRewards() {
+  const currentLevel = getAuthorPassLevel();
+  const rewardedUpTo = load('passit_rewards_up_to', 0);
+  if (rewardedUpTo >= currentLevel) return;
+  console.log(`[recoverMissingRewards] currentLevel=${currentLevel} rewardedUpTo=${rewardedUpTo} — recovering ${currentLevel - rewardedUpTo} levels`);
+  for (let l = rewardedUpTo + 1; l <= currentLevel; l++) {
+    processLevelRewards(l);
+  }
+  save('passit_rewards_up_to', currentLevel);
+}
+
 // Theme piece drop from box — weighted random
 function rollThemePiece() {
   // исключаем полностью собранные темы
@@ -6050,13 +6062,12 @@ function syncAuthorLevel() {
   const totalXP = getTotalAuthorXP();
   const newLevel = Math.min(Math.floor(totalXP / 500), 150);
   const oldLevel = getAuthorPassLevel();
-  console.log(`[syncAuthorLevel] totalXP=${totalXP} oldLevel=${oldLevel} newLevel=${newLevel}`);
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
     for (let l = oldLevel + 1; l <= newLevel; l++) {
-      console.log(`[syncAuthorLevel] calling processLevelRewards(${l})`);
       processLevelRewards(l);
     }
+    save('passit_rewards_up_to', newLevel);
     showToast(`⬆️ Уровень ${newLevel}!`);
     logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
   }
@@ -6335,6 +6346,7 @@ cleanupExpiredQuests();
 checkOnboarding();
 scheduleMidnightCleanup();
 updateDebtBadge();
+recoverMissingRewards(); // догоняет пропущенные награды за уровни
 
 // ====== FIREBASE AUTH ======
 var currentUser = null;
