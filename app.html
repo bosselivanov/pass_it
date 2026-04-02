@@ -5276,8 +5276,29 @@ const THEMES = {
   basic: {
     light: { '--bg':'#FFFFFF','--surface':'#F0F4FF','--accent':'#4A90D9','--accent2':'#C8DFF8','--text':'#0d1f3c','--text2':'#4a70a0','--border':'rgba(74,144,217,0.25)','--bar-bg':'rgba(74,144,217,0.1)','--card-bg':'rgba(255,255,255,0.8)','--overlay':'rgba(74,144,217,0.12)','--blur-bg':'rgba(240,244,255,0.96)' },
     dark: { '--bg':'#0a0a0a','--surface':'#141414','--accent':'#C8B89A','--accent2':'#2a2520','--text':'#F2E8D9','--text2':'#9a8a6a','--border':'rgba(200,184,154,0.25)','--bar-bg':'rgba(200,184,154,0.1)','--card-bg':'rgba(200,184,154,0.06)','--overlay':'rgba(0,0,0,0.6)','--blur-bg':'rgba(14,14,14,0.97)' }
+  },
+  // Сезонные темы — применяются пошагово по кусочкам
+  mira: {
+    light: { '--bg':'#fff0f4','--surface':'#ffe0ea','--accent':'#CF5C86','--accent2':'#F4B9BE','--text':'#3a0a17','--text2':'#8a3a55','--border':'rgba(207,92,134,0.25)','--bar-bg':'rgba(207,92,134,0.12)','--card-bg':'rgba(255,255,255,0.8)','--overlay':'rgba(207,92,134,0.12)','--blur-bg':'rgba(255,240,244,0.96)' },
+    dark: { '--bg':'#160810','--surface':'#2a1020','--accent':'#CF5C86','--accent2':'#4A1C29','--text':'#ffe8ef','--text2':'#d4849e','--border':'rgba(207,92,134,0.3)','--bar-bg':'rgba(207,92,134,0.14)','--card-bg':'rgba(74,28,41,0.45)','--overlay':'rgba(22,8,16,0.75)','--blur-bg':'rgba(30,10,20,0.96)' }
+  },
+  zoi: {
+    light: { '--bg':'#eef2ff','--surface':'#dde5ff','--accent':'#4566BB','--accent2':'#D27DA4','--text':'#0d1a3a','--text2':'#3a5088','--border':'rgba(69,102,187,0.25)','--bar-bg':'rgba(69,102,187,0.12)','--card-bg':'rgba(255,255,255,0.8)','--overlay':'rgba(69,102,187,0.12)','--blur-bg':'rgba(238,242,255,0.96)' },
+    dark: { '--bg':'#080d1a','--surface':'#101830','--accent':'#4566BB','--accent2':'#1B436C','--text':'#dde8ff','--text2':'#7a96cc','--border':'rgba(69,102,187,0.3)','--bar-bg':'rgba(69,102,187,0.14)','--card-bg':'rgba(27,67,108,0.4)','--overlay':'rgba(8,13,26,0.75)','--blur-bg':'rgba(10,16,32,0.96)' }
+  },
+  rumi: {
+    light: { '--bg':'#f4f2ff','--surface':'#e8e4ff','--accent':'#867DCE','--accent2':'#d4af37','--text':'#1a1540','--text2':'#5a50a0','--border':'rgba(134,125,206,0.25)','--bar-bg':'rgba(134,125,206,0.12)','--card-bg':'rgba(255,255,255,0.8)','--overlay':'rgba(134,125,206,0.12)','--blur-bg':'rgba(244,242,255,0.96)' },
+    dark: { '--bg':'#0d0c18','--surface':'#1a1830','--accent':'#867DCE','--accent2':'#d4af37','--text':'#ede8ff','--text2':'#a099d8','--border':'rgba(134,125,206,0.3)','--bar-bg':'rgba(134,125,206,0.14)','--card-bg':'rgba(64,62,114,0.4)','--overlay':'rgba(13,12,24,0.75)','--blur-bg':'rgba(16,14,28,0.96)' }
   }
 };
+
+// Тоглы шагов темы: { themeId: { color: true, gradient: true, border: true } }
+function getThemeToggles(themeId) {
+  return load('passit_theme_toggles_' + themeId, { color: true, gradient: true, border: true });
+}
+function saveThemeToggles(themeId, toggles) {
+  save('passit_theme_toggles_' + themeId, toggles);
+}
 
 let dark = load('darkMode', false);
 let currentTheme = load('currentTheme', 'huntrxs');
@@ -5287,8 +5308,56 @@ if (currentTheme === 'huntrx') { currentTheme = 'huntrxs'; save('currentTheme', 
 function applyTheme() {
   document.body.classList.toggle('dark', dark);
   document.getElementById('themeBtn').textContent = dark ? '☀️' : '🌙';
-  const vars = THEMES[currentTheme] ? THEMES[currentTheme][dark ? 'dark' : 'light'] : THEMES.huntrxs.light;
+  const mode = dark ? 'dark' : 'light';
+  const vars = THEMES[currentTheme] ? THEMES[currentTheme][mode] : THEMES.huntrxs[mode];
   Object.entries(vars).forEach(([k, v]) => document.documentElement.style.setProperty(k, v));
+
+  // применяем шаги сезонной темы
+  const seasonal = ['mira','zoi','rumi'];
+  if (seasonal.includes(currentTheme)) {
+    const step = getThemeStep(currentTheme);
+    const toggles = getThemeToggles(currentTheme);
+    const data = THEME_PREVIEW_DATA[currentTheme];
+    if (!data) return;
+    const palette = data[mode];
+
+    // шаг 1: цвет — уже применён через THEMES выше
+    // шаг 2: градиент
+    const meshEl = document.getElementById('themeMeshLayer');
+    if (step >= 2 && toggles.gradient && palette.mesh) {
+      if (!meshEl) {
+        const el = document.createElement('div');
+        el.id = 'themeMeshLayer';
+        el.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;transition:opacity 0.5s;';
+        document.body.prepend(el);
+      }
+      const mesh = document.getElementById('themeMeshLayer');
+      mesh.style.background = palette.mesh;
+      mesh.style.opacity = '1';
+    } else if (meshEl) {
+      meshEl.style.opacity = '0';
+    }
+
+    // шаг 3: рамки квест-карточек
+    const glowStyle = (step >= 3 && toggles.border)
+      ? `box-shadow: ${palette.glowShadow}; border-color: ${palette.glowBorder} !important;`
+      : '';
+    let styleEl = document.getElementById('themeGlowStyle');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'themeGlowStyle';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = glowStyle
+      ? `.quest-card { ${glowStyle} } .mq-row { ${glowStyle} }`
+      : '';
+  } else {
+    // базовая тема — убираем эффекты
+    const meshEl = document.getElementById('themeMeshLayer');
+    if (meshEl) meshEl.style.opacity = '0';
+    const styleEl = document.getElementById('themeGlowStyle');
+    if (styleEl) styleEl.textContent = '';
+  }
 }
 function toggleTheme() { dark = !dark; save('darkMode', dark); applyTheme(); }
 function renderPiecesGrids() {
@@ -5477,6 +5546,61 @@ function updateSwatchSelected() {
   document.querySelectorAll('.cos-card').forEach(c => c.classList.remove('selected'));
   const sel = document.querySelector(`.cos-card[onclick*="${currentTheme}"]`);
   if (sel) sel.classList.add('selected');
+  // показываем тоглы шагов если активная тема сезонная
+  renderThemeToggles();
+}
+
+function renderThemeToggles() {
+  // убираем старые тоглы
+  document.querySelectorAll('.theme-step-toggles').forEach(el => el.remove());
+
+  const seasonal = ['mira','zoi','rumi'];
+  if (!seasonal.includes(currentTheme)) return;
+
+  const step = getThemeStep(currentTheme);
+  if (step < 1) return; // ни одного шага не разблокировано
+
+  const card = document.querySelector(`.cos-card[onclick*="${currentTheme}"]`);
+  if (!card) return;
+
+  const toggles = getThemeToggles(currentTheme);
+  const stepNames = { color: 'Цвет', gradient: 'Градиент', border: 'Рамки' };
+  const stepMinStep = { color: 1, gradient: 2, border: 3 };
+
+  const container = document.createElement('div');
+  container.className = 'theme-step-toggles';
+  container.style.cssText = 'display:flex;flex-direction:column;gap:6px;padding:8px 10px;border-top:1px solid var(--border);margin-top:4px;';
+
+  ['color','gradient','border'].forEach(key => {
+    if (step < stepMinStep[key]) return; // шаг не разблокирован
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
+    const on = toggles[key];
+    row.innerHTML = `
+      <span style="font-size:11px;color:var(--text2);font-weight:600;">${stepNames[key]}</span>
+      <button onclick="toggleThemeStep('${currentTheme}','${key}')" style="
+        width:36px;height:20px;border-radius:10px;border:none;cursor:pointer;
+        background:${on ? 'var(--accent)' : 'var(--bar-bg)'};
+        position:relative;transition:background 0.2s;
+      ">
+        <span style="
+          position:absolute;top:2px;width:16px;height:16px;border-radius:50%;
+          background:white;transition:left 0.2s;
+          left:${on ? '18px' : '2px'};
+        "></span>
+      </button>`;
+    container.appendChild(row);
+  });
+
+  card.appendChild(container);
+}
+
+function toggleThemeStep(themeId, key) {
+  const toggles = getThemeToggles(themeId);
+  toggles[key] = !toggles[key];
+  saveThemeToggles(themeId, toggles);
+  applyTheme();
+  renderThemeToggles();
 }
 
 // ====== MIDNIGHT CLEANUP ======
