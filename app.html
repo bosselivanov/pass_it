@@ -5508,14 +5508,19 @@ function openThemePicker() {
   document.querySelectorAll('.cos-card[data-theme]').forEach(card => {
     const themeId = card.dataset.theme;
     const step = getThemeStep(themeId);
-    if (isCosmeticUnlocked(themeId)) {
+    const unlocked = isCosmeticUnlocked(themeId);
+
+    if (unlocked) {
       card.classList.remove('locked');
       card.querySelector('.cos-pieces')?.remove();
       const fill = card.querySelector('.cos-bar-fill');
       if (fill) fill.style.width = '100%';
+      if (!card.getAttribute('onclick')) {
+        card.setAttribute('onclick', `selectTheme('${themeId}')`);
+      }
     }
-    // onclick доступен если хотя бы 1 шаг разблокирован
-    if (step >= 1) {
+    // сезонные темы с хотя бы 1 разблокированным шагом тоже кликабельны
+    if (!unlocked && step >= 1) {
       card.classList.remove('locked');
       card.style.opacity = '1';
       if (!card.getAttribute('onclick')) {
@@ -5570,14 +5575,14 @@ function renderThemeToggles() {
   if (!card) return;
 
   const toggles = getThemeToggles(currentTheme);
-  const stepNames = { color: 'Цвет', gradient: 'Градиент', border: 'Рамки' };
-  const stepMinStep = { color: 1, gradient: 2, border: 3 };
+  const stepNames = { gradient: 'Градиент', border: 'Рамки' };
+  const stepMinStep = { gradient: 2, border: 3 };
 
   const container = document.createElement('div');
   container.className = 'theme-step-toggles';
   container.style.cssText = 'display:flex;flex-direction:column;gap:6px;padding:8px 10px;border-top:1px solid var(--border);margin-top:4px;';
 
-  ['color','gradient','border'].forEach(key => {
+  ['gradient','border'].forEach(key => {
     if (step < stepMinStep[key]) return; // шаг не разблокирован
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
