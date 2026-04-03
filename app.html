@@ -1911,6 +1911,12 @@ function boShowResult() {
   const items = document.getElementById('boResultItems');
   items.innerHTML = drops.map(d => makeResultHTML(d)).join('');
 
+  // применяем дропы только сейчас — после анимации
+  if (_boDrops && _boDrops.length) {
+    applyBoxDrops(_boDrops);
+    updateShopUI();
+  }
+
   // показываем "Открыть ещё раз" только если есть боксы
   const restartBtn = document.getElementById('boRestartBtn');
   if (restartBtn) restartBtn.style.display = getPendingBoxes() > 0 ? '' : 'none';
@@ -4703,7 +4709,7 @@ function shopBuyBox(count) {
 function shopOpenBox() {
   if (!useBox()) { showToast('Нет боксов'); return; }
   const drops = openBoxAndGetDrops();
-  applyBoxDrops(drops);
+  // НЕ применяем дропы сразу — применим после анимации в boShowResult
   updateShopUI();
   showBoxOpeningPopup(drops);
 }
@@ -5885,6 +5891,10 @@ function checkStreakToday() {
 
   const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
   const activeToday = allQuests.filter(q => isQuestActiveToday(q));
+
+  // если нет активных квестов вообще — не трогаем стрик
+  if (activeToday.length === 0) return streak;
+
   const streakMet = activeToday.some(q => (q.current || 0) >= q.max * 0.5);
 
   // если стрик был засчитан сегодня но условие больше не выполняется — убираем
