@@ -5740,23 +5740,26 @@ function addDebtToPass(i) {
   const debts = getDebts();
   const d = debts[i];
   const p = getCurrentPass();
-  // разрешаем добавлять один и тот же квест из разных дней
-  // имя квеста добавляем дату долга чтобы отличать
+  const maxQ = userIsPro ? 18 : 9;
+  const nonNull = (p.quests || []).filter(q => q !== null).length;
+  if (nonNull >= maxQ) { showToast('Пасс заполнен — освободи место'); return; }
+
   const questName = `${d.name} (долг от ${d.date})`;
   const quest = {
     id: uid(),
-    emoji: d.emoji,
+    emoji: d.emoji || '📋',
     name: questName,
-    max: d.max,
+    sub: '',   // не undefined
+    max: d.max || 1,
     current: d.current || 0,
     unit: d.unit || 'ед.',
     xp: d.xp || 100,
     repeat: { type: 'once' },
-    trackDebt: true,
+    trackDebt: false,
   };
   p.quests.push(quest);
   savePasses();
-  renderQuests();
+  render(); // полный ре-рендер чтобы показался новый блок
   updateAuthorIfOpen();
   showToast(`✅ «${d.name}» добавлен в пасс`);
   renderDebtList();
