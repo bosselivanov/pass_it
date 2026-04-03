@@ -6360,10 +6360,10 @@ function updateAuthorPassUI() {
   const weekXPstored = getWeeklyXPValue();
   const personalQuestsLive = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
   const personalLiveToday = personalQuestsLive.reduce((sum, q) => sum + Math.round(Math.min(1, (q.current||0)/q.max) * (q.xp||100)), 0);
-  const weekXP = weekXPstored + personalLiveToday;
   // цель = сумма XP всех личных квестов × 3 дня
   const allPersonalQ = passes.flatMap(p => (p.quests||[]).filter(q => q && !q.frozen));
   const weekTarget = Math.max(allPersonalQ.reduce((s, q) => s + (q.xp||100), 0), 500) * 3;
+  const weekXP = Math.min(weekXPstored + personalLiveToday, weekTarget); // не превышаем цель
   const weekPct = Math.min(100, Math.round((weekXP / weekTarget) * 100));
   const weekDone = weekXP >= weekTarget;
   const awq0 = document.getElementById('awq0bar');
@@ -6598,7 +6598,9 @@ firebase.auth().onAuthStateChanged(function(user) {
         if (cloudData.authorXP != null)        save('passit_author_xp', cloudData.authorXP);
         if (cloudData.authorLevel != null)      save('passit_author_level', cloudData.authorLevel);
         if (cloudData.authorXPDate != null)     save('passit_author_xp_date', cloudData.authorXPDate);
-        if (cloudData.rewardsUpTo != null)      save('passit_rewards_up_to', cloudData.rewardsUpTo);
+        // rewardsUpTo: если нет в облаке — ставим равным уровню, чтобы не пересчитывать
+        const cloudRewardsUpTo = cloudData.rewardsUpTo != null ? cloudData.rewardsUpTo : (cloudData.authorLevel || 0);
+        save('passit_rewards_up_to', cloudRewardsUpTo);
         if (cloudData.pendingBoxes != null)     save('passit_pending_boxes', cloudData.pendingBoxes);
         if (cloudData.boxPieces != null)        save('passit_box_pieces', cloudData.boxPieces);
         if (cloudData.coins != null)            save('passit_coins', cloudData.coins);
