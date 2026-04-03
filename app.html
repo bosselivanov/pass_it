@@ -2801,7 +2801,7 @@ function renderQuests() {
           const nextDay = !active && !frozen ? nextActiveDay(q) : null;
 
           div.className = 'quest-card' + (done ? ' done' : '') + (!active && !frozen ? ' inactive' : '') + (frozen ? ' frozen' : '');
-          div.draggable = !frozen && !notStarted;
+          div.draggable = !notStarted;
           div.dataset.snakeIdx = globalSnakeIdx;
           div.innerHTML = `
             <div class="quest-card-top">
@@ -4372,7 +4372,14 @@ function processLevelRewards(newLevel) {
 // Догоняет пропущенные награды если rewardsUpTo отстал от реального уровня
 function recoverMissingRewards() {
   const currentLevel = getAuthorPassLevel();
-  const rewardedUpTo = load('passit_rewards_up_to', 0);
+  const rewardedUpTo = load('passit_rewards_up_to', -1);
+  // -1 означает что ключа никогда не было — первый запуск после обновления
+  // в этом случае просто фиксируем текущий уровень без выдачи наград
+  // (награды уже могли быть выданы ранее через syncAuthorLevel)
+  if (rewardedUpTo === -1) {
+    save('passit_rewards_up_to', currentLevel);
+    return;
+  }
   if (rewardedUpTo >= currentLevel) return;
   for (let l = rewardedUpTo + 1; l <= currentLevel; l++) {
     processLevelRewards(l);
@@ -5727,19 +5734,18 @@ function addDebtToPass(i) {
   const debts = getDebts();
   const d = debts[i];
   const p = getCurrentPass();
-  // проверяем нет ли уже такого квеста в пассе
-  const already = (p.quests || []).some(q => q && q.name === d.name);
-  if (already) { showToast('Квест уже есть в пассе'); return; }
-  // добавляем квест из долга с текущим прогрессом
+  // разрешаем добавлять один и тот же квест из разных дней
+  // имя квеста добавляем дату долга чтобы отличать
+  const questName = `${d.name} (долг от ${d.date})`;
   const quest = {
     id: uid(),
     emoji: d.emoji,
-    name: d.name,
+    name: questName,
     max: d.max,
     current: d.current || 0,
     unit: d.unit || 'ед.',
     xp: d.xp || 100,
-    repeat: d.repeat || { type: 'once' },
+    repeat: { type: 'once' },
     trackDebt: true,
   };
   p.quests.push(quest);
@@ -6516,7 +6522,7 @@ cleanupExpiredQuests();
 checkOnboarding();
 scheduleMidnightCleanup();
 updateDebtBadge();
-recoverMissingRewards(); // догоняет пропущенные награды за уровни
+// recoverMissingRewards вызывается только после загрузки облака (в onAuthStateChanged)
 
 // ====== FIREBASE AUTH ======
 var currentUser = null;
@@ -6605,7 +6611,7 @@ firebase.auth().onAuthStateChanged(function(user) {
         recoverMissingRewards();
       } else if (localHasData && !cloudHasData) {
         // первый вход с локальными данными — тихо сохраняем в облако
-        cloudSave(); render();
+        cloudSave(); render(); recoverMissingRewards();
       } else {
         render();
       }
