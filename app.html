@@ -4350,7 +4350,12 @@ function addBoxPieces(n) {
   let boxes = 0;
   while (v >= 5) { v -= 5; boxes++; }
   save('passit_box_pieces', v);
-  if (boxes > 0) awardBoxes(boxes);
+  if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/boxPieces').set(v);
+  if (boxes > 0) {
+    awardBoxes(boxes);
+  } else {
+    showToast(`🧩 Кусочек бокса! (${v}/5)`);
+  }
   return v;
 }
 
@@ -4378,11 +4383,10 @@ function processLevelRewards(newLevel) {
 // Догоняет пропущенные награды если rewardsUpTo отстал от реального уровня
 function recoverMissingRewards() {
   const currentLevel = getAuthorPassLevel();
-  const rewardedUpTo = load('passit_rewards_up_to', -1);
-  // -1 означает что ключа никогда не было — первый запуск после обновления
-  // в этом случае просто фиксируем текущий уровень без выдачи наград
-  // (награды уже могли быть выданы ранее через syncAuthorLevel)
-  if (rewardedUpTo === -1) {
+  const rewardedUpTo = load('passit_rewards_up_to', 0);
+  // если разрыв больше 30 уровней — скорее всего данные слетели,
+  // просто фиксируем без выдачи чтобы не спамить боксами
+  if (currentLevel - rewardedUpTo > 30) {
     save('passit_rewards_up_to', currentLevel);
     return;
   }
@@ -6253,10 +6257,11 @@ function syncAuthorLevel() {
   const oldLevel = getAuthorPassLevel();
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
+    const rewardedUpTo = load('passit_rewards_up_to', 0);
     for (let l = oldLevel + 1; l <= newLevel; l++) {
-      processLevelRewards(l);
+      if (l > rewardedUpTo) processLevelRewards(l);
     }
-    save('passit_rewards_up_to', newLevel);
+    save('passit_rewards_up_to', Math.max(rewardedUpTo, newLevel));
     showToast(`⬆️ Уровень ${newLevel}!`);
     logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
   }
