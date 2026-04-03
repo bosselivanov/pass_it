@@ -4972,7 +4972,7 @@ function performDayReset(isManual) {
 }
 
 function newDay() {
-  performDayReset(true);
+  performDayReset(false);
   document.getElementById('menuOverlay').classList.remove('open');
   showToast('🌅 Новый день начат!');
 }
@@ -5689,8 +5689,12 @@ function addDebt(quest, passName, date) {
     id: Date.now() + Math.random(),
     emoji: quest.emoji,
     name: quest.name,
+    sub: quest.sub || '',
     current: quest.current || 0,
     max: quest.max,
+    unit: quest.unit || 'ед.',
+    xp: quest.xp || 100,
+    trackDebt: quest.trackDebt,
     passName: passName,
     date: date || todayStr()
   });
