@@ -3273,7 +3273,7 @@ function addQuest() {
   const trackDebt = document.getElementById('questTrackDebt').checked;
   const startDate = document.getElementById('questStartDate').value || null;
   if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
-  const newQuest = { emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay, trackDebt, startDate };
+  const newQuest = { id: uid(), emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay, trackDebt, startDate };
   // найти первый свободный слот
   const firstNull = p.quests.indexOf(null);
   if (firstNull !== -1) {
@@ -6035,8 +6035,28 @@ function renderStreakWidget() {
 }
 
 // --- XP СИСТЕМA ---
-function getWeeklyXP() { return load('passit_weekly_xp', { xp: 0, weekStart: null }); }
+function getWeeklyXP() { return load('passit_weekly_xp', { xp: 0, weekStart: null, target: null, completed: false }); }
 function saveWeeklyXP(w) { save('passit_weekly_xp', w); }
+function getWeeklyTargetBase() {
+  const allPersonalQ = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
+  return Math.max(allPersonalQ.reduce((sum, q) => sum + (q.xp || 100), 0), 500) * 3;
+}
+function getWeeklyChallengeState() {
+  const weekStart = getCurrentWeekStart();
+  const stored = getWeeklyXP();
+  const isCurrentWeek = stored.weekStart === weekStart;
+  const target = isCurrentWeek && stored.target ? stored.target : getWeeklyTargetBase();
+  const xp = isCurrentWeek ? (stored.xp || 0) : 0;
+  const completed = isCurrentWeek ? !!stored.completed : false;
+  return { weekStart, xp, target, completed };
+}
+function saveWeeklyChallengeState(patch) {
+  const current = getWeeklyChallengeState();
+  const next = { ...current, ...patch };
+  next.completed = !!next.completed || next.xp >= next.target;
+  saveWeeklyXP(next);
+  return next;
+}
 
 function getCurrentWeekStart() {
   const now = new Date();
@@ -6050,18 +6070,14 @@ function getCurrentWeekStart() {
 function addXPToday(xp) {
   // вызывается при завершении мегаквеста — сохраняем сразу в weekly
   if (!xp || xp <= 0) return;
-  const weekStart = getCurrentWeekStart();
-  const w = getWeeklyXP();
-  const stored = (w.weekStart === weekStart) ? (w.xp || 0) : 0;
-  saveWeeklyXP({ xp: stored + xp, weekStart });
+  const weekly = getWeeklyChallengeState();
+  saveWeeklyChallengeState({ xp: weekly.xp + xp });
 }
 
 function getWeeklyXPValue() {
   // weekly XP = только накопленный из прошлых дней (сохраняется при сбросе дня)
   // сегодняшний день не засчитывается пока не будет сброса
-  const weekStart = getCurrentWeekStart();
-  const w = getWeeklyXP();
-  return (w.weekStart === weekStart) ? (w.xp || 0) : 0;
+  return getWeeklyChallengeState().xp;
 }
 
 // --- КВЕСТ НЕДЕЛИ ---
@@ -6091,15 +6107,14 @@ function qowInit() {
 
   const d = qowGetData();
 
-  // уже выбран — проверяем что квест существует (не важно активен ли сегодня)
+  // если уже выбран на этой неделе — не перевыбираем посреди недели
   if (d.id || d.name) {
-    const found = qowFindQuest();
-    if (found) return d; // квест жив — не меняем весь week
+    return d;
   }
 
-  // нет квеста или удалён — выбираем среди активных сегодня
+  // выбираем один раз на неделю среди всех живых личных квестов
   const all = passes.flatMap(p =>
-    (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q))
+    (p.quests || []).filter(q => q && !q.frozen)
   );
   if (!all.length) return { id: null, name: null, emoji: null, dates: [] };
   const chosen = [...all].sort((a, b) => (a.current||0)/a.max - (b.current||0)/b.max)[0];
@@ -6205,10 +6220,8 @@ function processAuthorDailyReward() {
       const pct = Math.min(1, (q.current || 0) / q.max);
       return sum + Math.round(pct * (q.xp || 100));
     }, 0);
-    const weekStart = getCurrentWeekStart();
-    const w = getWeeklyXP();
-    const storedWeek = (w.weekStart === weekStart) ? (w.xp || 0) : 0;
-    saveWeeklyXP({ xp: storedWeek + personalXPToday, weekStart });
+    const weekly = getWeeklyChallengeState();
+    saveWeeklyChallengeState({ xp: weekly.xp + personalXPToday });
   }
 }
 
@@ -6247,7 +6260,8 @@ function getTodayLiveXP() {
   const streakXP = Math.round(Math.min(getStreakCount() / 4, 1) * 1000);
 
   // awq0: XP за неделю — (накопленный + живой) / цель × 1500
-  const weekStored = getWeeklyXPValue();
+  const weekly = getWeeklyChallengeState();
+  const weekStored = weekly.xp;
   const personalLive = activeToday.reduce((s, q) => s + Math.round(Math.min(1,(q.current||0)/q.max)*(q.xp||100)), 0);
   // вклад мегаквестов пропорционально прогрессу
   const megaLive = passes.flatMap(p => (p.megaQuests || [])).reduce((s, mq) => {
@@ -6259,9 +6273,11 @@ function getTodayLiveXP() {
   }, 0);
   // цель недели = сумма XP всех личных квестов × 3 дня
   const allPersonalQuests = passes.flatMap(p => (p.quests||[]).filter(q => q && !q.frozen));
-  const maxDayXP = allPersonalQuests.reduce((s, q) => s + (q.xp || 100), 0) || 500;
-  const weekTarget = maxDayXP * 3;
-  const weeklyXPtaskXP = Math.round(Math.min((weekStored + personalLive + megaLive) / weekTarget, 1) * 1500);
+  const weekTarget = weekly.target;
+  const liveWeekComplete = (weekStored + personalLive + megaLive) >= weekTarget;
+  if (liveWeekComplete && !weekly.completed) saveWeeklyChallengeState({ completed: true });
+  const effectiveWeekXP = (weekly.completed || liveWeekComplete) ? weekTarget : Math.min(weekStored + personalLive + megaLive, weekTarget);
+  const weeklyXPtaskXP = Math.round(Math.min(effectiveWeekXP / weekTarget, 1) * 1500);
 
   // awq1: квест недели — done/3 × 1000
   const qowProg = qowGetProgress();
@@ -6400,15 +6416,15 @@ function updateAuthorPassUI() {
   }
 
   // ЕЖЕНЕДЕЛЬНЫЕ — XP
-  const weekXPstored = getWeeklyXPValue();
+  const weeklyState = getWeeklyChallengeState();
+  const weekXPstored = weeklyState.xp;
   const personalQuestsLive = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
   const personalLiveToday = personalQuestsLive.reduce((sum, q) => sum + Math.round(Math.min(1, (q.current||0)/q.max) * (q.xp||100)), 0);
-  // цель = сумма XP всех личных квестов × 3 дня
-  const allPersonalQ = passes.flatMap(p => (p.quests||[]).filter(q => q && !q.frozen));
-  const weekTarget = Math.max(allPersonalQ.reduce((s, q) => s + (q.xp||100), 0), 500) * 3;
-  const weekXP = Math.min(weekXPstored + personalLiveToday, weekTarget); // не превышаем цель
+  const weekTarget = weeklyState.target;
+  const weekXP = weeklyState.completed ? weekTarget : Math.min(weekXPstored + personalLiveToday, weekTarget);
   const weekPct = Math.min(100, Math.round((weekXP / weekTarget) * 100));
   const weekDone = weekXP >= weekTarget;
+  if (weekDone && !weeklyState.completed) saveWeeklyChallengeState({ completed: true });
   const awq0 = document.getElementById('awq0bar');
   const awq0meta = document.getElementById('awq0meta');
   if (awq0) awq0.style.width = weekPct + '%';
