@@ -107,6 +107,17 @@ footer { border-top: 1px solid var(--border); padding: 32px 60px; display: flex;
 .footer-copy { font-size: 12px; color: var(--text2); opacity: 0.5; }
 .fade-up { opacity: 0; transform: translateY(30px); transition: opacity 0.7s, transform 0.7s; }
 .fade-up.visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .fade-up {
+    opacity: 1;
+    transform: none;
+  }
+}
 @media (max-width: 900px) {
   nav { padding: 16px 24px; }
   .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; gap: 40px; }
@@ -122,7 +133,7 @@ footer { border-top: 1px solid var(--border); padding: 32px 60px; display: flex;
 <body>
 
 <nav>
-  <a href="#" class="nav-logo">PASS<span>IT</span></a>
+  <a href="./index.html" class="nav-logo">PASS<span>IT</span></a>
   <a href="app.html" class="nav-login">Open App →</a>
 </nav>
 
@@ -215,13 +226,25 @@ footer { border-top: 1px solid var(--border); padding: 32px 60px; display: flex;
 </footer>
 
 <script>
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.15 });
-document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if ('IntersectionObserver' in window) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+} else {
+  document.querySelectorAll('.fade-up').forEach((el) => el.classList.add('visible'));
+}
 
 function buildDemo() {
   const container = document.getElementById('demoCircles');
+  const xpLabel = document.getElementById('demoXp');
+  if (!container || !xpLabel) return;
+
   const total = 6;
   container.innerHTML = '';
   for (let i = 0; i <= total; i++) {
@@ -238,17 +261,25 @@ function buildDemo() {
   let current = 0;
   const xp = [0, 100, 250, 100, 500, 250, 100];
   let totalXp = 0;
-  setInterval(() => {
+  if (prefersReducedMotion) {
+    xpLabel.textContent = `+${xp.slice(1).reduce((sum, value) => sum + value, 0)} XP earned today`;
+    document.querySelectorAll('.pass-demo-circle').forEach((circle) => circle.classList.add('filled'));
+    document.querySelectorAll('.pass-demo-line').forEach((line) => line.classList.add('filled'));
+    return;
+  }
+
+  if (buildDemo.intervalId) clearInterval(buildDemo.intervalId);
+  buildDemo.intervalId = setInterval(() => {
     if (current < total) {
       current++; totalXp += xp[current];
       document.getElementById(`dcircle-${current}`).classList.add('filled');
       document.getElementById(`dline-${current}`).classList.add('filled');
-      document.getElementById('demoXp').textContent = `+${totalXp} XP earned today`;
+      xpLabel.textContent = `+${totalXp} XP earned today`;
     } else {
       current = 0; totalXp = 0;
       document.querySelectorAll('.pass-demo-circle').forEach((c, i) => c.classList.toggle('filled', i === 0));
       document.querySelectorAll('.pass-demo-line').forEach(l => l.classList.remove('filled'));
-      document.getElementById('demoXp').textContent = '+0 XP earned today';
+      xpLabel.textContent = '+0 XP earned today';
     }
   }, 900);
 }
