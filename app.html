@@ -101,7 +101,8 @@ body {
 .pv-quest-card { background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 8px; font-size: 18px; display: flex; flex-direction: column; gap: 4px; transition: box-shadow 0.3s, border-color 0.3s; }
 .pv-quest-name { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.8); }
 .pv-quest-bar { height: 3px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; margin-top: 2px; }
-.pv-quest-fill { height: 100%; border-radius: 3px; background: rgba(255,255,255,0.5); transition: width 0.3s; } border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+.pv-quest-fill { height: 100%; border-radius: 3px; background: rgba(255,255,255,0.5); transition: width 0.3s; }
+.cos-filter-tag { background: transparent; border: 1.5px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 700; color: var(--text2); cursor: pointer; transition: all 0.15s; }
 .cos-filter-tag:hover { border-color: var(--accent); color: var(--text); }
 .cos-filter-tag.active { background: var(--accent); border-color: var(--accent); color: white; }
 .roadmap-btn { margin-top:6px;width:100%;background:var(--bar-bg);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--text2);cursor:pointer;transition:all 0.15s; }
@@ -2200,8 +2201,28 @@ function boRestart() {
 <script>
 // ====== UTILS ======
 function save(k, v) { localStorage.setItem('passit4_' + k, JSON.stringify(v)); }
-function load(k, def) { const v = localStorage.getItem('passit4_' + k); return v !== null ? JSON.parse(v) : def; }
+function load(k, def) {
+  const v = localStorage.getItem('passit4_' + k);
+  if (v === null) return def;
+  try {
+    return JSON.parse(v);
+  } catch (e) {
+    console.warn('Failed to parse localStorage key:', k, e);
+    return def;
+  }
+}
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function formatLocalDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -2301,8 +2322,8 @@ function renderPassMenuList() {
   const list = document.getElementById('passMenuList');
   list.innerHTML = passes.map(p => `
     <div class="pass-menu-item ${p.id === currentPassId ? 'active' : ''}" onclick="switchPass('${p.id}')">
-      <span class="pass-menu-item-emoji">${p.emoji}</span>
-      <span>${p.name}</span>
+      <span class="pass-menu-item-emoji">${escapeHtml(p.emoji)}</span>
+      <span>${escapeHtml(p.name)}</span>
     </div>`).join('');
 }
 
@@ -2470,8 +2491,8 @@ function renderPassMenuListDrag() {
         ondragleave="this.classList.remove('drag-target-hover')"
         ondrop="dropQuestToPass('${p.id}', event)"
         onclick="${p.id !== currentPassId ? `switchPass('${p.id}')` : ''}">
-        <span class="pass-menu-item-emoji">${p.emoji}</span>
-        <span>${p.name}${p.id === currentPassId ? ' (текущий)' : ''}</span>
+        <span class="pass-menu-item-emoji">${escapeHtml(p.emoji)}</span>
+        <span>${escapeHtml(p.name)}${p.id === currentPassId ? ' (текущий)' : ''}</span>
       </div>`).join('');
 }
 
@@ -2584,8 +2605,7 @@ function dismissUpdate() {
 }
 
 function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return formatLocalDate(new Date());
 }
 function todayDowIndex() { return (new Date().getDay() + 6) % 7; }
 
@@ -2811,8 +2831,8 @@ function renderQuests() {
           div.dataset.snakeIdx = globalSnakeIdx;
           div.innerHTML = `
             <div class="quest-card-top">
-              <span class="quest-emoji">${q.emoji}${frozen ? '❄️' : ''}</span>
-              <div style="flex:1;min-width:0;"><div class="quest-name">${q.name}</div><div class="quest-sub">${q.sub}</div></div>
+              <span class="quest-emoji">${escapeHtml(q.emoji)}${frozen ? '❄️' : ''}</span>
+              <div style="flex:1;min-width:0;"><div class="quest-name">${escapeHtml(q.name)}</div><div class="quest-sub">${escapeHtml(q.sub)}</div></div>
               <span class="quest-xp-badge ${q.xp >= 500 ? 'xp-epic' : q.xp >= 250 ? 'xp-rare' : 'xp-common'}">${q.xp}XP</span>
               <button class="quest-freeze-btn" onclick="toggleFreezeQuest(${globalSnakeIdx})" title="${frozen ? 'Разморозить' : 'Заморозить'}" ondragstart="event.stopPropagation()">${frozen ? '🔥' : '❄️'}</button>
               <button class="quest-freeze-btn" onclick="copyQuest(${globalSnakeIdx})" title="Копировать квест" ondragstart="event.stopPropagation()">📋</button>
@@ -3083,9 +3103,9 @@ function renderMqList() {
       ondragleave="mqDragLeave(event)"
       onclick="mqOpenFocus(${i})">
       <div class="mq-row-emoji" style="cursor:grab;">⠿</div>
-      <div class="mq-row-emoji">${mq.emoji}</div>
+      <div class="mq-row-emoji">${escapeHtml(mq.emoji)}</div>
       <div class="mq-row-info">
-        <div class="mq-row-name">${mq.name}</div>
+        <div class="mq-row-name">${escapeHtml(mq.name)}</div>
         <div class="mq-row-pct">${pc}% — ${mq.current || 0}/${mq.max} ${mq.unit || 'ед.'}</div>
         <div class="mq-row-bar"><div class="mq-row-fill" style="width:${pc}%"></div></div>
       </div>
@@ -3116,7 +3136,7 @@ function renderMqFocus(i) {
   const taskItems = tasks.map((t, ti) => `
     <div class="mega-task-item" id="task-item-${i}-${ti}">
       <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${i},${ti},this.checked)">
-      <span class="${t.done ? 'done-task' : ''}" ondblclick="editTaskInline(${i},${ti})">${t.text}</span>
+      <span class="${t.done ? 'done-task' : ''}" ondblclick="editTaskInline(${i},${ti})">${escapeHtml(t.text)}</span>
       <button class="task-edit-btn" onclick="editTaskInline(${i},${ti})" title="Редактировать">✏️</button>
       <button class="task-delete-btn" onclick="deleteTask(${i},${ti})" title="Удалить">✕</button>
     </div>`).join('');
@@ -3130,8 +3150,8 @@ function renderMqFocus(i) {
         <button class="mega-delete" onclick="deleteMega(${i})" title="Удалить мегаквест">🗑️</button>
       </div>
     </div>
-    <div class="flang-emoji-area">${mq.emoji}</div>
-    <div class="flang-desc-area"><div class="flang-title">${mq.name}</div><div class="flang-subtitle">${mq.sub}</div></div>
+    <div class="flang-emoji-area">${escapeHtml(mq.emoji)}</div>
+    <div class="flang-desc-area"><div class="flang-title">${escapeHtml(mq.name)}</div><div class="flang-subtitle">${escapeHtml(mq.sub)}</div></div>
     <div style="flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:6px;justify-content:space-between;">
         <button class="mega-tasks-toggle" onclick="toggleTasksPanel(${i})">📋 Задачи <span id="task-count-${i}">(${tasks.length})</span> ▾</button>
@@ -3164,8 +3184,8 @@ function renderMqFocus(i) {
   document.getElementById('mqStacked').innerHTML = rest.map(mq2 => {
     const ri = megaQuests.indexOf(mq2);
     return `<div class="mq-stacked-row" onclick="mqOpenFocus(${ri})">
-      <div class="mq-stacked-emoji">${mq2.emoji}</div>
-      <div class="mq-stacked-name">${mq2.name}</div>
+      <div class="mq-stacked-emoji">${escapeHtml(mq2.emoji)}</div>
+      <div class="mq-stacked-name">${escapeHtml(mq2.name)}</div>
       <div class="mq-stacked-pct">${mqPct(mq2)}%</div>
     </div>`;
   }).join('');
@@ -4995,8 +5015,9 @@ function importJSON() {
     reader.onload = ev => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (data.passes) { passes = data.passes; currentPassId = data.currentPassId || passes[0].id; }
-        else if (data.quests) { initPasses(data); }
+        if (Array.isArray(data.passes) && data.passes.length > 0) initPasses({ passes: data.passes, currentPassId: data.currentPassId });
+        else if (data.quests) initPasses(data);
+        else throw new Error('Invalid import payload');
         savePasses();
         document.getElementById('menuOverlay').classList.remove('open');
         render(); showToast('Данные загружены!');
@@ -5076,8 +5097,8 @@ function openHistory() {
       <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
         <div style="font-size:16px;width:24px;text-align:center;">${typeIcon[e.type] || '•'}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.name || ''}</div>
-          <div style="font-size:10px;color:var(--text2);">${typeLabel[e.type] || e.type}${e.passName ? ' · ' + e.passName : ''}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(e.name || '')}</div>
+          <div style="font-size:10px;color:var(--text2);">${escapeHtml(typeLabel[e.type] || e.type)}${e.passName ? ' · ' + escapeHtml(e.passName) : ''}</div>
         </div>
         ${e.xp ? `<div class="quest-xp-badge xp-rare" style="flex-shrink:0;">+${e.xp} XP</div>` : ''}
       </div>`).join('');
@@ -6152,7 +6173,7 @@ function processAuthorDailyReward() {
   const today = todayStr();
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+  const tomorrowStr = formatLocalDate(tomorrow);
   const lastSaved = load('passit_author_xp_date', null);
   if (lastSaved === today || lastSaved === tomorrowStr) return; // уже сохранено
   save('passit_author_xp_date', tomorrowStr); // ставим завтра — защита до следующего сброса
