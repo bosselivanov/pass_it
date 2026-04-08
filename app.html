@@ -4615,15 +4615,17 @@ function spinBoxSlot(idx, winDrop) {
   const names = { mira: 'Мира', zoi: 'Зои', rumi: 'Руми ✦' };
   const colors = { mira: 'linear-gradient(135deg,#F4B9BE,#CF5C86)', zoi: 'linear-gradient(135deg,#D27DA4,#4566BB)', rumi: 'linear-gradient(135deg,#d4af37,#867DCE)' };
 
-  const pool = [
-    { type:'piece', themeId:'mira' }, { type:'piece', themeId:'zoi' },
-    { type:'piece', themeId:'rumi' }, { type:'coin' },
-    { type:'piece', themeId:'mira' }, { type:'piece', themeId:'zoi' },
-    { type:'piece', themeId:'rumi' }, { type:'coin' },
-    { type:'piece', themeId:'mira' }, { type:'piece', themeId:'zoi' },
-    { type:'piece', themeId:'rumi' }, { type:'coin' },
-    winDrop
-  ];
+  const availableThemes = getAvailableThemeDropIds();
+  const pool = [];
+  if (availableThemes.length > 0) {
+    for (let i = 0; i < 3; i++) {
+      availableThemes.forEach(themeId => pool.push({ type:'piece', themeId }));
+      pool.push({ type:'coin' });
+    }
+  } else {
+    for (let i = 0; i < 6; i++) pool.push({ type:'coin' });
+  }
+  pool.push(winDrop);
 
   inner.innerHTML = pool.map(d => {
     if (d.type === 'coin') return `<div class="box-slot-item"><div class="bsi-coin">H</div><div class="bsi-label" style="color:#d4af37;">монеты</div></div>`;
