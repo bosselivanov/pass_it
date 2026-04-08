@@ -763,6 +763,7 @@ body {
     <div class="profile-dropdown" id="profileDropdown">
       <div class="profile-email" id="profileEmail">Не авторизован</div>
       <div class="profile-sub" id="profileSubStatus">Free план</div>
+      <div class="profile-sub" id="profileSeasonStatus" style="display:none;margin-top:4px;"></div>
       <div class="profile-divider"></div>
       <button class="profile-item" onclick="openSubPopup();closeProfileMenu()">⭐ Подписка</button>
       <button class="profile-item" onclick="openFeedbackExt();closeProfileMenu()">💬 Обратная связь</button>
@@ -4766,6 +4767,7 @@ const SEASONAL_THEMES = {
     accentLight: '#4aa8e0', accentDark: '#1a6fa0',
     steps: [4, 5, 6, 7], // кусочков на каждый шаг
     stepNames: ['Цвет', 'Градиент', 'Рамки', 'Статус'],
+    profileStatus: 'Путь Гок-До',
     totalPieces: 22
   },
   zoi: {
@@ -4773,6 +4775,7 @@ const SEASONAL_THEMES = {
     accentLight: '#9b5de5', accentDark: '#5a1fa0',
     steps: [6, 7, 8, 9],
     stepNames: ['Цвет', 'Градиент', 'Рамки', 'Статус'],
+    profileStatus: 'Искра Шин-Каль',
     totalPieces: 30
   },
   rumi: {
@@ -4780,6 +4783,7 @@ const SEASONAL_THEMES = {
     accentLight: '#E8960A', accentDark: '#8B5E00',
     steps: [8, 10, 12, 14],
     stepNames: ['Цвет', 'Градиент', 'Рамки', 'Эффект + Статус'],
+    profileStatus: 'Золотая Печать',
     totalPieces: 44
   }
 };
@@ -4823,6 +4827,16 @@ function getThemeStepProgress(themeId) {
     step,
     stepName: theme.stepNames[step]
   };
+}
+
+function getUnlockedSeasonStatuses() {
+  return Object.entries(SEASONAL_THEMES)
+    .filter(([themeId, theme]) => getThemeStep(themeId) >= theme.steps.length)
+    .map(([themeId, theme]) => ({
+      themeId,
+      label: theme.profileStatus,
+      accent: dark ? theme.accentDark : theme.accentLight
+    }));
 }
 
 // ====== ACHIEVEMENTS ======
@@ -5474,6 +5488,7 @@ function applyTheme() {
     const styleEl = document.getElementById('themeGlowStyle');
     if (styleEl) styleEl.textContent = '';
   }
+  updateProfileMenu();
 }
 function toggleTheme() { dark = !dark; save('darkMode', dark); applyTheme(); }
 function renderPiecesGrids() {
@@ -6616,6 +6631,7 @@ function closeProfileMenu() {
 function updateProfileMenu() {
   const emailEl = document.getElementById('profileEmail');
   const subEl = document.getElementById('profileSubStatus');
+  const seasonEl = document.getElementById('profileSeasonStatus');
   const authBtn = document.getElementById('profileAuthBtn');
   if (currentUser) {
     emailEl.textContent = currentUser.email;
@@ -6625,6 +6641,18 @@ function updateProfileMenu() {
     emailEl.textContent = 'Не авторизован';
     subEl.textContent = 'Free план';
     authBtn.textContent = '🔑 Войти через Google';
+  }
+  const statuses = getUnlockedSeasonStatuses();
+  if (seasonEl) {
+    if (statuses.length > 0) {
+      seasonEl.style.display = 'block';
+      seasonEl.textContent = statuses.map(s => s.label).join(' • ');
+      seasonEl.style.color = statuses.length === 1 ? statuses[0].accent : 'var(--accent)';
+      seasonEl.style.fontWeight = '800';
+    } else {
+      seasonEl.style.display = 'none';
+      seasonEl.textContent = '';
+    }
   }
 }
 function profileAuthAction() {
