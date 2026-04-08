@@ -1992,10 +1992,6 @@ function boRestart() {
       <div class="popup-title">🎖️ Достижения</div>
       <button class="popup-btn secondary" onclick="closePopup('achievementsOverlay')" style="flex:0;padding:6px 12px;font-size:12px;">✕</button>
     </div>
-    <div style="display:flex;gap:8px;margin-top:12px;">
-      <button class="popup-btn primary" onclick="forceRecoverAchievements()" style="flex:1;">Зачесть достижения</button>
-      <button class="popup-btn secondary" onclick="resetAchievementRewardStatus()" style="flex:1;">Сбросить статус наград</button>
-    </div>
     <div id="achievementsList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;"></div>
   </div>
 </div>
@@ -5852,6 +5848,7 @@ function renderDebtList() {
 function addDebtToPass(i) {
   const debts = getDebts();
   const d = debts[i];
+  if (!d) return;
   const p = getCurrentPass();
   const maxQ = userIsPro ? 18 : 9;
   const nonNull = (p.quests || []).filter(q => q !== null).length;
@@ -5871,9 +5868,12 @@ function addDebtToPass(i) {
     trackDebt: false,
   };
   p.quests.push(quest);
+  debts.splice(i, 1);
+  saveDebts(debts);
   savePasses();
   render(); // полный ре-рендер чтобы показался новый блок
   updateAuthorIfOpen();
+  updateDebtBadge();
   showToast(`✅ «${d.name}» добавлен в пасс`);
   renderDebtList();
 }
