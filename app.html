@@ -4861,32 +4861,39 @@ function grantAchievementReward(achievement) {
   }
 }
 
-function checkAchievements(showToasts = true) {
+function recoverMissingAchievementRewards(showToasts = false) {
   const unlocked = getUnlockedAchievements();
   const rewarded = getRewardedAchievements();
-  let changed = false;
+  let unlockedChanged = false;
+  let rewardedChanged = false;
 
-  ACHIEVEMENTS.forEach(a => {
-    const achieved = a.check();
-    if (achieved && !unlocked.includes(a.id)) {
-      unlocked.push(a.id);
-      changed = true;
-      if (showToasts) showToast(`🎖️ Достижение: ${a.name}!`);
+  ACHIEVEMENTS.forEach((achievement) => {
+    if (!achievement.check()) return;
+
+    if (!unlocked.includes(achievement.id)) {
+      unlocked.push(achievement.id);
+      unlockedChanged = true;
+      if (showToasts) showToast(`🎖️ Достижение: ${achievement.name}!`);
     }
-    if (achieved && !rewarded.includes(a.id)) {
-      grantAchievementReward(a);
-      rewarded.push(a.id);
-      changed = true;
-      if (showToasts) showToast(`🎁 Награда за достижение «${a.name}»: ${a.reward}`);
+
+    if (!rewarded.includes(achievement.id)) {
+      grantAchievementReward(achievement);
+      rewarded.push(achievement.id);
+      rewardedChanged = true;
+      if (showToasts) showToast(`🎁 Награда за достижение «${achievement.name}»: ${achievement.reward}`);
     }
   });
 
-  if (changed) {
-    saveUnlockedAchievements(unlocked);
-    saveRewardedAchievements(rewarded);
+  if (unlockedChanged) saveUnlockedAchievements(unlocked);
+  if (rewardedChanged) saveRewardedAchievements(rewarded);
+  if (unlockedChanged || rewardedChanged) {
     renderShop();
     cloudSave();
   }
+}
+
+function checkAchievements(showToasts = true) {
+  recoverMissingAchievementRewards(showToasts);
 }
 
 function openAchievements() {
@@ -6736,11 +6743,13 @@ firebase.auth().onAuthStateChanged(function(user) {
         if (cloudData.weeklyXP != null)         save('passit_weekly_xp', cloudData.weeklyXP);
         render();
         recoverMissingRewards();
+        recoverMissingAchievementRewards(false);
       } else if (localHasData && !cloudHasData) {
         // первый вход с локальными данными — тихо сохраняем в облако
-        cloudSave(); render(); recoverMissingRewards();
+        cloudSave(); render(); recoverMissingRewards(); recoverMissingAchievementRewards(false);
       } else {
         render();
+        recoverMissingAchievementRewards(false);
       }
     });
   } else {
