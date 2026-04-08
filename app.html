@@ -1992,6 +1992,9 @@ function boRestart() {
       <div class="popup-title">🎖️ Достижения</div>
       <button class="popup-btn secondary" onclick="closePopup('achievementsOverlay')" style="flex:0;padding:6px 12px;font-size:12px;">✕</button>
     </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="popup-btn primary" onclick="forceRecoverAchievements()" style="flex:1;">Зачесть достижения</button>
+    </div>
     <div id="achievementsList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;"></div>
   </div>
 </div>
@@ -4866,6 +4869,8 @@ function recoverMissingAchievementRewards(showToasts = false) {
   const rewarded = getRewardedAchievements();
   let unlockedChanged = false;
   let rewardedChanged = false;
+  let unlockedNow = 0;
+  let rewardedNow = 0;
 
   ACHIEVEMENTS.forEach((achievement) => {
     if (!achievement.check()) return;
@@ -4873,6 +4878,7 @@ function recoverMissingAchievementRewards(showToasts = false) {
     if (!unlocked.includes(achievement.id)) {
       unlocked.push(achievement.id);
       unlockedChanged = true;
+      unlockedNow++;
       if (showToasts) showToast(`🎖️ Достижение: ${achievement.name}!`);
     }
 
@@ -4880,6 +4886,7 @@ function recoverMissingAchievementRewards(showToasts = false) {
       grantAchievementReward(achievement);
       rewarded.push(achievement.id);
       rewardedChanged = true;
+      rewardedNow++;
       if (showToasts) showToast(`🎁 Награда за достижение «${achievement.name}»: ${achievement.reward}`);
     }
   });
@@ -4887,13 +4894,25 @@ function recoverMissingAchievementRewards(showToasts = false) {
   if (unlockedChanged) saveUnlockedAchievements(unlocked);
   if (rewardedChanged) saveRewardedAchievements(rewarded);
   if (unlockedChanged || rewardedChanged) {
-    renderShop();
+    updateShopUI();
+    updateAuthorPassUI();
     cloudSave();
   }
+  return { unlockedNow, rewardedNow };
 }
 
 function checkAchievements(showToasts = true) {
   recoverMissingAchievementRewards(showToasts);
+}
+
+function forceRecoverAchievements() {
+  const result = recoverMissingAchievementRewards(true);
+  openAchievements();
+  if (!result.unlockedNow && !result.rewardedNow) {
+    showToast('Новых начислений по достижениям нет');
+  } else {
+    showToast(`✅ Зачтено: ${result.unlockedNow} достиж. / ${result.rewardedNow} наград`);
+  }
 }
 
 function openAchievements() {
