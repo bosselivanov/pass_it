@@ -952,8 +952,8 @@ body {
   <div class="popup" onmousedown="event.stopPropagation()" style="width:400px;">
     <div class="popup-title">Новый квест</div>
     <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="questEmojiGrid"></div></div>
-    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="questName" type="text" placeholder="Название квеста..." maxlength="60"></div>
-    <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="questSub" type="text" placeholder="Подзаголовок..." maxlength="80"></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="questName" type="text" placeholder="Название квеста..." maxlength="100"></div>
+    <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="questSub" type="text" placeholder="Подзаголовок..." maxlength="180"></div>
     <div class="popup-field"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="questMetric" type="number" placeholder="Например: 17" min="1" max="9999"></div>
     <div class="popup-field"><div class="popup-label">Опыт за квест</div>
       <div class="xp-options">
@@ -1001,8 +1001,8 @@ body {
   <div class="popup" onmousedown="event.stopPropagation()">
     <div class="popup-title">Новый мегаквест</div>
     <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="megaEmojiGrid"></div></div>
-    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="megaName" type="text" placeholder="Название мегаквеста..." maxlength="60"></div>
-    <div class="popup-field"><div class="popup-label">Описание</div><input class="popup-input" id="megaSub" type="text" placeholder="Краткое описание..." maxlength="80"></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="megaName" type="text" placeholder="Название мегаквеста..." maxlength="100"></div>
+    <div class="popup-field"><div class="popup-label">Описание</div><input class="popup-input" id="megaSub" type="text" placeholder="Краткое описание..." maxlength="180"></div>
     <div class="popup-field">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
         <input type="checkbox" id="megaTaskMode" onchange="toggleMegaTaskMode()" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer;">
@@ -1010,7 +1010,7 @@ body {
       </label>
     </div>
     <div class="popup-field" id="megaMetricField"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="megaMetric" type="number" placeholder="Например: 100" min="1" max="99999"></div>
-    <div class="popup-field" id="megaUnitField"><div class="popup-label">Единица измерения</div><input class="popup-input" id="megaUnit" type="text" placeholder="Страницы, дни, задачи..." maxlength="30"></div>
+    <div class="popup-field" id="megaUnitField"><div class="popup-label">Единица измерения</div><input class="popup-input" id="megaUnit" type="text" placeholder="Страницы, дни, задачи..." maxlength="50"></div>
     <div class="popup-actions">
       <button class="popup-btn secondary" onclick="closePopup('megaPopupOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="addMega()">Добавить</button>
@@ -1023,7 +1023,7 @@ body {
   <div class="popup" onmousedown="event.stopPropagation()">
     <div class="popup-title">Новый пасс</div>
     <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="createPassEmojiGrid"></div></div>
-    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="createPassName" type="text" placeholder="Название пасса..." maxlength="24"></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="createPassName" type="text" placeholder="Название пасса..." maxlength="40"></div>
     <div class="popup-actions">
       <button class="popup-btn secondary" onclick="closePopup('createPassOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="createPass()">Создать</button>
@@ -1036,7 +1036,7 @@ body {
   <div class="popup" onmousedown="event.stopPropagation()">
     <div class="popup-title">Переименовать пасс</div>
     <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="renamePassEmojiGrid"></div></div>
-    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="renamePassName" type="text" maxlength="24"></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="renamePassName" type="text" maxlength="40"></div>
     <div class="popup-actions">
       <button class="popup-btn secondary" onclick="closePopup('renamePassOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="saveRenamePass()">Сохранить</button>
@@ -1049,8 +1049,8 @@ body {
   <div class="popup" onmousedown="event.stopPropagation()" style="width:400px;">
     <div class="popup-title">✏️ Редактировать квест</div>
     <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="editQuestEmojiGrid"></div></div>
-    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="editQuestName" type="text" maxlength="60"></div>
-    <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="editQuestSub" type="text" maxlength="80"></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="editQuestName" type="text" maxlength="100"></div>
+    <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="editQuestSub" type="text" maxlength="180"></div>
     <div class="popup-field"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="editQuestMetric" type="number" min="1" max="9999"></div>
     <div class="popup-field"><div class="popup-label">Опыт за квест</div>
       <div class="xp-options" id="editXpOptions">
@@ -1098,8 +1098,8 @@ body {
   <div class="popup" onmousedown="event.stopPropagation()">
     <div class="popup-title">✏️ Редактировать мегаквест</div>
     <div class="popup-field"><div class="popup-label">Смайл</div><div class="emoji-grid" id="editMegaEmojiGrid"></div></div>
-    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="editMegaName" type="text" maxlength="60"></div>
-    <div class="popup-field"><div class="popup-label">Описание</div><input class="popup-input" id="editMegaSub" type="text" maxlength="80"></div>
+    <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="editMegaName" type="text" maxlength="100"></div>
+    <div class="popup-field"><div class="popup-label">Описание</div><input class="popup-input" id="editMegaSub" type="text" maxlength="180"></div>
     <div class="popup-field">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;">
         <input type="checkbox" id="editMegaTaskMode" onchange="toggleEditMegaTaskMode()" style="accent-color:var(--accent);width:15px;height:15px;cursor:pointer;">
@@ -1107,7 +1107,7 @@ body {
       </label>
     </div>
     <div class="popup-field" id="editMegaMetricField"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="editMegaMetric" type="number" min="1" max="99999"></div>
-    <div class="popup-field"><div class="popup-label">Единица измерения</div><input class="popup-input" id="editMegaUnit" type="text" maxlength="30"></div>
+    <div class="popup-field"><div class="popup-label">Единица измерения</div><input class="popup-input" id="editMegaUnit" type="text" maxlength="50"></div>
     <div class="popup-actions">
       <button class="popup-btn secondary" onclick="closePopup('editMegaOverlay')">Отмена</button>
       <button class="popup-btn primary" onclick="saveEditMega()">💾 Сохранить</button>
@@ -3160,7 +3160,7 @@ function renderMqFocus(i) {
       <div class="mega-tasks-panel open" id="tasks-panel-${i}">
         ${taskItems}
         <div class="mega-task-add">
-          <input class="mega-task-input" id="task-input-${i}" placeholder="Новая задача..." maxlength="50" onkeydown="if(event.key==='Enter') addTask(${i})">
+          <input class="mega-task-input" id="task-input-${i}" placeholder="Новая задача..." maxlength="120" onkeydown="if(event.key==='Enter') addTask(${i})">
           <button class="mega-task-add-btn" onclick="addTask(${i})">+</button>
         </div>
       </div>
@@ -3284,6 +3284,7 @@ function addQuest() {
   savePasses();
   closePopup('questPopupOverlay');
   renderQuests();
+  checkAchievements(false);
 }
 
 function addMega() {
@@ -3475,7 +3476,7 @@ function editTaskInline(i, ti) {
   input.type = 'text';
   input.className = 'task-inline-input';
   input.value = task.text;
-  input.maxLength = 50;
+  input.maxLength = 120;
   span.replaceWith(input);
   editBtn.style.display = 'none';
   deleteBtn.style.display = 'none';
@@ -4826,40 +4827,65 @@ function getThemeStepProgress(themeId) {
 
 // ====== ACHIEVEMENTS ======
 const ACHIEVEMENTS = [
-  { id: 'first_quest', emoji: '⚡', name: 'Первый квест', desc: 'Выполни любой квест', reward: '🎁 Бокс', check: () => {
+  { id: 'first_quest', emoji: '⚡', name: 'Первый квест', desc: 'Выполни любой квест', reward: '🎁 Бокс', rewardType: 'box', rewardAmount: 1, check: () => {
     return passes.some(p => (p.quests||[]).some(q => q && (q.current||0) >= q.max));
   }},
-  { id: 'first_mega', emoji: '🏆', name: 'Мегастарт', desc: 'Заверши первый мегаквест', reward: '🎁 Бокс', check: () => {
+  { id: 'first_mega', emoji: '🏆', name: 'Мегастарт', desc: 'Заверши первый мегаквест', reward: '🎁 Бокс', rewardType: 'box', rewardAmount: 1, check: () => {
     return getCompletedMegas().length >= 1;
   }},
-  { id: 'streak_3', emoji: '🔥', name: 'Огонёк', desc: 'Продли стрик 3 дня подряд', reward: '💰 100 монет', check: () => {
+  { id: 'streak_3', emoji: '🔥', name: 'Огонёк', desc: 'Продли стрик 3 дня подряд', reward: '💰 100 монет', rewardType: 'coins', rewardAmount: 100, check: () => {
     return getStreakCount() >= 3;
   }},
-  { id: 'streak_7', emoji: '🌟', name: 'Неделя силы', desc: 'Продли стрик 7 дней подряд', reward: '🎁 Редкий бокс', check: () => {
+  { id: 'streak_7', emoji: '🌟', name: 'Неделя силы', desc: 'Продли стрик 7 дней подряд', reward: '🎁 Редкий бокс', rewardType: 'box', rewardAmount: 2, check: () => {
     return getStreakCount() >= 7;
   }},
-  { id: 'all_quests', emoji: '💯', name: 'Идеальный день', desc: 'Выполни все квесты за один день', reward: '💰 200 монет', check: () => {
+  { id: 'all_quests', emoji: '💯', name: 'Идеальный день', desc: 'Выполни все квесты за один день', reward: '💰 200 монет', rewardType: 'coins', rewardAmount: 200, check: () => {
     const allQ = passes.flatMap(p=>(p.quests||[]).filter(q=>q&&!q.frozen&&isQuestActiveToday(q)));
     return allQ.length > 0 && allQ.every(q=>(q.current||0)>=q.max);
   }},
-  { id: 'full_pass', emoji: '🎯', name: 'Заполни пасс', desc: 'Создай 9 квестов в одном пассе', reward: '💰 150 монет', check: () => {
+  { id: 'full_pass', emoji: '🎯', name: 'Заполни пасс', desc: 'Создай 9 квестов в одном пассе', reward: '💰 150 монет', rewardType: 'coins', rewardAmount: 150, check: () => {
     return passes.some(p=>(p.quests||[]).filter(q=>q).length>=9);
   }},
 ];
 
 function getUnlockedAchievements() { return load('passit_achievements', []); }
 function saveUnlockedAchievements(arr) { save('passit_achievements', arr); }
+function getRewardedAchievements() { return load('passit_achievements_rewarded', []); }
+function saveRewardedAchievements(arr) { save('passit_achievements_rewarded', arr); }
 
-function checkAchievements() {
+function grantAchievementReward(achievement) {
+  if (achievement.rewardType === 'coins') {
+    addCoins(achievement.rewardAmount || 0);
+  } else if (achievement.rewardType === 'box') {
+    awardBoxes(achievement.rewardAmount || 1);
+  }
+}
+
+function checkAchievements(showToasts = true) {
   const unlocked = getUnlockedAchievements();
+  const rewarded = getRewardedAchievements();
+  let changed = false;
+
   ACHIEVEMENTS.forEach(a => {
-    if (unlocked.includes(a.id)) return;
-    if (a.check()) {
+    const achieved = a.check();
+    if (achieved && !unlocked.includes(a.id)) {
       unlocked.push(a.id);
-      saveUnlockedAchievements(unlocked);
-      showToast(`🎖️ Достижение: ${a.name}!`);
+      changed = true;
+      if (showToasts) showToast(`🎖️ Достижение: ${a.name}!`);
+    }
+    if (achieved && !rewarded.includes(a.id)) {
+      grantAchievementReward(a);
+      rewarded.push(a.id);
+      changed = true;
+      if (showToasts) showToast(`🎁 Награда за достижение «${a.name}»: ${a.reward}`);
     }
   });
+
+  if (changed) {
+    saveUnlockedAchievements(unlocked);
+    saveRewardedAchievements(rewarded);
+    renderShop();
+  }
 }
 
 function openAchievements() {
@@ -4928,6 +4954,7 @@ function completeMega(i) {
   mqFocused = -1;
   savePasses();
   renderMega();
+  checkAchievements(false);
   showToast(`🏆 Мегаквест завершён! +${xp} XP`);
 }
 
@@ -6609,6 +6636,7 @@ function openFeedback() { document.getElementById('feedbackOverlay').classList.a
 
 applyTheme();
 render();
+checkAchievements(false);
 checkUpdateBanner();
 initDragToPass();
 checkAndAutoReset();
