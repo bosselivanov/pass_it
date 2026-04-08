@@ -4839,8 +4839,8 @@ const ACHIEVEMENTS = [
   { id: 'streak_7', emoji: '🌟', name: 'Неделя силы', desc: 'Продли стрик 7 дней подряд', reward: '🎁 Редкий бокс', rewardType: 'box', rewardAmount: 2, check: () => {
     return getStreakCount() >= 7;
   }},
-  { id: 'all_quests', emoji: '💯', name: 'Идеальный день', desc: 'Выполни все квесты за один день', reward: '💰 200 монет', rewardType: 'coins', rewardAmount: 200, check: () => {
-    const allQ = passes.flatMap(p=>(p.quests||[]).filter(q=>q&&!q.frozen&&isQuestActiveToday(q)));
+  { id: 'all_quests', emoji: '💯', name: 'Идеальный день', desc: 'Выполни все активные квесты в текущем пассе за день', reward: '💰 200 монет', rewardType: 'coins', rewardAmount: 200, check: () => {
+    const allQ = (getCurrentPass()?.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q));
     return allQ.length > 0 && allQ.every(q=>(q.current||0)>=q.max);
   }},
   { id: 'full_pass', emoji: '🎯', name: 'Заполни пасс', desc: 'Создай 9 квестов в одном пассе', reward: '💰 150 монет', rewardType: 'coins', rewardAmount: 150, check: () => {
@@ -4885,6 +4885,7 @@ function checkAchievements(showToasts = true) {
     saveUnlockedAchievements(unlocked);
     saveRewardedAchievements(rewarded);
     renderShop();
+    cloudSave();
   }
 }
 
@@ -6726,6 +6727,8 @@ firebase.auth().onAuthStateChanged(function(user) {
         if (cloudData.pendingBoxes != null)     save('passit_pending_boxes', cloudData.pendingBoxes);
         if (cloudData.boxPieces != null)        save('passit_box_pieces', cloudData.boxPieces);
         if (cloudData.coins != null)            save('passit_coins', cloudData.coins);
+        if (cloudData.achievements != null)     save('passit_achievements', cloudData.achievements);
+        if (cloudData.achievementsRewarded != null) save('passit_achievements_rewarded', cloudData.achievementsRewarded);
         if (cloudData.themePiecesMira != null)  save('passit_theme_pieces_mira', cloudData.themePiecesMira);
         if (cloudData.themePiecesZoi != null)   save('passit_theme_pieces_zoi', cloudData.themePiecesZoi);
         if (cloudData.themePiecesRumi != null)  save('passit_theme_pieces_rumi', cloudData.themePiecesRumi);
@@ -6797,6 +6800,8 @@ function cloudSave() {
     pendingBoxes: load('passit_pending_boxes', 0),
     boxPieces: load('passit_box_pieces', 0),
     coins: load('passit_coins', 0),
+    achievements: load('passit_achievements', []),
+    achievementsRewarded: load('passit_achievements_rewarded', []),
     // кусочки тем
     themePiecesMira: load('passit_theme_pieces_mira', 0),
     themePiecesZoi: load('passit_theme_pieces_zoi', 0),
