@@ -4380,15 +4380,35 @@ function addBoxPieces(n) {
 }
 
 function getPendingBoxes() { return load('passit_pending_boxes', 0); }
-function awardBoxes(n) {
+function getTempLevelBoxes() { return load('passit_temp_level_boxes', 0); }
+function awardBoxes(n, options = {}) {
+  const { temporaryLevel = false } = options;
   const v = getPendingBoxes() + n;
   save('passit_pending_boxes', v);
+  if (temporaryLevel) {
+    save('passit_temp_level_boxes', getTempLevelBoxes() + n);
+  }
   showToast(`📦 Получен${n > 1 ? 'о ' + n : ''} бокс${n > 1 ? 'а' : ''}! Открой в магазине.`);
+}
+function revokeTempLevelBoxes(n) {
+  if (!n) return;
+  const temp = getTempLevelBoxes();
+  const pending = getPendingBoxes();
+  const toRemove = Math.min(n, temp, pending);
+  if (toRemove <= 0) return;
+  save('passit_temp_level_boxes', temp - toRemove);
+  save('passit_pending_boxes', pending - toRemove);
+  showToast(`↩️ Временн${toRemove > 1 ? 'ые боксы убраны' : 'ый бокс убран'} после отката уровня`);
+}
+function commitTempLevelBoxes() {
+  if (getTempLevelBoxes() > 0) save('passit_temp_level_boxes', 0);
 }
 function useBox() {
   const v = getPendingBoxes();
   if (v <= 0) return false;
   save('passit_pending_boxes', v - 1);
+  const temp = getTempLevelBoxes();
+  if (temp > 0) save('passit_temp_level_boxes', temp - 1);
   return true;
 }
 
@@ -6200,6 +6220,8 @@ function processAuthorDailyReward() {
   const newTotalXP = stored + todayXP;
   save('passit_author_xp', newTotalXP);
   if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newTotalXP);
+  save('passit_rewards_up_to', Math.max(load('passit_rewards_up_to', 0), Math.min(Math.floor(newTotalXP / 500), 150)));
+  commitTempLevelBoxes();
 
   // syncAuthorLevel сам выдаст награды и тост если уровень вырос
   syncAuthorLevel();
@@ -6296,15 +6318,28 @@ function syncAuthorLevel() {
   const totalXP = getTotalAuthorXP();
   const newLevel = Math.min(Math.floor(totalXP / 500), 150);
   const oldLevel = getAuthorPassLevel();
+  const committedLevel = Math.min(Math.floor(getAuthorXP() / 500), 150);
+  const rewardedUpTo = load('passit_rewards_up_to', 0);
+
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
-    const rewardedUpTo = load('passit_rewards_up_to', 0);
     for (let l = oldLevel + 1; l <= newLevel; l++) {
-      if (l > rewardedUpTo) processLevelRewards(l);
+      if (l > committedLevel) {
+        if (l > 0 && l % 5 === 0) awardBoxes(1, { temporaryLevel: true });
+      } else if (l > rewardedUpTo) {
+        processLevelRewards(l);
+      }
     }
-    save('passit_rewards_up_to', Math.max(rewardedUpTo, newLevel));
+    save('passit_rewards_up_to', Math.max(rewardedUpTo, Math.min(newLevel, committedLevel)));
     showToast(`⬆️ Уровень ${newLevel}!`);
     logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
+  } else if (newLevel < oldLevel) {
+    saveAuthorPassLevel(newLevel);
+    let tempLostBoxes = 0;
+    for (let l = newLevel + 1; l <= oldLevel; l++) {
+      if (l > committedLevel && l % 5 === 0) tempLostBoxes++;
+    }
+    revokeTempLevelBoxes(tempLostBoxes);
   }
   return newLevel;
 }
