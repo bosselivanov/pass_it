@@ -1994,6 +1994,7 @@ function boRestart() {
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;">
       <button class="popup-btn primary" onclick="forceRecoverAchievements()" style="flex:1;">Зачесть достижения</button>
+      <button class="popup-btn secondary" onclick="resetAchievementRewardStatus()" style="flex:1;">Сбросить статус наград</button>
     </div>
     <div id="achievementsList" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;"></div>
   </div>
@@ -4913,6 +4914,14 @@ function forceRecoverAchievements() {
   } else {
     showToast(`✅ Зачтено: ${result.unlockedNow} достиж. / ${result.rewardedNow} наград`);
   }
+}
+
+function resetAchievementRewardStatus() {
+  saveRewardedAchievements([]);
+  cloudSave();
+  const result = recoverMissingAchievementRewards(true);
+  openAchievements();
+  showToast(`♻️ Статус наград сброшен: заново начислено ${result.rewardedNow}`);
 }
 
 function openAchievements() {
