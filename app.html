@@ -4874,16 +4874,17 @@ function recoverMissingAchievementRewards(showToasts = false) {
   let rewardedNow = 0;
 
   ACHIEVEMENTS.forEach((achievement) => {
-    if (!achievement.check()) return;
+    const achievedNow = achievement.check();
+    const alreadyUnlocked = unlocked.includes(achievement.id);
 
-    if (!unlocked.includes(achievement.id)) {
+    if (achievedNow && !alreadyUnlocked) {
       unlocked.push(achievement.id);
       unlockedChanged = true;
       unlockedNow++;
       if (showToasts) showToast(`🎖️ Достижение: ${achievement.name}!`);
     }
 
-    if (!rewarded.includes(achievement.id)) {
+    if ((achievedNow || alreadyUnlocked) && !rewarded.includes(achievement.id)) {
       grantAchievementReward(achievement);
       rewarded.push(achievement.id);
       rewardedChanged = true;
