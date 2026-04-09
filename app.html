@@ -4440,12 +4440,16 @@ function recoverMissingRewards() {
 }
 
 // Theme piece drop from box — weighted random
-function rollThemePiece() {
-  // исключаем полностью собранные темы
-  const available = ['mira','zoi','rumi'].filter(id => {
+function getAvailableThemeDropIds() {
+  return ['mira','zoi','rumi'].filter(id => {
     const theme = SEASONAL_THEMES[id];
     return theme && getThemePieces(id) < theme.totalPieces;
   });
+}
+
+function rollThemePiece() {
+  // исключаем полностью собранные темы
+  const available = getAvailableThemeDropIds();
   if (available.length === 0) {
     // все темы собраны — выдаём монетки
     return null;
@@ -6285,27 +6289,36 @@ function tryAddAuthorLevel(count) {
 }
 
 function processAuthorDailyReward() {
-  // Защита от дупа — сохраняем для следующего дня (после сброса начинается новый день)
+  // Защита от дупа — фиксируем только один раз за текущий день сброса
   const today = todayStr();
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = formatLocalDate(tomorrow);
   const lastSaved = load('passit_author_xp_date', null);
-  if (lastSaved === today || lastSaved === tomorrowStr) return; // уже сохранено
-  save('passit_author_xp_date', tomorrowStr); // ставим завтра — защита до следующего сброса
+  if (lastSaved === today) return;
 
   const todayXP = getTodayLiveXP();
+  const oldStoredXP = getAuthorXP();
+  const oldCommittedLevel = Math.min(Math.floor(oldStoredXP / 500), 150);
+  const oldRewardsUpTo = load('passit_rewards_up_to', 0);
 
   // сохраняем в исторический XP авторского пасса
-  const stored = getAuthorXP();
-  const newTotalXP = stored + todayXP;
+  const newTotalXP = oldStoredXP + todayXP;
   save('passit_author_xp', newTotalXP);
-  if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newTotalXP);
-  save('passit_rewards_up_to', Math.max(load('passit_rewards_up_to', 0), Math.min(Math.floor(newTotalXP / 500), 150)));
-  commitTempLevelBoxes();
+  save('passit_author_xp_date', today);
+  const committedLevel = Math.min(Math.floor(newTotalXP / 500), 150);
+  saveAuthorPassLevel(committedLevel);
 
-  // syncAuthorLevel сам выдаст награды и тост если уровень вырос
-  syncAuthorLevel();
+  if (currentUser) {
+    fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newTotalXP);
+    fbdb.ref('passit_users/' + currentUser.uid + '/authorXPDate').set(today);
+  }
+
+  // Награды за уже зафиксированные уровни: боксы были временными и просто закрепляются,
+  // а кусочки/прочие постоянные награды нужно долить здесь.
+  for (let l = Math.max(oldRewardsUpTo + 1, oldCommittedLevel + 1); l <= committedLevel; l++) {
+    if (l > 0 && l % 5 === 0) continue;
+    processLevelRewards(l);
+  }
+  save('passit_rewards_up_to', Math.max(oldRewardsUpTo, committedLevel));
+  commitTempLevelBoxes();
 
   // стрик
   const streakMet = checkStreakToday();
@@ -6326,6 +6339,8 @@ function processAuthorDailyReward() {
     const weekly = getWeeklyChallengeState();
     saveWeeklyChallengeState({ xp: weekly.xp + personalXPToday });
   }
+
+  if (authorScreenOpen) updateAuthorPassUI();
 }
 
 // --- АВТОР XP ---
