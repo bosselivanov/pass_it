@@ -1688,7 +1688,6 @@ body:not(.dark) #boxOpenOverlay .restart-btn { background: rgba(134,125,206,0.1)
   <div id="boResultStage">
     <div class="result-items" id="boResultItems"></div>
     <div style="display:flex;gap:10px;margin-top:4px;">
-      <button class="restart-btn" id="boRestartBtn" onclick="boRestart()" style="display:none;">Открыть ещё раз</button>
       <button class="restart-btn" onclick="boCloseAnimation()">Закрыть</button>
     </div>
   </div>
@@ -1919,45 +1918,13 @@ function boShowResult() {
     updateShopUI();
   }
 
-  // показываем "Открыть ещё раз" только если есть боксы
-  const restartBtn = document.getElementById('boRestartBtn');
-  if (restartBtn) restartBtn.style.display = getPendingBoxes() > 0 ? '' : 'none';
-
   stage.style.display = 'flex';
   stage.style.transition = 'opacity 0.4s';
   requestAnimationFrame(() => { stage.style.opacity = '1'; });
 }
 
 function boRestart() {
-  boPhase = 0;
-  drops.fill(null);
-
-  // reset all stages
-  document.getElementById('boResultStage').style.display = 'none';
-  document.getElementById('boResultStage').style.opacity = '0';
-  document.getElementById('boSlotsStage').style.display = 'none';
-  document.getElementById('boSlotsStage').style.opacity = '0';
-  document.querySelectorAll('#boxOpenOverlay .bo-slot').forEach(s => s.classList.remove('winning'));
-  for (let i=0;i<3;i++) {
-    document.getElementById('boInner'+i).innerHTML = '';
-    document.getElementById('boInner'+i).style.transform = '';
-    document.getElementById('boInner'+i).style.transition = '';
-  }
-
-  // reset box
-  const box = document.getElementById('boCrystalBox');
-  box.classList.remove('fixing');
-  box.style.animation = 'none';
-  requestAnimationFrame(() => {
-    box.style.animation = '';
-    box.style.animationName = 'spinBox';
-  });
-
-  const boxStage = document.getElementById('boBoxStage');
-  boxStage.style.display = 'flex';
-  boxStage.style.opacity = '0';
-  boxStage.style.transition = 'opacity 0.4s';
-  requestAnimationFrame(() => { boxStage.style.opacity = '1'; });
+  return;
 }
 </script>
 </div>
@@ -4383,6 +4350,18 @@ function addBoxPieces(n) {
 
 function getPendingBoxes() { return load('passit_pending_boxes', 0); }
 function getTempLevelBoxes() { return load('passit_temp_level_boxes', 0); }
+function getGrantedLevelRewards() {
+  const stored = load('passit_level_rewards_granted', null);
+  if (Array.isArray(stored)) return stored;
+  const rewardedUpTo = load('passit_rewards_up_to', 0);
+  const seeded = [];
+  for (let l = 1; l <= rewardedUpTo; l++) seeded.push(l);
+  save('passit_level_rewards_granted', seeded);
+  return seeded;
+}
+function saveGrantedLevelRewards(levels) {
+  save('passit_level_rewards_granted', levels);
+}
 function awardBoxes(n, options = {}) {
   const { temporaryLevel = false } = options;
   const v = getPendingBoxes() + n;
@@ -4416,10 +4395,14 @@ function useBox() {
 
 // Called when level up
 function processLevelRewards(newLevel) {
+  const granted = getGrantedLevelRewards();
+  if (granted.includes(newLevel)) return;
   const isBox = newLevel > 0 && newLevel % 5 === 0;
   const isPiece = newLevel > 0 && newLevel % 3 === 0 && !isBox;
   if (isBox) { awardBoxes(1); }
   else if (isPiece) { addBoxPieces(1); }
+  granted.push(newLevel);
+  saveGrantedLevelRewards(granted);
 }
 
 // Догоняет пропущенные награды если rewardsUpTo отстал от реального уровня
