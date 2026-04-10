@@ -2198,6 +2198,9 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
+function __dbglog(hypothesisId, location, message, data, runId = 'reset-investigation-v1') {
+  fetch('http://127.0.0.1:7431/ingest/7e162704-861f-490c-a28c-55e20888d976',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'78f730'},body:JSON.stringify({sessionId:'78f730',runId,hypothesisId,location,message,data,timestamp:Date.now()})}).catch(()=>{});
+}
 
 const EMOJIS_COMMON = ['💻','📚','🏃','🧠','🎯','✏️','📋','💪','🔥','📖','🎨','🏆','⭐','🚀','🎮','🌐','🏋️','💰','⚡','🔵'];
 const EMOJIS_ALL = [...EMOJIS_COMMON,'🧘','🎵','🎸','🎹','🏊','🚴','🧗','⚽','🏀','🎾','🏐','🧩','🎲','🃏','🎭','🍎','🥗','💊','🧪','🔬','🌱','🌍','✈️','🏠','📊','📈','💼','🔑','🛡️','⚔️','🏅','🥇','🎖️','🌟','💫','✨','🎉','🪄','🦁','🦊','🐺','🦅','🐉','🌙','☀️','⛅','🌈','❄️','🌊','🏔️','🌲'];
@@ -5027,6 +5030,15 @@ function performDayReset(isManual) {
   yesterday.setDate(yesterday.getDate() - 1);
   const yd = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
   const ydDow = (yesterday.getDay() + 6) % 7;
+  // #region agent log
+  __dbglog('H4-H5', 'app.html:performDayReset:start', 'performDayReset called', {
+    isManual,
+    today,
+    yd,
+    lastAutoReset: load('lastAutoReset', null),
+    passesCount: passes.length
+  });
+  // #endregion
 
   // дата долга — вчера при автосбросе, сегодня при ручном
   const debtDate = isManual ? today : yd;
@@ -5059,15 +5071,34 @@ function performDayReset(isManual) {
   processAuthorDailyReward();
 
   // сброс активных квестов
+  let resetCandidates = 0;
+  let resetApplied = 0;
   passes.forEach(p => {
     (p.quests || []).forEach(q => {
       if (!q || q.frozen) return;
-      if (isQuestActiveToday(q)) q.current = 0;
+      if (isQuestActiveToday(q)) {
+        resetCandidates++;
+        if ((q.current || 0) !== 0) resetApplied++;
+        q.current = 0;
+      }
     });
   });
+  // #region agent log
+  __dbglog('H5', 'app.html:performDayReset:afterResetLoop', 'reset loop finished', {
+    resetCandidates,
+    resetApplied
+  });
+  // #endregion
 
   save('lastAutoReset', today);
   save('lastNewDay', today);
+  // #region agent log
+  __dbglog('H1-H2-H3', 'app.html:performDayReset:saveMarkers', 'reset markers saved', {
+    lastAutoReset: load('lastAutoReset', null),
+    lastNewDay: load('lastNewDay', null),
+    isManual
+  });
+  // #endregion
   savePasses();
   cleanupExpiredQuests();
   renderQuests();
@@ -5769,10 +5800,22 @@ function scheduleMidnightCleanup() {
 
 // ====== NEW DAY POPUP ======
 function showNewDayPopup() {
+  // #region agent log
+  __dbglog('H2', 'app.html:showNewDayPopup', 'new day popup opened', {
+    lastAutoReset: load('lastAutoReset', null),
+    today: todayStr()
+  });
+  // #endregion
   document.getElementById('newDayOverlay').classList.add('open');
 }
 
 function confirmDayReset() {
+  // #region agent log
+  __dbglog('H3', 'app.html:confirmDayReset', 'user confirmed reset popup', {
+    today: todayStr(),
+    lastAutoResetBeforeConfirm: load('lastAutoReset', null)
+  });
+  // #endregion
   document.getElementById('newDayOverlay').classList.remove('open');
   performDayReset(false);
   showToast('🌅 Новый день начат — квесты сброшены!');
@@ -5926,6 +5969,13 @@ function clearAllDebts() {
 function checkAndAutoReset() {
   const today = todayStr();
   const lastReset = load('lastAutoReset', null);
+  // #region agent log
+  __dbglog('H1-H2-H4', 'app.html:checkAndAutoReset', 'checkAndAutoReset evaluated', {
+    today,
+    lastReset,
+    shouldReturn: lastReset === today
+  });
+  // #endregion
   if (lastReset === today) return;
 
   // проверяем стрик за пропущенные дни
