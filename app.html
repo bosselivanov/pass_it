@@ -191,6 +191,55 @@ body {
 .author-quest-bar-fill { height: 100%; background: linear-gradient(90deg,#C07800,#E8B400); border-radius: 3px; transition: width 0.4s; }
 .author-quest-meta { font-size: 11px; color: #7A4E00; font-weight: 600; }
 
+/* Личный пасс: ежедневки авторского + мегаквест в одной колонке */
+.flangs-section-personal {
+  gap: 8px;
+}
+.personal-dailies-panel {
+  flex: 0 0 auto;
+  max-height: 38%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.author-dailies-header {
+  color: #8B5E00 !important;
+  letter-spacing: 2px;
+  padding-left: 2px;
+}
+.personal-dailies-scroll {
+  flex: 1;
+  min-height: 0;
+  max-height: min(200px, 38vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 2px 6px 0;
+  scrollbar-width: thin;
+}
+.personal-dailies-scroll::-webkit-scrollbar { width: 6px; }
+.personal-dailies-scroll::-webkit-scrollbar-thumb {
+  background: rgba(180,120,0,0.35);
+  border-radius: 4px;
+}
+.personal-dailies-scroll .author-quest-card {
+  flex-shrink: 0;
+  padding: 8px 10px;
+}
+.personal-dailies-scroll .author-quest-name { font-size: 13px; }
+.personal-dailies-scroll .author-quest-meta { font-size: 10px; }
+.personal-mega-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+
 /* XP BADGE COLORS */
 /* XP badge colors defined with quest-xp-badge above */
 .pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
@@ -850,16 +899,38 @@ body {
     </div>
 
     <div class="main-layout">
-      <div class="flangs-section">
-        <div class="flangs-header-row">
-          <div class="section-header">✦ Mega Quests</div>
-          <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
+      <div class="flangs-section flangs-section-personal">
+        <div class="personal-dailies-panel">
+          <div class="section-header author-dailies-header">✦ Ежедневки</div>
+          <div class="personal-dailies-scroll" id="personalDailiesScroll">
+            <div class="author-quest-card" id="personalAdq0">
+              <div class="author-quest-name" id="personalAdq0name">Выполни квесты</div>
+              <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="personalAdq0bar" style="width:0%"></div></div>
+              <div class="author-quest-meta" id="personalAdq0meta">0 / ? · +200 XP</div>
+            </div>
+            <div class="author-quest-card" id="personalAdq1">
+              <div class="author-quest-name" id="personalAdq1name">Выполни больше</div>
+              <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="personalAdq1bar" style="width:0%"></div></div>
+              <div class="author-quest-meta" id="personalAdq1meta">0 / ? · +300 XP</div>
+            </div>
+            <div class="author-quest-card" id="personalAdq2">
+              <div class="author-quest-name" id="personalAdq2name">Выполни все</div>
+              <div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="personalAdq2bar" style="width:0%"></div></div>
+              <div class="author-quest-meta" id="personalAdq2meta">0 / ? · +500 XP</div>
+            </div>
+          </div>
         </div>
-        <div class="mq-list" id="mqList"></div>
-        <div class="mq-focus" id="mqFocus">
-          <div class="flang-card" id="mqFocusCard"></div>
-          <div class="mq-stacked-label">остальные пассы</div>
-          <div class="mq-stacked" id="mqStacked"></div>
+        <div class="personal-mega-panel">
+          <div class="flangs-header-row">
+            <div class="section-header">✦ Mega Quests</div>
+            <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
+          </div>
+          <div class="mq-list" id="mqList"></div>
+          <div class="mq-focus" id="mqFocus">
+            <div class="flang-card" id="mqFocusCard"></div>
+            <div class="mq-stacked-label">остальные пассы</div>
+            <div class="mq-stacked" id="mqStacked"></div>
+          </div>
         </div>
       </div>
       <div class="quests-section">
@@ -2773,7 +2844,6 @@ function updatePass() {
     milestones.appendChild(pill);
   });
   container.appendChild(milestones);
-  // Кламп плашек по границам, чтобы крайние не обрезались у краёв карточки.
   requestAnimationFrame(() => {
     const w = milestones.clientWidth;
     if (!w) return;
@@ -2785,6 +2855,8 @@ function updatePass() {
       pill.style.left = `${clamped}px`;
     });
   });
+
+  updateAuthorDailyQuestsCards();
 }
 
 // ====== RENDER QUESTS with drag & drop (snake order) ======
@@ -6592,9 +6664,9 @@ function renderAuthorCircles() {
   const scrollEl = document.getElementById('authorCirclesScroll');
   if (scrollEl) scrollEl.scrollLeft = Math.max(0, level * 68 - 150);
 }
-function updateAuthorPassUI() {
+// Три ежедневки авторского пасса — обновляет карточки на авторском экране и в личном пассе
+function updateAuthorDailyQuestsCards() {
   const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
-  // исключаем задачи с дедлайном дальше 7 дней
   const activeToday = allQuests.filter(q => {
     if (!isQuestActiveToday(q)) return false;
     if (q.deadline) {
@@ -6604,14 +6676,10 @@ function updateAuthorPassUI() {
     return true;
   });
   const total = activeToday.length;
-  // done = сумма пропорционального прогресса по всем квестам
-  // квест на 50% = 0.5, на 100% = 1.0
   const done = activeToday.reduce((sum, q) => {
     const pct = Math.min(1, (q.current || 0) / q.max);
     return sum + pct;
   }, 0);
-
-  // ЕЖЕДНЕВКИ — пороги 25/50/100%
   const targets = [
     Math.max(1, Math.ceil(total * 0.25)),
     Math.max(1, Math.ceil(total * 0.5)),
@@ -6622,17 +6690,29 @@ function updateAuthorPassUI() {
     `Выполни ${targets[1]} из ${total}`,
     `Выполни все (${total})`
   ];
+  const xpRewards = [200, 300, 500];
   for (let i = 0; i < 3; i++) {
-    const pct = Math.min(100, Math.round((done / targets[i]) * 100));
+    const barPct = Math.min(100, Math.round((done / targets[i]) * 100));
     const isDone = done >= targets[i];
-    const el = document.getElementById(`adq${i}`);
-    if (!el) continue;
-    document.getElementById(`adq${i}name`).textContent = dailyNames[i];
-    document.getElementById(`adq${i}bar`).style.width = pct + '%';
-    document.getElementById(`adq${i}meta`).textContent = `${Math.min(Math.floor(done), targets[i])} / ${targets[i]} · +${[200,300,500][i]} XP`;
-    el.style.opacity = isDone ? '1' : '0.75';
-    el.style.borderColor = isDone ? 'rgba(200,140,0,0.6)' : '';
+    const metaText = `${Math.min(Math.floor(done), targets[i])} / ${targets[i]} · +${xpRewards[i]} XP`;
+    ['adq', 'personalAdq'].forEach(prefix => {
+      const rootId = prefix + i;
+      const el = document.getElementById(rootId);
+      if (!el) return;
+      const nameEl = document.getElementById(rootId + 'name');
+      const barEl = document.getElementById(rootId + 'bar');
+      const metaEl = document.getElementById(rootId + 'meta');
+      if (nameEl) nameEl.textContent = dailyNames[i];
+      if (barEl) barEl.style.width = barPct + '%';
+      if (metaEl) metaEl.textContent = metaText;
+      el.style.opacity = isDone ? '1' : '0.75';
+      el.style.borderColor = isDone ? 'rgba(200,140,0,0.6)' : '';
+    });
   }
+}
+
+function updateAuthorPassUI() {
+  updateAuthorDailyQuestsCards();
 
   // ЕЖЕНЕДЕЛЬНЫЕ — XP
   const weeklyState = getWeeklyChallengeState();
