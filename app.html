@@ -264,26 +264,32 @@ body {
   min-height: 92px; min-width: max-content; width: 100%;
 }
 .pass-title { font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--text2); text-transform: uppercase; }
-.pass-levels-wrap { display: flex; align-items: center; position: relative; min-height: 38px; }
+.pass-levels-wrap {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  min-height: 62px;
+  padding-bottom: 22px;
+}
 .pass-author-xp-hint {
   font-size: 10px; font-weight: 700; color: var(--text2);
   letter-spacing: 0.2px; opacity: 0.95;
 }
 .pass-author-xp-hint strong { color: var(--accent); font-weight: 800; }
-.pass-author-xp-milestones {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
 .pass-author-xp-milestone {
-  font-size: 10px;
+  position: absolute;
+  top: 42px;
+  transform: translateX(-50%);
+  font-size: 9px;
   font-weight: 700;
   color: var(--text2);
   text-align: center;
   background: var(--bar-bg);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 4px 6px;
+  border-radius: 999px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
 }
 .pass-author-xp-milestone strong {
   color: var(--accent);
@@ -839,7 +845,6 @@ body {
           </div>
           <div class="pass-levels-wrap" id="passLevels"></div>
           <div class="pass-author-xp-hint" id="passAuthorXpHint">В авторский пасс сегодня: <strong>+0 XP</strong></div>
-          <div class="pass-author-xp-milestones" id="passAuthorXpMilestones"></div>
         </div>
       </div>
     </div>
@@ -2746,6 +2751,28 @@ function updatePass() {
     wrap.appendChild(div);
   }
   container.appendChild(wrap);
+
+  const milestones = document.createElement('div');
+  milestones.style.cssText = `position:absolute;left:0;top:0;min-width:${circles * 46}px;width:100%;height:62px;pointer-events:none;`;
+  const m20 = estimateAuthorXpByDoneUnits(quests.length * 0.2, quests.length);
+  const m60 = estimateAuthorXpByDoneUnits(quests.length * 0.6, quests.length);
+  const m100 = estimateAuthorXpByDoneUnits(quests.length, quests.length);
+  const markDefs = [
+    { id: 'm20', pct: 20, xp: m20.total },
+    { id: 'm60', pct: 60, xp: m60.total },
+    { id: 'm100', pct: 100, xp: m100.total }
+  ];
+  let visibleMarks = markDefs;
+  if (circles < 3) visibleMarks = markDefs.filter(m => m.id !== 'm20');
+  if (circles < 2) visibleMarks = markDefs.filter(m => m.id === 'm100');
+  visibleMarks.forEach(mark => {
+    const pill = document.createElement('div');
+    pill.className = 'pass-author-xp-milestone';
+    pill.style.left = `${mark.pct}%`;
+    pill.innerHTML = `${mark.pct}%: <strong>+${mark.xp}</strong>`;
+    milestones.appendChild(pill);
+  });
+  container.appendChild(milestones);
 }
 
 // ====== RENDER QUESTS with drag & drop (snake order) ======
