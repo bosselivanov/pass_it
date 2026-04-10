@@ -2712,7 +2712,7 @@ function updatePass() {
     const currentProjection = estimateAuthorXpByDoneUnits(currentDoneUnits, quests.length);
     const lvlGain = Math.round((currentProjection.total / 500) * 10) / 10;
     const lvlText = lvlGain > 0 ? ` · ≈ +${lvlGain} ур.` : '';
-    authorHintEl.innerHTML = `Прогноз в авторский пасс: <strong>+${currentProjection.total} XP</strong>${lvlText}`;
+    authorHintEl.innerHTML = `Прогноз на авторский пасс: <strong>+${currentProjection.total} XP</strong>${lvlText}`;
   }
   const milestonesEl = document.getElementById('passAuthorXpMilestones');
   if (milestonesEl) {
@@ -2773,6 +2773,18 @@ function updatePass() {
     milestones.appendChild(pill);
   });
   container.appendChild(milestones);
+  // Кламп плашек по границам, чтобы крайние не обрезались у краёв карточки.
+  requestAnimationFrame(() => {
+    const w = milestones.clientWidth;
+    if (!w) return;
+    milestones.querySelectorAll('.pass-author-xp-milestone').forEach(pill => {
+      const pct = parseFloat(pill.style.left) || 0;
+      const targetPx = (pct / 100) * w;
+      const half = pill.offsetWidth / 2;
+      const clamped = Math.max(half + 4, Math.min(w - half - 4, targetPx));
+      pill.style.left = `${clamped}px`;
+    });
+  });
 }
 
 // ====== RENDER QUESTS with drag & drop (snake order) ======
