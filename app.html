@@ -270,6 +270,25 @@ body {
   letter-spacing: 0.2px; opacity: 0.95;
 }
 .pass-author-xp-hint strong { color: var(--accent); font-weight: 800; }
+.pass-author-xp-milestones {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.pass-author-xp-milestone {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text2);
+  text-align: center;
+  background: var(--bar-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+.pass-author-xp-milestone strong {
+  color: var(--accent);
+  font-weight: 800;
+}
 .pass-level {
   width: 38px; height: 38px; border-radius: 50%; background: var(--surface);
   border: 2px solid var(--border); display: flex; align-items: center;
@@ -820,6 +839,7 @@ body {
           </div>
           <div class="pass-levels-wrap" id="passLevels"></div>
           <div class="pass-author-xp-hint" id="passAuthorXpHint">В авторский пасс сегодня: <strong>+0 XP</strong></div>
+          <div class="pass-author-xp-milestones" id="passAuthorXpMilestones"></div>
         </div>
       </div>
     </div>
@@ -2662,12 +2682,54 @@ function updatePass() {
     const pctClass = earned === totalMaxXP && totalMaxXP > 0 ? 'color:var(--accent);font-weight:800;' : '';
     xpEl.innerHTML = `<span style="${pctClass}">${earned}</span> / ${totalMaxXP} XP`;
   }
+
+  function estimateAuthorXpByDoneUnits(doneUnits, totalUnits) {
+    const safeTotal = Math.max(totalUnits, 1);
+    const done = Math.max(0, Math.min(doneUnits, safeTotal));
+    const t1 = Math.max(1, Math.ceil(safeTotal * 0.25));
+    const t2 = Math.max(1, Math.ceil(safeTotal * 0.5));
+    const t3 = safeTotal;
+
+    // Ежедневки авторского пасса (детерминированный расчёт)
+    const xp0 = Math.round(Math.min(done / t1, 1) * 200);
+    const xp1 = Math.round(Math.min(done / t2, 1) * 300);
+    const xp2 = Math.round(Math.min(done / t3, 1) * 500);
+    const dailyPart = xp0 + xp1 + xp2;
+
+    // Вклад в weekly-челлендж считаем только от личных квестов (без мег и стрика)
+    const avgQuestXp = totalMaxXP > 0 ? totalMaxXP / safeTotal : 0;
+    const projectedPersonalXp = Math.round(avgQuestXp * done);
+    const weekly = getWeeklyChallengeState();
+    const weeklyProgress = weekly.completed
+      ? weekly.target
+      : Math.min((weekly.xp || 0) + projectedPersonalXp, weekly.target || 1);
+    const weeklyPart = Math.round(Math.min(weeklyProgress / (weekly.target || 1), 1) * 1500);
+
+    return {
+      total: dailyPart + weeklyPart,
+      dailyPart,
+      weeklyPart
+    };
+  }
+
   const authorHintEl = document.getElementById('passAuthorXpHint');
   if (authorHintEl) {
-    const authorToday = Math.round(getTodayLiveXP());
-    const lvlGain = Math.round((authorToday / 500) * 10) / 10;
+    const currentDoneUnits = quests.reduce((sum, q) => sum + Math.min(1, (q.current || 0) / q.max), 0);
+    const currentProjection = estimateAuthorXpByDoneUnits(currentDoneUnits, quests.length);
+    const lvlGain = Math.round((currentProjection.total / 500) * 10) / 10;
     const lvlText = lvlGain > 0 ? ` · ≈ +${lvlGain} ур.` : '';
-    authorHintEl.innerHTML = `В авторский пасс сегодня: <strong>+${authorToday} XP</strong>${lvlText}`;
+    authorHintEl.innerHTML = `Прогноз в авторский пасс: <strong>+${currentProjection.total} XP</strong>${lvlText}`;
+  }
+  const milestonesEl = document.getElementById('passAuthorXpMilestones');
+  if (milestonesEl) {
+    const m20 = estimateAuthorXpByDoneUnits(quests.length * 0.2, quests.length);
+    const m60 = estimateAuthorXpByDoneUnits(quests.length * 0.6, quests.length);
+    const m100 = estimateAuthorXpByDoneUnits(quests.length, quests.length);
+    milestonesEl.innerHTML = `
+      <div class="pass-author-xp-milestone">20%: <strong>+${m20.total} XP</strong></div>
+      <div class="pass-author-xp-milestone">60%: <strong>+${m60.total} XP</strong></div>
+      <div class="pass-author-xp-milestone">100%: <strong>+${m100.total} XP</strong></div>
+    `;
   }
 
   const container = document.getElementById('passLevels');
