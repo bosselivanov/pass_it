@@ -2204,9 +2204,6 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
-function __dbglogAuthor(hypothesisId, location, message, data, runId = 'author-level-boxes-v1') {
-  fetch('http://127.0.0.1:7431/ingest/7e162704-861f-490c-a28c-55e20888d976',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'78f730'},body:JSON.stringify({sessionId:'78f730',runId,hypothesisId,location,message,data,timestamp:Date.now()})}).catch(()=>{});
-}
 
 const EMOJIS_COMMON = ['💻','📚','🏃','🧠','🎯','✏️','📋','💪','🔥','📖','🎨','🏆','⭐','🚀','🎮','🌐','🏋️','💰','⚡','🔵'];
 const EMOJIS_ALL = [...EMOJIS_COMMON,'🧘','🎵','🎸','🎹','🏊','🚴','🧗','⚽','🏀','🎾','🏐','🧩','🎲','🃏','🎭','🍎','🥗','💊','🧪','🔬','🌱','🌍','✈️','🏠','📊','📈','💼','🔑','🛡️','⚔️','🏅','🥇','🎖️','🌟','💫','✨','🎉','🪄','🦁','🦊','🐺','🦅','🐉','🌙','☀️','⛅','🌈','❄️','🌊','🏔️','🌲'];
@@ -4380,16 +4377,6 @@ function saveGrantedLevelRewards(levels) {
 }
 function awardBoxes(n, options = {}) {
   const { temporaryLevel = false } = options;
-  // #region agent log
-  __dbglogAuthor('H1-H2', 'app.html:awardBoxes', 'awardBoxes called', {
-    n,
-    temporaryLevel,
-    pendingBefore: getPendingBoxes(),
-    tempBefore: getTempLevelBoxes(),
-    authorLevel: getAuthorPassLevel(),
-    authorXP: getAuthorXP()
-  });
-  // #endregion
   const v = getPendingBoxes() + n;
   save('passit_pending_boxes', v);
   if (temporaryLevel) {
@@ -6309,17 +6296,6 @@ function processAuthorDailyReward() {
   const oldStoredXP = getAuthorXP();
   const oldCommittedLevel = Math.min(Math.floor(oldStoredXP / 500), 150);
   const oldRewardsUpTo = load('passit_rewards_up_to', 0);
-  // #region agent log
-  __dbglogAuthor('H2-H4', 'app.html:processAuthorDailyReward:start', 'daily reward start', {
-    today,
-    lastSaved,
-    todayXP,
-    oldStoredXP,
-    oldCommittedLevel,
-    oldRewardsUpTo,
-    weeklyState: getWeeklyChallengeState()
-  });
-  // #endregion
 
   // сохраняем в исторический XP авторского пасса
   const newTotalXP = oldStoredXP + todayXP;
@@ -6327,12 +6303,6 @@ function processAuthorDailyReward() {
   save('passit_author_xp_date', today);
   const committedLevel = Math.min(Math.floor(newTotalXP / 500), 150);
   saveAuthorPassLevel(committedLevel);
-  // #region agent log
-  __dbglogAuthor('H2-H4', 'app.html:processAuthorDailyReward:afterCommit', 'daily reward committed xp', {
-    newTotalXP,
-    committedLevel
-  });
-  // #endregion
 
   if (currentUser) {
     fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newTotalXP);
@@ -6366,13 +6336,6 @@ function processAuthorDailyReward() {
     }, 0);
     const weekly = getWeeklyChallengeState();
     saveWeeklyChallengeState({ xp: weekly.xp + personalXPToday });
-    // #region agent log
-    __dbglogAuthor('H4', 'app.html:processAuthorDailyReward:weeklySave', 'weekly xp saved in day reset', {
-      weeklyGuardKey,
-      personalXPToday,
-      weeklyBefore: weekly
-    });
-    // #endregion
   }
 
   if (authorScreenOpen) updateAuthorPassUI();
@@ -6451,30 +6414,10 @@ function syncAuthorLevel() {
   const oldLevel = getAuthorPassLevel();
   const committedLevel = Math.min(Math.floor(getAuthorXP() / 500), 150);
   const rewardedUpTo = load('passit_rewards_up_to', 0);
-  // #region agent log
-  __dbglogAuthor('H1-H3-H5', 'app.html:syncAuthorLevel:start', 'syncAuthorLevel start', {
-    totalXP,
-    newLevel,
-    oldLevel,
-    committedLevel,
-    rewardedUpTo,
-    todayLiveXP: getTodayLiveXP(),
-    pendingBoxes: getPendingBoxes(),
-    tempBoxes: getTempLevelBoxes()
-  });
-  // #endregion
 
   if (newLevel > oldLevel) {
     saveAuthorPassLevel(newLevel);
     for (let l = oldLevel + 1; l <= newLevel; l++) {
-      // #region agent log
-      __dbglogAuthor('H1-H2-H5', 'app.html:syncAuthorLevel:loop', 'evaluating level reward in sync loop', {
-        levelIter: l,
-        committedLevel,
-        rewardedUpTo,
-        branch: l > committedLevel ? 'temporary' : (l > rewardedUpTo ? 'committed' : 'none')
-      });
-      // #endregion
       if (l > committedLevel) {
         if (l > 0 && l % 5 === 0) awardBoxes(1, { temporaryLevel: true });
       } else if (l > rewardedUpTo) {
