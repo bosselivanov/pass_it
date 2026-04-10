@@ -2696,19 +2696,8 @@ function updatePass() {
     const xp2 = Math.round(Math.min(done / t3, 1) * 500);
     const dailyPart = xp0 + xp1 + xp2;
 
-    // Вклад в weekly-челлендж считаем только от личных квестов (без мег и стрика)
-    const avgQuestXp = totalMaxXP > 0 ? totalMaxXP / safeTotal : 0;
-    const projectedPersonalXp = Math.round(avgQuestXp * done);
-    const weekly = getWeeklyChallengeState();
-    const weeklyProgress = weekly.completed
-      ? weekly.target
-      : Math.min((weekly.xp || 0) + projectedPersonalXp, weekly.target || 1);
-    const weeklyPart = Math.round(Math.min(weeklyProgress / (weekly.target || 1), 1) * 1500);
-
     return {
-      total: dailyPart + weeklyPart,
-      dailyPart,
-      weeklyPart
+      total: dailyPart
     };
   }
 
