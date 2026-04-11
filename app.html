@@ -178,6 +178,49 @@ body {
 .author-pass-bar-fill { height: 100%; background: linear-gradient(90deg, #E8960A, #F5C842); border-radius: 5px; transition: width 0.5s; }
 .author-pass-bar-pct { font-size: 10px; font-weight: 700; color: #F5C842; }
 
+/* Mini 3D box for level rewards */
+.mini-box {
+  width: 40px; height: 40px;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: spinMiniBox 4s linear infinite;
+}
+@keyframes spinMiniBox {
+  from { transform: rotateY(0deg) rotateX(15deg); }
+  to   { transform: rotateY(360deg) rotateX(15deg); }
+}
+.mini-box .face {
+  position: absolute;
+  width: 40px; height: 40px;
+  border: 1px solid rgba(232,150,10,0.4);
+  background: rgba(232,150,10,0.1);
+  backdrop-filter: blur(1px);
+}
+.mini-box .face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+}
+.mini-box .front  { transform: translateZ(14px); }
+.mini-box .back   { transform: translateZ(-14px) rotateY(180deg); }
+.mini-box .left   { transform: translateX(-14px) rotateY(-90deg); }
+.mini-box .right  { transform: translateX(14px) rotateY(90deg); }
+.mini-box .top    { transform: translateY(-14px) rotateX(90deg); }
+.mini-box .bottom { transform: translateY(14px) rotateX(-90deg); }
+
+.mini-box-glow {
+  position: absolute;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(232,150,10,0.3) 0%, transparent 70%);
+  animation: pulseMiniGlow 2s ease-in-out infinite;
+}
+@keyframes pulseMiniGlow {
+  0%,100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
+
 #authorPassBox:hover {
   background: linear-gradient(135deg, rgba(232,150,10,0.25), rgba(245,200,66,0.15));
   border-color: rgba(232,150,10,0.5);
@@ -6930,7 +6973,17 @@ function renderAuthorCircles() {
     // Добавляем иконку кликабельного бокса под каждым уровнем с боксом
     if (isBox && filled) {
       html += `<div onclick="openShop()" style="cursor:pointer;position:relative;margin-top:8px;text-align:center;" data-tip="Кликни чтобы открыть магазин">
-        <div style="font-size:32px;line-height:1;filter:drop-shadow(0 4px 8px rgba(232,150,10,0.3));">📦</div>
+        <div style="position:relative;display:inline-block;">
+          <div class="mini-box-glow" style="position:absolute;top:-10px;left:-10px;"></div>
+          <div class="mini-box">
+            <div class="face front"></div>
+            <div class="face back"></div>
+            <div class="face left"></div>
+            <div class="face right"></div>
+            <div class="face top"></div>
+            <div class="face bottom"></div>
+          </div>
+        </div>
         <div style="font-size:9px;font-weight:700;color:#8B5E00;margin-top:2px;">Забрать</div>
       </div>`;
     }
