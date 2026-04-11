@@ -1014,16 +1014,6 @@ body {
           <div class="pass-levels-wrap" style="overflow:visible;position:relative;">
             <div style="overflow-x:auto;overflow-y:visible;scrollbar-width:thin;padding-bottom:32px;margin-bottom:-28px;" id="authorCirclesScroll"><div id="authorCirclesRow" style="display:flex;align-items:center;min-width:max-content;gap:0;padding:2px 0;"></div></div>
           </div>
-          <!-- Кликабельный бокс для забора наград -->
-          <div id="authorPassBox" onclick="claimPendingBox()" style="margin-top:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:linear-gradient(135deg,rgba(232,150,10,0.15),rgba(245,200,66,0.1));border:2px solid rgba(180,120,0,0.3);border-radius:16px;padding:16px;transition:all 0.2s;position:relative;overflow:hidden;">
-            <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.3),transparent);pointer-events:none;"></div>
-            <div style="text-align:center;position:relative;z-index:1;">
-              <div style="font-size:48px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 4px 8px rgba(232,150,10,0.3));">📦</div>
-              <div style="font-size:12px;font-weight:800;color:#8B5E00;letter-spacing:1px;text-transform:uppercase;">Забрать награды</div>
-              <div style="font-size:10px;color:#9B6E10;margin-top:4px;" id="pendingBoxCount">Боксов: 0</div>
-            </div>
-            <div id="boxGlow" style="position:absolute;inset:0;background:radial-gradient(circle,rgba(232,150,10,0.2),transparent 70%);opacity:0;transition:opacity 0.3s;pointer-events:none;"></div>
-          </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
             <div style="font-size:10px;color:#9B6E10;" id="seasonDaysLeft">75 дн. до конца сезона</div>
             <div style="font-size:10px;color:#9B6E10;">Ур. <span id="authorLevelNum">0</span>/150 · <span id="authorXPTotalNum">0</span> XP</div>
@@ -6936,6 +6926,14 @@ function renderAuthorCircles() {
     else inner = `<span style="font-size:${current?13:11}px;font-weight:800;color:${color};">${i}</span>`;
 
     html += `<div class="ap-node-circle" data-tip="${isBox ? '📦 Бокс' : isPiece ? '🧩 Кусочек' : 'Ур. ' + i}" style="width:${size}px;height:${size}px;border-radius:50%;border:${filled?'2.5px':current?'3px':'1.5px'} solid ${border};background:${bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;${shadow}">${inner}</div>`;
+
+    // Добавляем иконку кликабельного бокса под каждым уровнем с боксом
+    if (isBox && filled) {
+      html += `<div onclick="openShop()" style="cursor:pointer;position:relative;margin-top:8px;text-align:center;" data-tip="Кликни чтобы открыть магазин">
+        <div style="font-size:32px;line-height:1;filter:drop-shadow(0 4px 8px rgba(232,150,10,0.3));">📦</div>
+        <div style="font-size:9px;font-weight:700;color:#8B5E00;margin-top:2px;">Забрать</div>
+      </div>`;
+    }
 
     if (i < 150) {
       // линия: заполнена если уровень пройден, частично если текущий
