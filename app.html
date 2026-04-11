@@ -133,7 +133,7 @@ body {
 }
 .screens-wrap.author-shown ~ * .pass-switch-wrap,
 .pass-switch-wrap.author-mode {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
+  background: linear-gradient(135deg, #FFF8DC, #FFE4B5);
 }
 .pass-switch-btn {
   display: flex; align-items: center; gap: 6px;
@@ -164,10 +164,10 @@ body {
 
 /* AUTHOR PASS SCREEN */
 .author-pass-area {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 40%, #FF8C00 70%, #8B4500 100%);
+  background: linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 40%, #FFD700 70%, #DAA520 100%);
   border-bottom: 1.5px solid rgba(180,120,0,0.2);
-  padding: 10px 24px 12px;
-  flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
+  padding: 16px 24px 20px;
+  flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;
 }
 .author-pass-header { display: flex; align-items: center; justify-content: space-between; }
 .author-pass-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #4A2E00; }
@@ -177,6 +177,16 @@ body {
 .author-pass-bar-track { flex: 1; height: 5px; background: rgba(180,120,0,0.15); border-radius: 5px; overflow: hidden; }
 .author-pass-bar-fill { height: 100%; background: linear-gradient(90deg, #E8960A, #F5C842); border-radius: 5px; transition: width 0.5s; }
 .author-pass-bar-pct { font-size: 10px; font-weight: 700; color: #F5C842; }
+
+#authorPassBox:hover {
+  background: linear-gradient(135deg, rgba(232,150,10,0.25), rgba(245,200,66,0.15));
+  border-color: rgba(232,150,10,0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(232,150,10,0.2);
+}
+#authorPassBox:hover #boxGlow {
+  opacity: 1;
+}
 
 .author-quests-layout {
   flex: 1; min-height: 0; display: grid;
@@ -993,7 +1003,7 @@ body {
   </div>
 
   <!-- SCREEN 2: АВТОРСКИЙ ПАСС -->
-  <div class="screen" id="screenAuthor" style="background:linear-gradient(180deg,#FFD700 0%,#FFA500 30%,#FF8C00 60%,#8B4500 100%);">
+  <div class="screen" id="screenAuthor" style="background:linear-gradient(180deg,#FFF8DC 0%,#FFE4B5 30%,#FFD700 60%,#DAA520 100%);">
     <!-- PASS BAR -->
     <div class="author-pass-area">
       <div class="pass-container-wrap" style="flex:1;">
@@ -1003,6 +1013,16 @@ body {
           </div>
           <div class="pass-levels-wrap" style="overflow:visible;position:relative;">
             <div style="overflow-x:auto;overflow-y:visible;scrollbar-width:thin;padding-bottom:32px;margin-bottom:-28px;" id="authorCirclesScroll"><div id="authorCirclesRow" style="display:flex;align-items:center;min-width:max-content;gap:0;padding:2px 0;"></div></div>
+          </div>
+          <!-- Кликабельный бокс для забора наград -->
+          <div id="authorPassBox" onclick="claimPendingBox()" style="margin-top:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:linear-gradient(135deg,rgba(232,150,10,0.15),rgba(245,200,66,0.1));border:2px solid rgba(180,120,0,0.3);border-radius:16px;padding:16px;transition:all 0.2s;position:relative;overflow:hidden;">
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.3),transparent);pointer-events:none;"></div>
+            <div style="text-align:center;position:relative;z-index:1;">
+              <div style="font-size:48px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 4px 8px rgba(232,150,10,0.3));">📦</div>
+              <div style="font-size:12px;font-weight:800;color:#8B5E00;letter-spacing:1px;text-transform:uppercase;">Забрать награды</div>
+              <div style="font-size:10px;color:#9B6E10;margin-top:4px;" id="pendingBoxCount">Боксов: 0</div>
+            </div>
+            <div id="boxGlow" style="position:absolute;inset:0;background:radial-gradient(circle,rgba(232,150,10,0.2),transparent 70%);opacity:0;transition:opacity 0.3s;pointer-events:none;"></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
             <div style="font-size:10px;color:#9B6E10;" id="seasonDaysLeft">75 дн. до конца сезона</div>
@@ -4636,6 +4656,16 @@ function useBox() {
   return true;
 }
 
+function claimPendingBox() {
+  const boxes = getPendingBoxes();
+  if (boxes <= 0) {
+    showToast('Нет доступных боксов');
+    return;
+  }
+  openShop();
+  updateAuthorPassUI();
+}
+
 // Called when level up
 function processLevelRewards(newLevel) {
   const granted = getGrantedLevelRewards();
@@ -6884,7 +6914,7 @@ function renderAuthorCircles() {
     const current = i === level;
     const isBox = i > 0 && i % 5 === 0;
     const isPiece = i > 0 && i % 3 === 0 && !isBox;
-    const size = isBox ? 52 : 40;
+    const size = isBox ? 64 : 50;
 
     let bg, border, color, shadow = '';
     if (filled) {
@@ -7052,9 +7082,11 @@ function updateAuthorPassUI() {
   const boxBadge = document.getElementById('shopBoxBadge');
   const coinsWidget = document.getElementById('shopCoinsWidget');
   const piecesWidget = document.getElementById('shopPiecesWidget');
+  const pendingBoxCount = document.getElementById('pendingBoxCount');
   if (boxBadge) boxBadge.textContent = `Боксов: ${getPendingBoxes()}`;
   if (coinsWidget) coinsWidget.textContent = getCoins();
   if (piecesWidget) piecesWidget.textContent = `${getBoxPieces()}/5`;
+  if (pendingBoxCount) pendingBoxCount.textContent = `Боксов: ${getPendingBoxes()}`;
 
   // обновляем pity-полоску легендарных тем
   updateLegendaryPityBars();
