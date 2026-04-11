@@ -123,9 +123,9 @@ body {
   border-bottom-color: rgba(160,110,0,0.2);
   transition: background 0.4s, border-color 0.4s;
 }
-.header.author-mode .header-title { color: #8B5E00; letter-spacing: 4px; }
-.header.author-mode .header-btn { color: #A07020; }
-.header.author-mode .header-btn:hover { background: rgba(180,120,0,0.1); color: #6B4400; }
+.header.author-mode .header-title { color: #4A2E00; letter-spacing: 4px; }
+.header.author-mode .header-btn { color: #6B4400; }
+.header.author-mode .header-btn:hover { background: rgba(255,255,255,0.3); color: #4A2E00; }
 .pass-switch-wrap {
   display: flex; justify-content: center;
   padding: 4px 24px 0; flex-shrink: 0;
@@ -133,7 +133,7 @@ body {
 }
 .screens-wrap.author-shown ~ * .pass-switch-wrap,
 .pass-switch-wrap.author-mode {
-  background: linear-gradient(135deg, #FDF5E0, #F5EAC0);
+  background: linear-gradient(135deg, #FFD700, #FFA500);
 }
 .pass-switch-btn {
   display: flex; align-items: center; gap: 6px;
@@ -144,7 +144,7 @@ body {
   transition: all 0.2s;
 }
 .pass-switch-btn:hover { border-color: var(--accent); color: var(--accent); }
-.pass-switch-btn.author-active { border-color: #C07800; color: #8B5E00; background: rgba(200,140,0,0.1); }
+.pass-switch-btn.author-active { border-color: #4A2E00; color: #4A2E00; background: rgba(255,255,255,0.4); }
 
 /* SCREENS */
 .screens-wrap {
@@ -164,13 +164,13 @@ body {
 
 /* AUTHOR PASS SCREEN */
 .author-pass-area {
-  background: linear-gradient(135deg, #FFFAED 0%, #FFF3CC 60%, #FFECAA 100%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 40%, #FF8C00 70%, #8B4500 100%);
   border-bottom: 1.5px solid rgba(180,120,0,0.2);
   padding: 10px 24px 12px;
   flex-shrink: 0; display: flex; flex-direction: column; gap: 8px;
 }
 .author-pass-header { display: flex; align-items: center; justify-content: space-between; }
-.author-pass-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #6B4400; }
+.author-pass-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #4A2E00; }
 .author-pass-sub { font-size: 10px; color: rgba(100,60,0,0.6); margin-top: 2px; }
 .author-pass-badge { font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; background: rgba(232,150,10,0.15); color: #E8960A; border: 1px solid rgba(232,150,10,0.3); border-radius: 6px; padding: 3px 8px; }
 .author-pass-bar-wrap { display: flex; align-items: center; gap: 10px; }
@@ -204,7 +204,7 @@ body {
   gap: 4px;
 }
 .author-dailies-header {
-  color: #8B5E00 !important;
+  color: #4A2E00 !important;
   letter-spacing: 2px;
   padding-left: 2px;
 }
@@ -993,7 +993,7 @@ body {
   </div>
 
   <!-- SCREEN 2: АВТОРСКИЙ ПАСС -->
-  <div class="screen" id="screenAuthor" style="background:linear-gradient(180deg,#FDF6E3 0%,#FAF0CC 50%,#F5E6A8 100%);">
+  <div class="screen" id="screenAuthor" style="background:linear-gradient(180deg,#FFD700 0%,#FFA500 30%,#FF8C00 60%,#8B4500 100%);">
     <!-- PASS BAR -->
     <div class="author-pass-area">
       <div class="pass-container-wrap" style="flex:1;">
