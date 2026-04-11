@@ -164,10 +164,10 @@ body {
 
 /* AUTHOR PASS SCREEN */
 .author-pass-area {
-  background: linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 40%, #FFD700 70%, #DAA520 100%);
+  background: linear-gradient(135deg, #FFD700, #FFA500, #FF8C00);
   border-bottom: 1.5px solid rgba(180,120,0,0.2);
-  padding: 16px 24px 20px;
-  flex-shrink: 0; display: flex; flex-direction: column; gap: 12px;
+  padding: 24px 24px 28px;
+  flex-shrink: 0; display: flex; flex-direction: column; gap: 16px;
 }
 .author-pass-header { display: flex; align-items: center; justify-content: space-between; }
 .author-pass-label { font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #4A2E00; }
@@ -192,15 +192,15 @@ body {
 .mini-box .face {
   position: absolute;
   width: 40px; height: 40px;
-  border: 1px solid rgba(232,150,10,0.4);
-  background: rgba(232,150,10,0.1);
-  backdrop-filter: blur(1px);
+  border: 1px solid rgba(232,150,10,0.6);
+  background: rgba(232,150,10,0.3);
+  backdrop-filter: blur(2px);
 }
 .mini-box .face::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%);
 }
 .mini-box .front  { transform: translateZ(14px); }
 .mini-box .back   { transform: translateZ(-14px) rotateY(180deg); }
@@ -213,12 +213,12 @@ body {
   position: absolute;
   width: 60px; height: 60px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(232,150,10,0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(232,150,10,0.4) 0%, transparent 70%);
   animation: pulseMiniGlow 2s ease-in-out infinite;
 }
 @keyframes pulseMiniGlow {
-  0%,100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.15); opacity: 0.8; }
+  0%,100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 0.9; }
 }
 
 #authorPassBox:hover {
