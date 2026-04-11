@@ -671,6 +671,48 @@ body {
   font-size: 12px; font-weight: 800; padding: 5px 16px;
   border-radius: 10px; letter-spacing: 2px; text-transform: uppercase;
 }
+/* LEGENDARY POPUP STYLES */
+.legendary-popup {
+  max-width: 380px;
+  box-shadow: 0 0 80px rgba(167,139,250,0.4);
+}
+.legendary-label {
+  font-size: 12px; font-weight: 800; letter-spacing: 3px;
+  text-transform: uppercase; color: #d4af37;
+  text-shadow: 0 0 20px rgba(212,175,55,0.5);
+}
+.legendary-title {
+  font-size: 28px; font-weight: 800; color: white;
+  text-align: center; text-shadow: 0 2px 30px rgba(167,139,250,0.8);
+}
+.legendary-preview {
+  height: 220px;
+  border: 2px solid rgba(212,175,55,0.4);
+  box-shadow: 0 20px 70px rgba(167,139,250,0.6);
+}
+.legendary-rarity {
+  background: rgba(212,175,55,0.2);
+  color: #d4af37;
+  border: 1px solid rgba(212,175,55,0.4);
+  text-shadow: 0 0 10px rgba(212,175,55,0.3);
+}
+.legendary-btn-primary {
+  background: linear-gradient(135deg, #A78BFA, #d4af37);
+  border: none;
+  color: white;
+  font-weight: 800;
+}
+.legendary-btn-primary:hover {
+  background: linear-gradient(135deg, #9375DB, #c49d2f);
+}
+.legendary-btn-secondary {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+}
+.legendary-btn-secondary:hover {
+  background: rgba(255,255,255,0.15);
+}
 .unlock-btn {
   background: white; color: #1a1a2e; border: none;
   border-radius: 14px; padding: 14px 40px;
@@ -711,6 +753,11 @@ body {
 .cos-name { font-size: 11px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cos-bar { height: 3px; background: var(--bar-bg); border-radius: 3px; margin-top: 4px; overflow: hidden; }
 .cos-bar-fill { height: 100%; border-radius: 3px; }
+/* PITY BAR для легендарных тем */
+.cos-pity-bar { height: 2px; background: rgba(167,139,250,0.15); border-radius: 2px; margin-top: 3px; overflow: hidden; }
+.cos-pity-fill { height: 100%; background: linear-gradient(90deg, #A78BFA, #d4af37); border-radius: 2px; transition: width 0.3s ease; }
+.cos-pro-tag { position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 2px 6px; font-size: 8px; font-weight: 800; color: #d4af37; letter-spacing: 0.5px; z-index: 4; }
+.cos-pro-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); font-size: 24px; z-index: 5; }
 /* PROFILE DROPDOWN */
 .profile-wrap { position: relative; }
 .profile-btn { position: relative; }
@@ -1400,7 +1447,10 @@ body {
               <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cos-footer"><div class="cos-name">HUNTRIX / H</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#A78BFA;"></div></div></div>
+            <div class="cos-footer">
+              <div class="cos-name">HUNTRIX / H</div>
+              <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#A78BFA;"></div></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1449,7 +1499,7 @@ body {
 
         <div class="rarity-badge rarity-legendary" style="margin-top:8px;">Легендарный</div>
         <div class="cos-grid">
-          <div class="cos-card locked" data-theme="rumi" data-pieces="8" data-collected="0" data-season="1" data-rarity="legendary">
+          <div class="cos-card locked" data-theme="rumi" data-pieces="8" data-collected="0" data-season="1" data-rarity="legendary" data-legendary="true">
             <div class="cos-preview">
               <div class="cos-light" style="background:linear-gradient(160deg,#f4f2ff 40%,#867DCE 100%);"></div>
               <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
@@ -1461,6 +1511,7 @@ body {
                 <div style="font-size:9px;color:var(--text2);" data-piece-counter>0/44 🧩</div>
               </div>
               <div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#867DCE;"></div></div>
+              <div class="cos-pity-bar" id="pityBar-rumi" style="display:none;"><div class="cos-pity-fill" style="width:0%;"></div></div>
               <button onclick="event.stopPropagation();openRoadmap('rumi')" class="roadmap-btn">📍 Роадмап</button>
             </div>
           </div>
@@ -2177,6 +2228,23 @@ function boRestart() {
     </div>
     <div class="unlock-rarity" id="unlockRarity"></div>
     <button class="unlock-btn" onclick="closeUnlockCelebration()">Круто!</button>
+  </div>
+</div>
+
+<!-- LEGENDARY UNLOCK OVERLAY -->
+<div class="unlock-overlay" id="legendaryOverlay" onclick="closeLegendaryUnlock()">
+  <canvas class="unlock-particles" id="legendaryParticles"></canvas>
+  <div class="unlock-popup legendary-popup" onclick="event.stopPropagation()">
+    <div class="unlock-label legendary-label">⚡ ЛЕГЕНДАРНАЯ ТЕМА ПОЛУЧЕНА!</div>
+    <div class="unlock-title legendary-title" id="legendaryTitle">HUNTRIX / H</div>
+    <div class="unlock-preview legendary-preview" id="legendaryPreview">
+      <div class="unlock-preview-shine"></div>
+    </div>
+    <div class="unlock-rarity legendary-rarity" id="legendaryRarity"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="unlock-btn legendary-btn-primary" onclick="applyLegendaryTheme()">Применить</button>
+      <button class="unlock-btn legendary-btn-secondary" onclick="closeLegendaryUnlock()">Позже</button>
+    </div>
   </div>
 </div>
 
@@ -5425,13 +5493,13 @@ function applyCode() {
 
 // ====== UNLOCK CELEBRATION ======
 const COSMETIC_META = {
-  huntrxh: {
-    name: 'HUNTRIX / H',
+  rumi: {
+    name: 'Руми ✦',
     rarity: 'Легендарный',
     rarityColor: '#b06000',
     rarityBg: 'rgba(240,160,20,0.2)',
     rarityBorder: 'rgba(240,160,20,0.5)',
-    bg: 'linear-gradient(135deg,#E2DEFF 0%,#A78BFA 50%,#2DD4BF 100%)'
+    bg: 'linear-gradient(135deg,#f4f2ff 0%,#867DCE 50%,#6B5B95 100%)'
   }
 };
 
@@ -5557,6 +5625,135 @@ function loadCloudCosmetics() {
       }
     }
   });
+}
+
+// ====== LEGENDARY PITY SYSTEM ======
+// Легендарные темы — только для Pro пользователей
+const LEGENDARY_THEMES = ['rumi'];
+
+function getPityCounter() {
+  return load('passit_pity_counter', 0);
+}
+
+function savePityCounter(val) {
+  save('passit_pity_counter', val);
+  if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/pityCounter').set(val);
+}
+
+function calculateLegendaryChance(pityCounter) {
+  // Базовый шанс 5%
+  // После 40% пасса шанс растёт линейно до 100% на 100%
+  if (pityCounter < 0.4) return 0.05;
+  const chance = 0.05 + ((pityCounter - 0.4) / 0.6) * 0.95;
+  return Math.min(1, chance);
+}
+
+function getAvailableLegendaryThemes() {
+  const unlocked = getUnlockedCosmetics();
+  return LEGENDARY_THEMES.filter(id => !unlocked.includes(id));
+}
+
+function rollLegendary() {
+  // Не вызываем если не Pro или все легендарки уже получены
+  if (!userIsPro) return false;
+  const available = getAvailableLegendaryThemes();
+  if (available.length === 0) return false;
+
+  const pity = getPityCounter();
+  const chance = calculateLegendaryChance(pity);
+  const rolled = Math.random() < chance;
+
+  if (rolled) {
+    // Выпала легендарка
+    const themeId = available[Math.floor(Math.random() * available.length)];
+    unlockCosmetic(themeId);
+    savePityCounter(0); // сбрасываем pity
+    showLegendaryUnlock(themeId);
+    return true;
+  } else {
+    // Не выпало — обновляем pityCounter
+    const level = getAuthorPassLevel();
+    const totalLevels = 150;
+    const newPity = Math.min(level / totalLevels, 1);
+    savePityCounter(newPity);
+    return false;
+  }
+}
+
+function showLegendaryUnlock(themeId) {
+  const meta = COSMETIC_META[themeId];
+  if (!meta) return;
+
+  document.getElementById('legendaryTitle').textContent = meta.name;
+  document.getElementById('legendaryPreview').style.background = meta.bg;
+  const rarityEl = document.getElementById('legendaryRarity');
+  rarityEl.textContent = meta.rarity;
+  rarityEl.style.background = meta.rarityBg;
+  rarityEl.style.color = meta.rarityColor;
+  rarityEl.style.border = '1px solid ' + meta.rarityBorder;
+  document.getElementById('legendaryOverlay').classList.add('open');
+  startLegendaryConfetti();
+}
+
+function closeLegendaryUnlock() {
+  document.getElementById('legendaryOverlay').classList.remove('open');
+  stopLegendaryConfetti();
+}
+
+function applyLegendaryTheme() {
+  const themeId = document.getElementById('legendaryTitle').textContent.toLowerCase().replace(/[^a-z]/g, '');
+  const themeMap = { 'huntrixh': 'huntrxh' };
+  const actualId = themeMap[themeId] || themeId;
+  if (THEMES[actualId]) {
+    selectTheme(actualId);
+  }
+  closeLegendaryUnlock();
+  closeThemePicker();
+}
+
+let legendaryConfettiAnim = null;
+let legendaryConfettiParticles = [];
+
+function startLegendaryConfetti() {
+  const canvas = document.getElementById('legendaryParticles');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const colors = ['#A78BFA','#2DD4BF','#FFD700','#FF69B4','#d4af37','#ffffff'];
+  legendaryConfettiParticles = Array.from({length: 100}, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * 100,
+    r: 5 + Math.random() * 8,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: (Math.random() - 0.5) * 4,
+    vy: 3 + Math.random() * 4,
+    spin: Math.random() * Math.PI * 2,
+    spinV: (Math.random() - 0.5) * 0.3,
+    shape: Math.random() > 0.5 ? 'rect' : 'circle'
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    legendaryConfettiParticles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.spin += p.spinV;
+      if (p.y > canvas.height) { p.y = -20; p.x = Math.random() * canvas.width; }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.spin);
+      ctx.fillStyle = p.color;
+      if (p.shape === 'rect') ctx.fillRect(-p.r, -p.r/2, p.r*2, p.r);
+      else { ctx.beginPath(); ctx.arc(0, 0, p.r/2, 0, Math.PI*2); ctx.fill(); }
+      ctx.restore();
+    });
+    legendaryConfettiAnim = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+function stopLegendaryConfetti() {
+  if (legendaryConfettiAnim) { cancelAnimationFrame(legendaryConfettiAnim); legendaryConfettiAnim = null; }
+  const canvas = document.getElementById('legendaryParticles');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // ====== THEME ======
@@ -5779,6 +5976,68 @@ function openRoadmap(themeId) {
   document.getElementById('roadmapOverlay').classList.add('open');
 }
 
+function updateLegendaryPityBars() {
+  // Обновляем pity-полоску и PRO-замок для легендарных тем
+  document.querySelectorAll('.cos-card[data-legendary="true"]').forEach(card => {
+    const themeId = card.dataset.theme;
+    const pityBar = document.getElementById('pityBar-' + themeId);
+    const preview = card.querySelector('.cos-preview');
+
+    // Удаляем существующие PRO-элементы и обработчики
+    card.querySelector('.cos-pro-tag')?.remove();
+    card.querySelector('.cos-pro-lock')?.remove();
+    card.onclick = null;
+
+    // Если тема уже разблокирована - скрываем pity-полоску
+    if (isCosmeticUnlocked(themeId)) {
+      if (pityBar) pityBar.style.display = 'none';
+      return;
+    }
+
+    // Если не Pro - показываем замок и тег PRO, добавляем клик на подписку
+    if (!userIsPro) {
+      if (pityBar) pityBar.style.display = 'none';
+      // Добавляем тег PRO
+      const proTag = document.createElement('div');
+      proTag.className = 'cos-pro-tag';
+      proTag.textContent = 'PRO';
+      preview.appendChild(proTag);
+      // Добавляем замок
+      const lock = document.createElement('div');
+      lock.className = 'cos-pro-lock';
+      lock.textContent = '🔒';
+      preview.appendChild(lock);
+      // При клике открываем окно подписки
+      card.onclick = function() {
+        openSubPopup();
+      };
+      card.style.cursor = 'pointer';
+      return;
+    }
+
+    // Для Pro пользователей - показываем pity-полоску
+    if (!pityBar) return;
+
+    const pity = getPityCounter();
+    const level = getAuthorPassLevel();
+    const totalLevels = 150;
+    const progress = Math.min(level / totalLevels, 1);
+
+    // Показываем pity-полоску только после 40% пасса
+    if (progress < 0.4) {
+      pityBar.style.display = 'none';
+    } else {
+      pityBar.style.display = 'block';
+      // Шанс растёт от 5% на 40% до 100% на 100%
+      const chance = calculateLegendaryChance(pity);
+      const fill = pityBar.querySelector('.cos-pity-fill');
+      if (fill) {
+        fill.style.width = (chance * 100) + '%';
+      }
+    }
+  });
+}
+
 function openThemePicker() {
   // обновляем счётчики кусочков
   ['mira','zoi','rumi'].forEach(id => {
@@ -5802,6 +6061,7 @@ function openThemePicker() {
     }
   });
   renderPiecesGrids();
+  updateLegendaryPityBars();
   document.querySelectorAll('.cos-card[data-theme]').forEach(card => {
     const themeId = card.dataset.theme;
     const step = getThemeStep(themeId);
@@ -6589,6 +6849,8 @@ function syncAuthorLevel() {
     save('passit_rewards_up_to', Math.max(rewardedUpTo, Math.min(newLevel, committedLevel)));
     showToast(`⬆️ Уровень ${newLevel}!`);
     logActivity('author_level', { name: `Уровень ${newLevel}`, xp: 0 });
+    // Проверяем выпадение легендарной темы при повышении уровня
+    rollLegendary();
   } else if (newLevel < oldLevel) {
     saveAuthorPassLevel(newLevel);
     let tempLostBoxes = 0;
@@ -6793,6 +7055,9 @@ function updateAuthorPassUI() {
   if (boxBadge) boxBadge.textContent = `Боксов: ${getPendingBoxes()}`;
   if (coinsWidget) coinsWidget.textContent = getCoins();
   if (piecesWidget) piecesWidget.textContent = `${getBoxPieces()}/5`;
+
+  // обновляем pity-полоску легендарных тем
+  updateLegendaryPityBars();
 }
 
 // ====== AUTHOR PASS (old popup — kept for compat) ======
@@ -6983,6 +7248,7 @@ firebase.auth().onAuthStateChanged(function(user) {
         if (cloudData.themePiecesRumi != null)  save('passit_theme_pieces_rumi', cloudData.themePiecesRumi);
         if (cloudData.streak != null)           save('passit_streak', cloudData.streak);
         if (cloudData.weeklyXP != null)         save('passit_weekly_xp', cloudData.weeklyXP);
+        if (cloudData.pityCounter != null)      save('passit_pity_counter', cloudData.pityCounter);
         render();
         recoverMissingRewards();
         recoverMissingAchievementRewards(false);
@@ -7061,6 +7327,8 @@ function cloudSave() {
     streak: load('passit_streak', null),
     // weekly XP
     weeklyXP: load('passit_weekly_xp', null),
+    // pity counter для легендарных тем
+    pityCounter: load('passit_pity_counter', 0),
   });
 }
 
