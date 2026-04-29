@@ -870,6 +870,85 @@ body {
 </style>
 <body>
 
+<div class="lobby-overlay" id="lobbyOverlay">
+  <div class="lobby-shell">
+    <div class="lobby-col">
+      <div class="lobby-title">Week Shop</div>
+      <div class="lobby-subtitle">Weekly highlight. Visual placeholder for future shop rotation.</div>
+      <div class="lobby-card week-shop-card">
+        <div>
+          <div class="week-shop-name" id="lobbyShopName">Night Shift</div>
+          <div class="lobby-subtitle" id="lobbyShopFlavor">Limited weekly pick</div>
+        </div>
+        <div class="week-shop-price" id="lobbyShopPrice">200 Coins</div>
+        <div class="week-shop-nav">
+          <button type="button" onclick="stepLobbyShop(-1)">‹</button>
+          <div class="week-shop-count" id="lobbyShopCount">1/3</div>
+          <button type="button" onclick="stepLobbyShop(1)">›</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="lobby-col lobby-center">
+      <div class="lobby-welcome">Welcome home<span id="lobbyWelcomeName" class="lobby-username"></span></div>
+
+      <div class="lobby-section">
+        <div class="lobby-section-title">Last day progress</div>
+        <div class="lobby-meta" id="lobbyLastDayMeta">No previous snapshot yet</div>
+        <div class="lobby-passbar">
+          <div class="lobby-passbar-fill" id="lobbyLastDayFill"></div>
+          <div class="lobby-passbar-labels">
+            <span>1</span><span>2</span><span>3</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lobby-section">
+        <div class="lobby-section-title">Today pass</div>
+        <div class="lobby-meta" id="lobbyTodayMeta">0/0 quests</div>
+        <div class="lobby-passbar">
+          <div class="lobby-passbar-fill" id="lobbyTodayFill"></div>
+          <div class="lobby-passbar-labels">
+            <span>1</span><span>2</span><span>3</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="lobby-section">
+        <div class="lobby-section-title">Tasks (most XP)</div>
+        <div class="lobby-task-grid">
+          <div class="lobby-card lobby-task-card">
+            <div class="lobby-task-name" id="lobbyTask1Name">No task yet</div>
+            <div class="lobby-task-xp" id="lobbyTask1XP">0 XP</div>
+          </div>
+          <div class="lobby-card lobby-task-card">
+            <div class="lobby-task-name" id="lobbyTask2Name">No task yet</div>
+            <div class="lobby-task-xp" id="lobbyTask2XP">0 XP</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lobby-section">
+        <div class="lobby-section-title">Author Pass</div>
+        <div class="lobby-meta" id="lobbyAuthorMeta">Level 0 · 0 XP</div>
+        <div class="lobby-passbar">
+          <div class="lobby-passbar-fill" id="lobbyAuthorFill"></div>
+          <div class="lobby-passbar-labels" id="lobbyAuthorLabels">
+            <span>0</span><span>1</span><span>2</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lobby-col">
+      <div class="lobby-card lobby-enter-card" onclick="enterAppFromLobby()">
+        <div class="lobby-enter-text">GET INTO</div>
+        <div class="lobby-enter-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="update-banner" id="updateBanner" style="display:none;">
   <div style="font-size:20px;">🎉</div>
@@ -2725,6 +2804,123 @@ function todayStr() {
   return formatLocalDate(new Date());
 }
 function todayDowIndex() { return (new Date().getDay() + 6) % 7; }
+
+const LOBBY_WEEK_SHOP_ITEMS = [
+  { name: 'Night Shift', price: 200, flavor: 'Weekly featured skin pack' },
+  { name: 'Star Tape', price: 140, flavor: 'Retro reward capsule' },
+  { name: 'Gold Signal', price: 260, flavor: 'Limited premium placeholder' }
+];
+let lobbyShopIndex = 0;
+
+function getLobbyLastDaySummary() {
+  return load('passit_last_day_summary', null);
+}
+function saveLobbyLastDaySummary(summary) {
+  save('passit_last_day_summary', summary);
+  if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/lastDaySummary').set(summary);
+}
+function getLobbySnapshotDate() {
+  const today = todayStr();
+  const lastReset = load('lastAutoReset', null);
+  if (lastReset && lastReset < today) {
+    const d = new Date(today + 'T00:00:00');
+    d.setDate(d.getDate() - 1);
+    return formatLocalDate(d);
+  }
+  return today;
+}
+function getLobbyQuestProgressFromPass(pass) {
+  const quests = ((pass && pass.quests) || []).filter(q => q && !q.frozen && isQuestActiveToday(q));
+  const total = quests.length;
+  const done = quests.filter(q => (q.current || 0) >= q.max).length;
+  return { done, total, ratio: total ? done / total : 0 };
+}
+function getLobbyTaskLeaders() {
+  return (getCurrentPass()?.quests || [])
+    .filter(q => q && !q.frozen)
+    .sort((a, b) => (b.xp || 0) - (a.xp || 0))
+    .slice(0, 2);
+}
+function formatLobbyWeekday(dateStr) {
+  if (!dateStr) return 'No snapshot';
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('en-US', { weekday: 'long' });
+}
+function stepLobbyShop(dir) {
+  lobbyShopIndex = (lobbyShopIndex + dir + LOBBY_WEEK_SHOP_ITEMS.length) % LOBBY_WEEK_SHOP_ITEMS.length;
+  renderLobbyShop();
+}
+function renderLobbyShop() {
+  const item = LOBBY_WEEK_SHOP_ITEMS[lobbyShopIndex];
+  const nameEl = document.getElementById('lobbyShopName');
+  const priceEl = document.getElementById('lobbyShopPrice');
+  const countEl = document.getElementById('lobbyShopCount');
+  const flavorEl = document.getElementById('lobbyShopFlavor');
+  if (nameEl) nameEl.textContent = item.name;
+  if (priceEl) priceEl.textContent = `${item.price} Coins`;
+  if (countEl) countEl.textContent = `${lobbyShopIndex + 1}/${LOBBY_WEEK_SHOP_ITEMS.length}`;
+  if (flavorEl) flavorEl.textContent = item.flavor;
+}
+function setLobbyVisible(visible) {
+  const overlay = document.getElementById('lobbyOverlay');
+  if (!overlay) return;
+  overlay.classList.toggle('hidden', !visible);
+}
+function enterAppFromLobby() {
+  setLobbyVisible(false);
+}
+function renderLobby() {
+  renderLobbyShop();
+
+  const welcomeName = document.getElementById('lobbyWelcomeName');
+  if (welcomeName) {
+    const raw = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Commander';
+    welcomeName.textContent = `, ${raw}`;
+  }
+
+  const currentPass = getCurrentPass();
+  const todayProg = getLobbyQuestProgressFromPass(currentPass);
+  const todayMeta = document.getElementById('lobbyTodayMeta');
+  const todayFill = document.getElementById('lobbyTodayFill');
+  if (todayMeta) todayMeta.textContent = `${todayProg.done}/${todayProg.total} quests completed today`;
+  if (todayFill) todayFill.style.width = `${Math.round(todayProg.ratio * 100)}%`;
+
+  const lastDay = getLobbyLastDaySummary();
+  const lastMeta = document.getElementById('lobbyLastDayMeta');
+  const lastFill = document.getElementById('lobbyLastDayFill');
+  if (lastDay) {
+    const seenText = `Last seen: ${formatLobbyWeekday(lastDay.date)} · ${lastDay.done}/${lastDay.total} quests`;
+    if (lastMeta) lastMeta.textContent = seenText;
+    if (lastFill) lastFill.style.width = `${Math.round((lastDay.ratio || 0) * 100)}%`;
+  } else {
+    if (lastMeta) lastMeta.textContent = 'No previous snapshot yet';
+    if (lastFill) lastFill.style.width = '0%';
+  }
+
+  const topTasks = getLobbyTaskLeaders();
+  const t1 = topTasks[0] || null;
+  const t2 = topTasks[1] || null;
+  const task1Name = document.getElementById('lobbyTask1Name');
+  const task1XP = document.getElementById('lobbyTask1XP');
+  const task2Name = document.getElementById('lobbyTask2Name');
+  const task2XP = document.getElementById('lobbyTask2XP');
+  if (task1Name) task1Name.textContent = t1 ? t1.name : 'No task yet';
+  if (task1XP) task1XP.textContent = t1 ? `${t1.xp || 0} XP` : '0 XP';
+  if (task2Name) task2Name.textContent = t2 ? t2.name : 'No task yet';
+  if (task2XP) task2XP.textContent = t2 ? `${t2.xp || 0} XP` : '0 XP';
+
+  const totalAuthorXP = getTotalAuthorXP();
+  const authorLevel = Math.min(Math.floor(totalAuthorXP / 500), 150);
+  const authorMeta = document.getElementById('lobbyAuthorMeta');
+  const authorFill = document.getElementById('lobbyAuthorFill');
+  const authorLabels = document.getElementById('lobbyAuthorLabels');
+  if (authorMeta) authorMeta.textContent = `Level ${authorLevel} · ${totalAuthorXP} XP`;
+  if (authorFill) authorFill.style.width = `${Math.round(((totalAuthorXP % 500) / 500) * 100)}%`;
+  if (authorLabels) {
+    authorLabels.innerHTML = [authorLevel, Math.min(authorLevel + 1, 150), Math.min(authorLevel + 2, 150)]
+      .map(level => `<span>${level}</span>`).join('');
+  }
+}
 
 function isQuestActiveToday(q) {
   const today = todayStr();
@@ -5242,6 +5438,14 @@ function performDayReset(isManual) {
     });
   });
 
+  const lobbyProg = getLobbyQuestProgressFromPass(getCurrentPass());
+  saveLobbyLastDaySummary({
+    date: getLobbySnapshotDate(),
+    done: lobbyProg.done,
+    total: lobbyProg.total,
+    ratio: lobbyProg.ratio
+  });
+
   // сохраняем прогресс авторского пасса ДО сброса квестов
   processAuthorDailyReward();
 
@@ -5257,10 +5461,16 @@ function performDayReset(isManual) {
 
   save('lastAutoReset', today);
   save('lastNewDay', today);
+  if (currentUser) {
+    fbdb.ref('passit_users/' + currentUser.uid + '/lastAutoReset').set(today);
+    fbdb.ref('passit_users/' + currentUser.uid + '/lastNewDay').set(today);
+  }
   savePasses();
   cleanupExpiredQuests();
   renderQuests();
   updateDebtBadge();
+  renderLobby();
+  cloudSave();
 }
 
 function newDay() {
@@ -5393,6 +5603,7 @@ function render() {
   updatePassMenuTrigger();
   renderMega();
   renderQuests();
+  renderLobby();
 }
 
 // ====== SUBSCRIPTION ======
@@ -6131,7 +6342,7 @@ function checkAndAutoReset() {
     }
   }
 
-  showNewDayPopup();
+  performDayReset(false);
 }
 
 // ====== AUTHOR PASS SCREEN ======
@@ -6987,19 +7198,37 @@ firebase.auth().onAuthStateChanged(function(user) {
         if (cloudData.themePiecesRumi != null)  save('passit_theme_pieces_rumi', cloudData.themePiecesRumi);
         if (cloudData.streak != null)           save('passit_streak', cloudData.streak);
         if (cloudData.weeklyXP != null)         save('passit_weekly_xp', cloudData.weeklyXP);
+        const localLastAutoReset = load('lastAutoReset', null);
+        if (cloudData.lastAutoReset != null && (!localLastAutoReset || cloudData.lastAutoReset > localLastAutoReset)) {
+          save('lastAutoReset', cloudData.lastAutoReset);
+        }
+        const localLastNewDay = load('lastNewDay', null);
+        if (cloudData.lastNewDay != null && (!localLastNewDay || cloudData.lastNewDay > localLastNewDay)) {
+          save('lastNewDay', cloudData.lastNewDay);
+        }
+        const localLastDaySummary = load('passit_last_day_summary', null);
+        if (cloudData.lastDaySummary != null && (!localLastDaySummary?.date || cloudData.lastDaySummary.date >= localLastDaySummary.date)) {
+          save('passit_last_day_summary', cloudData.lastDaySummary);
+        }
+        if (cloudData.levelRewardsGranted != null) save('passit_level_rewards_granted', cloudData.levelRewardsGranted);
         render();
+        checkAndAutoReset();
+        renderLobby();
         recoverMissingRewards();
         recoverMissingAchievementRewards(false);
       } else if (localHasData && !cloudHasData) {
         // первый вход с локальными данными — тихо сохраняем в облако
-        cloudSave(); render(); recoverMissingRewards(); recoverMissingAchievementRewards(false);
+        cloudSave(); render(); checkAndAutoReset(); renderLobby(); recoverMissingRewards(); recoverMissingAchievementRewards(false);
       } else {
         render();
+        checkAndAutoReset();
+        renderLobby();
         recoverMissingAchievementRewards(false);
       }
     });
   } else {
     setProStatus(false);
+    renderLobby();
   }
 });
 
@@ -7065,6 +7294,10 @@ function cloudSave() {
     streak: load('passit_streak', null),
     // weekly XP
     weeklyXP: load('passit_weekly_xp', null),
+    lastAutoReset: load('lastAutoReset', null),
+    lastNewDay: load('lastNewDay', null),
+    lastDaySummary: load('passit_last_day_summary', null),
+    levelRewardsGranted: load('passit_level_rewards_granted', []),
   });
 }
 
