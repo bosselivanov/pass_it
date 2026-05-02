@@ -1485,21 +1485,13 @@ body {
 
         <div class="rarity-badge rarity-common">Обычный</div>
         <div class="cos-grid">
-          <div class="cos-card" onclick="selectTheme('tactical_dark')">
+          <div class="cos-card" onclick="selectTheme('tactical')">
             <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#0a0d14 40%,#00f5ff 100%);"></div>
+              <div class="cos-light" style="background:linear-gradient(160deg,#f0f2f7 40%,#0066cc 100%);"></div>
               <div class="cos-dark"  style="background:linear-gradient(160deg,#0a0d14 30%,#00f5ff 100%);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cos-footer"><div class="cos-name">TACTICAL/D</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#00f5ff;"></div></div></div>
-          </div>
-          <div class="cos-card" onclick="selectTheme('tactical_light')">
-            <div class="cos-preview">
-              <div class="cos-light" style="background:linear-gradient(160deg,#f0f2f7 40%,#0066cc 100%);"></div>
-              <div class="cos-dark"  style="background:linear-gradient(160deg,#f0f2f7 30%,#0066cc 100%);"></div>
-              <div class="cos-preview-btn">Предпросмотр</div>
-            </div>
-            <div class="cos-footer"><div class="cos-name">TACTICAL/L</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#0066cc;"></div></div></div>
+            <div class="cos-footer"><div class="cos-name">TACTICAL</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#0066cc;"></div></div></div>
           </div>
           <div class="cos-card selected" onclick="selectTheme('basic')">
             <div class="cos-preview">
@@ -5844,13 +5836,9 @@ function loadCloudCosmetics() {
 
 // ====== THEME ======
 const THEMES = {
-  tactical_dark: {
-    light: { '--bg':'#0a0d14','--surface':'#111520','--accent':'#00f5ff','--accent2':'#ff4655','--text':'#e8eaf0','--text2':'#6b7a99','--border':'rgba(0,245,255,0.15)','--bar-bg':'rgba(0,245,255,0.06)','--card-bg':'rgba(17,21,32,0.95)','--overlay':'rgba(0,245,255,0.05)','--blur-bg':'rgba(10,13,20,0.97)' },
-    dark: { '--bg':'#0a0d14','--surface':'#111520','--accent':'#00f5ff','--accent2':'#ff4655','--text':'#e8eaf0','--text2':'#6b7a99','--border':'rgba(0,245,255,0.15)','--bar-bg':'rgba(0,245,255,0.06)','--card-bg':'rgba(17,21,32,0.95)','--overlay':'rgba(0,245,255,0.05)','--blur-bg':'rgba(10,13,20,0.97)' }
-  },
-  tactical_light: {
+  tactical: {
     light: { '--bg':'#f0f2f7','--surface':'#ffffff','--accent':'#0066cc','--accent2':'#cc2233','--text':'#0a0d14','--text2':'#4a5568','--border':'rgba(0,102,204,0.2)','--bar-bg':'rgba(0,102,204,0.06)','--card-bg':'rgba(255,255,255,0.9)','--overlay':'rgba(0,102,204,0.05)','--blur-bg':'rgba(240,242,247,0.97)' },
-    dark: { '--bg':'#f0f2f7','--surface':'#ffffff','--accent':'#0066cc','--accent2':'#cc2233','--text':'#0a0d14','--text2':'#4a5568','--border':'rgba(0,102,204,0.2)','--bar-bg':'rgba(0,102,204,0.06)','--card-bg':'rgba(255,255,255,0.9)','--overlay':'rgba(0,102,204,0.05)','--blur-bg':'rgba(240,242,247,0.97)' }
+    dark: { '--bg':'#0a0d14','--surface':'#111520','--accent':'#00f5ff','--accent2':'#ff4655','--text':'#e8eaf0','--text2':'#6b7a99','--border':'rgba(0,245,255,0.15)','--bar-bg':'rgba(0,245,255,0.06)','--card-bg':'rgba(17,21,32,0.95)','--overlay':'rgba(0,245,255,0.05)','--blur-bg':'rgba(10,13,20,0.97)' }
   },
   huntrxs: {
     light: { '--bg':'#F8EAFA','--surface':'#EEDDFF','--accent':'#96A0E2','--accent2':'#F9DABB','--text':'#2a1a4a','--text2':'#7a5ab0','--border':'rgba(150,160,226,0.35)','--bar-bg':'rgba(150,160,226,0.18)','--card-bg':'rgba(255,255,255,0.55)','--overlay':'rgba(200,180,255,0.25)','--blur-bg':'rgba(238,221,255,0.92)' },
