@@ -7,6 +7,9 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>YOUR DAILY PASS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -42,14 +45,15 @@ body {
 /* LOBBY */
 .lobby-overlay {
   position: fixed; inset: 0; z-index: 1200;
-  background:
-    radial-gradient(circle at top left, rgba(255,255,255,0.12), transparent 24%),
-    radial-gradient(circle at bottom right, rgba(150,160,226,0.10), transparent 26%),
-    var(--bg);
+  background: #0a0d14;
   display: flex; align-items: stretch; justify-content: stretch;
   padding: 24px 28px 18px;
   opacity: 1; visibility: visible; pointer-events: all;
   transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
+  font-family: 'Rajdhani', sans-serif;
+}
+.lobby-overlay * {
+  font-family: 'Rajdhani', sans-serif;
 }
 .lobby-overlay.hidden {
   opacity: 0; visibility: hidden; pointer-events: none;
@@ -69,10 +73,9 @@ body {
   font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.5;
 }
 .lobby-card {
-  background: var(--card-bg);
-  border: 1.5px solid var(--border);
+  background: #111520;
+  border: 1px solid rgba(0,245,255,0.12);
   border-radius: 18px;
-  backdrop-filter: blur(16px);
   box-shadow: 0 10px 24px rgba(0,0,0,0.06);
 }
 .week-shop-card {
@@ -92,10 +95,10 @@ body {
 .week-shop-count { min-width: 50px; font-size: 16px; font-weight: 800; color: var(--text2); }
 .lobby-center { padding: 2px 6px; }
 .lobby-welcome {
-  font-size: 46px; font-weight: 900; line-height: 1; color: var(--text);
+  font-size: 46px; font-weight: 900; line-height: 1; color: #e8eaf0;
   letter-spacing: -1px;
 }
-.lobby-username { color: var(--accent); }
+.lobby-username { color: #00f5ff; text-shadow: 0 0 20px rgba(0,245,255,0.4); }
 .lobby-section { margin-top: 22px; }
 .lobby-section-title { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px; letter-spacing: 0.5px; }
 .lobby-meta { font-size: 11px; color: var(--text2); margin-bottom: 8px; font-weight: 700; }
@@ -109,17 +112,17 @@ body {
   font-size: 12px; font-weight: 800; color: var(--text2);
   position: relative; z-index: 1; flex-shrink: 0; transition: all 0.25s ease;
 }
-.lobby-pass-node.filled { background: var(--accent); border-color: transparent; color: white; }
+.lobby-pass-node.filled { background: #00f5ff; border-color: transparent; color: white; box-shadow: 0 0 12px rgba(0,245,255,0.25); }
 .lobby-pass-node.author-filled { background: linear-gradient(135deg,#E8960A,#F5C842); border-color: transparent; color: white; }
-.lobby-pass-node.current { border-color: var(--accent); color: var(--text); box-shadow: 0 0 0 3px rgba(150,160,226,0.18); }
+.lobby-pass-node.current { border-color: #00f5ff; color: #e8eaf0; box-shadow: 0 0 0 3px rgba(0,245,255,0.25), 0 0 12px rgba(0,245,255,0.25); }
 .lobby-pass-node.author-current { border-color: #E8960A; color: #8B5E00; box-shadow: 0 0 0 3px rgba(232,150,10,0.18); }
 .lobby-pass-line {
-  flex: 1; height: 4px; border-radius: 3px; background: rgba(150,160,226,0.18);
+  flex: 1; height: 4px; border-radius: 3px; background: rgba(0,245,255,0.12);
   margin: 0 6px; position: relative; overflow: hidden;
 }
 .lobby-pass-line-fill {
   position: absolute; inset: 0 auto 0 0; width: 0%;
-  background: var(--accent); border-radius: inherit; transition: width 0.35s ease;
+  background: #00f5ff; border-radius: inherit; transition: width 0.35s ease;
 }
 .lobby-pass-line-fill.author-line { background: linear-gradient(90deg,#E8960A,#F5C842); }
 .lobby-task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -137,15 +140,15 @@ body {
 }
 .lobby-enter-card:hover {
   transform: translateX(3px);
-  border-color: var(--accent);
-  box-shadow: 0 14px 28px rgba(0,0,0,0.08);
+  border-color: #00f5ff;
+  box-shadow: 0 0 24px rgba(0,245,255,0.15);
 }
 .lobby-enter-text { font-size: 28px; font-weight: 900; color: var(--text); text-align: center; }
 .lobby-enter-arrow {
   margin-top: 22px; font-size: 58px; line-height: 1; text-align: center;
   color: var(--text2); transition: color 0.18s ease, transform 0.18s ease;
 }
-.lobby-enter-card:hover .lobby-enter-arrow { color: var(--accent); transform: translateX(6px); }
+.lobby-enter-card:hover .lobby-enter-arrow { color: #00f5ff; transform: translateX(6px); }
 
 @media (max-width: 1200px) {
   .lobby-shell { grid-template-columns: 1fr; overflow-y: auto; }
@@ -1482,6 +1485,22 @@ body {
 
         <div class="rarity-badge rarity-common">Обычный</div>
         <div class="cos-grid">
+          <div class="cos-card" onclick="selectTheme('tactical_dark')">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#0a0d14 40%,#00f5ff 100%);"></div>
+              <div class="cos-dark"  style="background:linear-gradient(160deg,#0a0d14 30%,#00f5ff 100%);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
+            </div>
+            <div class="cos-footer"><div class="cos-name">TACTICAL/D</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#00f5ff;"></div></div></div>
+          </div>
+          <div class="cos-card" onclick="selectTheme('tactical_light')">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#f0f2f7 40%,#0066cc 100%);"></div>
+              <div class="cos-dark"  style="background:linear-gradient(160deg,#f0f2f7 30%,#0066cc 100%);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
+            </div>
+            <div class="cos-footer"><div class="cos-name">TACTICAL/L</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#0066cc;"></div></div></div>
+          </div>
           <div class="cos-card selected" onclick="selectTheme('basic')">
             <div class="cos-preview">
               <div class="cos-light" style="background:linear-gradient(160deg,#F0F4FF 40%,#4A90D9 100%);"></div>
@@ -1494,25 +1513,25 @@ body {
 
         <div class="rarity-badge rarity-rare">Редкий</div>
         <div class="cos-grid">
-          <div class="cos-card" onclick="selectTheme('huntrxs')">
+          <div class="cos-card" onclick="selectTheme('huntrxs')" data-season="1">
             <div class="cos-preview">
               <div class="cos-light" style="background:linear-gradient(160deg,#F8EAFA 40%,#96A0E2 100%);"></div>
               <div class="cos-dark"  style="background:linear-gradient(160deg,#1a1330 30%,#C90060 100%);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cos-footer"><div class="cos-name">HUNTRIX / S</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#96A0E2;"></div></div></div>
+            <div class="cos-footer"><div class="cos-name">UNIT-01</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#96A0E2;"></div></div></div>
           </div>
         </div>
 
         <div class="rarity-badge rarity-legendary">Легендарный</div>
         <div class="cos-grid">
-          <div class="cos-card locked" data-theme="huntrxh" data-pieces="8" data-collected="0">
+          <div class="cos-card locked" data-theme="huntrxh" data-pieces="8" data-collected="0" data-season="1">
             <div class="cos-preview">
               <div class="cos-light" style="background:linear-gradient(160deg,#E2DEFF 40%,#A78BFA 100%);"></div>
               <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
               <div class="cos-preview-btn">Предпросмотр</div>
             </div>
-            <div class="cos-footer"><div class="cos-name">HUNTRIX / H</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#A78BFA;"></div></div></div>
+            <div class="cos-footer"><div class="cos-name">UNIT-02</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#A78BFA;"></div></div></div>
           </div>
         </div>
       </div>
@@ -1520,6 +1539,28 @@ body {
       <!-- RIGHT: СЕЗОННЫЕ -->
       <div class="cos-col">
         <div class="cos-col-title">Сезон 1 · KPDH</div>
+
+        <div class="rarity-badge" style="background:rgba(240,160,20,0.15);color:#b06000;border:1px solid rgba(240,160,20,0.3);">SEASON 01 — CLASSIFIED</div>
+        <div class="cos-grid" id="season1HunterGrid">
+          <div class="cos-card" onclick="selectTheme('huntrxs')" data-season="1">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#F8EAFA 40%,#96A0E2 100%);"></div>
+              <div class="cos-dark"  style="background:linear-gradient(160deg,#1a1330 30%,#C90060 100%);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
+            </div>
+            <div class="cos-footer"><div class="cos-name">UNIT-01</div><div class="cos-bar"><div class="cos-bar-fill" style="width:100%;background:#96A0E2;"></div></div></div>
+          </div>
+          <div class="cos-card locked" data-theme="huntrxh" data-pieces="8" data-collected="0" data-season="1">
+            <div class="cos-preview">
+              <div class="cos-light" style="background:linear-gradient(160deg,#E2DEFF 40%,#A78BFA 100%);"></div>
+              <div class="cos-pieces" style="grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);"></div>
+              <div class="cos-preview-btn">Предпросмотр</div>
+            </div>
+            <div class="cos-footer"><div class="cos-name">UNIT-02</div><div class="cos-bar"><div class="cos-bar-fill" style="width:0%;background:#A78BFA;"></div></div></div>
+          </div>
+        </div>
+
+        <div class="rarity-badge rarity-common" style="background:rgba(50,200,80,0.12);color:#1a8a30;border-color:rgba(50,200,80,0.3);margin-top:8px;">Обычный</div>
 
         <div class="rarity-badge rarity-common" style="background:rgba(50,200,80,0.12);color:#1a8a30;border-color:rgba(50,200,80,0.3);">Обычный</div>
         <div class="cos-grid">
@@ -2283,7 +2324,7 @@ function boRestart() {
   <canvas class="unlock-particles" id="unlockParticles"></canvas>
   <div class="unlock-popup" onclick="event.stopPropagation()">
     <div class="unlock-label">✨ Разблокировано!</div>
-    <div class="unlock-title" id="unlockTitle">HUNTRIX / H</div>
+    <div class="unlock-title" id="unlockTitle">UNIT-02</div>
     <div class="unlock-preview" id="unlockPreview">
       <div class="unlock-preview-shine"></div>
     </div>
@@ -4043,7 +4084,7 @@ function mqDrop(e, i) {
 // ====== THEME PREVIEW ======
 const THEME_PREVIEW_DATA = {
   huntrxh: {
-    name: 'HUNTRIX / H', steps: ['color','gradient','border'], stepLabels: ['Цвет','Градиент','Рамки'],
+    name: 'UNIT-02', steps: ['color','gradient','border'], stepLabels: ['Цвет','Градиент','Рамки'],
     dark: { bg:'#0e0b1f', accent:'#A78BFA', text:'#EDE9FF', cardBg:'rgba(45,40,100,0.4)', borderColor:'rgba(167,139,250,0.2)', mesh:'radial-gradient(ellipse at 20% 50%, rgba(123,47,247,0.3) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.2) 0%, transparent 50%)', glowBorder:'rgba(167,139,250,0.6)', glowShadow:'0 4px 20px rgba(167,139,250,0.3), 0 0 0 1px rgba(167,139,250,0.3)' },
     light: { bg:'#F0EEFF', accent:'#7B6FD4', text:'#1a1540', cardBg:'rgba(255,255,255,0.75)', borderColor:'rgba(123,111,212,0.2)', mesh:'radial-gradient(ellipse at 20% 50%, rgba(123,111,212,0.15) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(45,212,191,0.12) 0%, transparent 50%)', glowBorder:'rgba(123,111,212,0.5)', glowShadow:'0 4px 20px rgba(123,111,212,0.2), 0 0 0 1px rgba(123,111,212,0.25)' }
   },
@@ -5660,12 +5701,20 @@ function applyCode() {
 // ====== UNLOCK CELEBRATION ======
 const COSMETIC_META = {
   huntrxh: {
-    name: 'HUNTRIX / H',
+    name: 'UNIT-02',
     rarity: 'Легендарный',
     rarityColor: '#b06000',
     rarityBg: 'rgba(240,160,20,0.2)',
     rarityBorder: 'rgba(240,160,20,0.5)',
     bg: 'linear-gradient(135deg,#E2DEFF 0%,#A78BFA 50%,#2DD4BF 100%)'
+  },
+  huntrxs: {
+    name: 'UNIT-01',
+    rarity: 'Редкий',
+    rarityColor: '#5a4fa0',
+    rarityBg: 'rgba(123,111,212,0.15)',
+    rarityBorder: 'rgba(123,111,212,0.3)',
+    bg: 'linear-gradient(135deg,#F8EAFA 0%,#96A0E2 50%,#C90060 100%)'
   }
 };
 
@@ -5795,6 +5844,14 @@ function loadCloudCosmetics() {
 
 // ====== THEME ======
 const THEMES = {
+  tactical_dark: {
+    light: { '--bg':'#0a0d14','--surface':'#111520','--accent':'#00f5ff','--accent2':'#ff4655','--text':'#e8eaf0','--text2':'#6b7a99','--border':'rgba(0,245,255,0.15)','--bar-bg':'rgba(0,245,255,0.06)','--card-bg':'rgba(17,21,32,0.95)','--overlay':'rgba(0,245,255,0.05)','--blur-bg':'rgba(10,13,20,0.97)' },
+    dark: { '--bg':'#0a0d14','--surface':'#111520','--accent':'#00f5ff','--accent2':'#ff4655','--text':'#e8eaf0','--text2':'#6b7a99','--border':'rgba(0,245,255,0.15)','--bar-bg':'rgba(0,245,255,0.06)','--card-bg':'rgba(17,21,32,0.95)','--overlay':'rgba(0,245,255,0.05)','--blur-bg':'rgba(10,13,20,0.97)' }
+  },
+  tactical_light: {
+    light: { '--bg':'#f0f2f7','--surface':'#ffffff','--accent':'#0066cc','--accent2':'#cc2233','--text':'#0a0d14','--text2':'#4a5568','--border':'rgba(0,102,204,0.2)','--bar-bg':'rgba(0,102,204,0.06)','--card-bg':'rgba(255,255,255,0.9)','--overlay':'rgba(0,102,204,0.05)','--blur-bg':'rgba(240,242,247,0.97)' },
+    dark: { '--bg':'#f0f2f7','--surface':'#ffffff','--accent':'#0066cc','--accent2':'#cc2233','--text':'#0a0d14','--text2':'#4a5568','--border':'rgba(0,102,204,0.2)','--bar-bg':'rgba(0,102,204,0.06)','--card-bg':'rgba(255,255,255,0.9)','--overlay':'rgba(0,102,204,0.05)','--blur-bg':'rgba(240,242,247,0.97)' }
+  },
   huntrxs: {
     light: { '--bg':'#F8EAFA','--surface':'#EEDDFF','--accent':'#96A0E2','--accent2':'#F9DABB','--text':'#2a1a4a','--text2':'#7a5ab0','--border':'rgba(150,160,226,0.35)','--bar-bg':'rgba(150,160,226,0.18)','--card-bg':'rgba(255,255,255,0.55)','--overlay':'rgba(200,180,255,0.25)','--blur-bg':'rgba(238,221,255,0.92)' },
     dark: { '--bg':'#090107','--surface':'#1a1330','--accent':'#C90060','--accent2':'#554EA7','--text':'#F6E3C2','--text2':'#b89a70','--border':'rgba(201,0,96,0.3)','--bar-bg':'rgba(201,0,96,0.12)','--card-bg':'rgba(85,78,167,0.22)','--overlay':'rgba(9,1,7,0.75)','--blur-bg':'rgba(26,19,48,0.95)' }
@@ -6014,6 +6071,13 @@ function openRoadmap(themeId) {
 }
 
 function openThemePicker() {
+  // фильтр Season 1 hunter themes по authorLevel
+  const authorLevel = getAuthorPassLevel();
+  const season1HunterGrid = document.getElementById('season1HunterGrid');
+  if (season1HunterGrid) {
+    season1HunterGrid.style.display = authorLevel > 0 ? 'grid' : 'none';
+  }
+  
   // обновляем счётчики кусочков
   ['mira','zoi','rumi'].forEach(id => {
     const theme = SEASONAL_THEMES[id];
