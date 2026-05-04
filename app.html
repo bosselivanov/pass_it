@@ -327,6 +327,26 @@ body {
 .author-quest-bar-fill { height: 100%; background: linear-gradient(90deg,#C07800,#E8B400); border-radius: 3px; transition: width 0.4s; }
 .author-quest-meta { font-size: 11px; color: #7A4E00; font-weight: 600; }
 
+/* DAILY QUESTS CARDS — for main screen */
+.daily-quests-section .author-quest-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+.daily-quests-section .author-quest-name {
+  color: var(--text);
+  font-size: 13px;
+}
+.daily-quests-section .author-quest-bar-bg {
+  background: var(--bar-bg);
+}
+.daily-quests-section .author-quest-bar-fill {
+  background: var(--accent);
+}
+.daily-quests-section .author-quest-meta {
+  color: var(--text2);
+}
+
 /* XP BADGE COLORS */
 /* XP badge colors defined with quest-xp-badge above */
 .pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
@@ -1046,15 +1066,28 @@ body {
 
     <div class="main-layout">
       <div class="flangs-section">
-        <div class="flangs-header-row">
-          <div class="section-header">✦ Mega Quests</div>
-          <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
+        <!-- ЕЖЕДНЕВКИ -->
+        <div class="daily-quests-section" style="flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;">
+          <div class="section-header">ЕЖЕДНЕВКИ</div>
+          <div class="daily-quests-grid" style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;min-height:0;">
+            <div class="author-quest-card" id="dailyAdq0"><div class="author-quest-name" id="dailyAdq0name">Выполни квесты</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="dailyAdq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="dailyAdq0meta">0 / ? · +200 XP</div></div>
+            <div class="author-quest-card" id="dailyAdq1"><div class="author-quest-name" id="dailyAdq1name">Выполни больше</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="dailyAdq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="dailyAdq1meta">0 / ? · +200 XP</div></div>
+            <div class="author-quest-card" id="dailyAdq2"><div class="author-quest-name" id="dailyAdq2name">Выполни все</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="dailyAdq2bar" style="width:0%"></div></div><div class="author-quest-meta" id="dailyAdq2meta">0 / ? · +200 XP</div></div>
+          </div>
         </div>
-        <div class="mq-list" id="mqList"></div>
-        <div class="mq-focus" id="mqFocus">
-          <div class="flang-card" id="mqFocusCard"></div>
-          <div class="mq-stacked-label">остальные пассы</div>
-          <div class="mq-stacked" id="mqStacked"></div>
+
+        <!-- МЕГАКВЕСТ -->
+        <div class="mega-quests-section" style="flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;">
+          <div class="flangs-header-row">
+            <div class="section-header">✦ Mega Quests</div>
+            <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
+          </div>
+          <div class="mq-list" id="mqList"></div>
+          <div class="mq-focus" id="mqFocus">
+            <div class="flang-card" id="mqFocusCard"></div>
+            <div class="mq-stacked-label">остальные пассы</div>
+            <div class="mq-stacked" id="mqStacked"></div>
+          </div>
         </div>
       </div>
       <div class="quests-section">
