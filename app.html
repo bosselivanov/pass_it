@@ -331,7 +331,6 @@ body {
 .daily-quests-section .author-quest-card {
   background: var(--card-bg);
   border: 1.5px solid var(--border);
-  backdrop-filter: blur(12px);
 }
 .daily-quests-section .author-quest-name {
   color: var(--text);
@@ -352,7 +351,7 @@ body {
 .pass-menu-wrap { flex-shrink: 0; width: 160px; position: relative; }
 .pass-menu-card {
   border: 1.5px solid var(--border); border-radius: 16px;
-  background: var(--card-bg); backdrop-filter: blur(12px);
+  background: var(--card-bg);
   overflow: hidden; transition: border-color 0.2s;
 }
 .pass-menu-card:hover { border-color: var(--accent); }
@@ -415,7 +414,7 @@ body {
 .pass-container-wrap::-webkit-scrollbar { display: none; }
 .pass-container {
   border: 1.5px solid var(--border); border-radius: 16px;
-  background: var(--card-bg); backdrop-filter: blur(12px);
+  background: var(--card-bg);
   padding: 14px 24px 16px; display: flex; flex-direction: column; gap: 10px;
   min-height: 92px; min-width: max-content; width: 100%;
 }
@@ -465,7 +464,7 @@ body {
 .mq-list { display: flex; flex-direction: column; gap: 6px; flex: 1; overflow-y: auto; min-height: 0; }
 .mq-list.hidden { display: none; }
 .mq-row {
-  background: var(--card-bg); backdrop-filter: blur(12px);
+  background: var(--card-bg);
   border: 1.5px solid var(--border); border-radius: 12px;
   padding: 10px 12px; cursor: pointer;
   display: flex; align-items: center; gap: 10px;
@@ -489,7 +488,7 @@ body {
 }
 .mq-back-btn:hover { background: var(--accent); color: white; border-color: transparent; }
 .flang-card {
-  background: var(--card-bg); backdrop-filter: blur(16px);
+  background: var(--card-bg);
   border: 1.5px solid var(--border); border-radius: 16px;
   padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
   position: relative; flex: 1;
@@ -507,7 +506,7 @@ body {
 .mq-stacked-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; flex-shrink: 0; }
 .mq-stacked { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
 .mq-stacked-row {
-  background: var(--card-bg); backdrop-filter: blur(8px);
+  background: var(--card-bg);
   border: 1.5px solid var(--border); border-radius: 10px;
   padding: 7px 11px; cursor: pointer;
   display: flex; align-items: center; gap: 8px;
@@ -569,7 +568,7 @@ body {
 .quests-scroll-wrap { flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 .quests-scroll-wrap::-webkit-scrollbar { display: none; }
 .quests-grid { display: grid; grid-template-rows: repeat(2, 1fr); grid-auto-flow: column; grid-auto-columns: calc((100% - 20px) / 3); column-gap: 10px; row-gap: 11px; height: 100%; min-width: 100%; }
-.quest-card { background: var(--card-bg); backdrop-filter: blur(12px); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; min-height: 0; cursor: grab; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s, border-color 0.15s; user-select: none; }
+.quest-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; min-height: 0; cursor: grab; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s, border-color 0.15s; user-select: none; }
 .quest-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
 .quest-card.dragging { opacity: 0.4; cursor: grabbing; transform: scale(0.97); }
 .quest-card.drag-over { border-color: var(--accent); border-width: 2px; box-shadow: 0 0 0 3px rgba(150,160,226,0.2); transform: scale(1.02); }
@@ -2477,8 +2476,8 @@ let currentPassId = null;
 function getCurrentPass() {
   return passes.find(p => p.id === currentPassId) || passes[0];
 }
-function getQuests() { return getCurrentPass()?.quests || []; }
-function getMegaQuests() { return getCurrentPass()?.megaQuests || []; }
+function getQuests() { return normalizeArray(getCurrentPass()?.quests); }
+function getMegaQuests() { return normalizeArray(getCurrentPass()?.megaQuests); }
 
 function savePasses() {
   save('passes', passes);
@@ -2501,14 +2500,14 @@ function initPasses(data) {
   // data = { passes, currentPassId } from cloud or local
   // OR data = old format { quests, megaQuests }
   if (data && data.passes && Array.isArray(data.passes) && data.passes.length > 0) {
-    passes = data.passes;
+    passes = normalizePassesList(data.passes);
     currentPassId = data.currentPassId || passes[0].id;
   } else if (data && data.quests !== undefined) {
     // old format — migrate into first pass
     passes = [{
       id: uid(), name: 'Мой пасс', emoji: '🎯',
-      quests: data.quests || [],
-      megaQuests: data.megaQuests || []
+      quests: normalizeArray(data.quests),
+      megaQuests: normalizeArray(data.megaQuests)
     }];
     currentPassId = passes[0].id;
   } else {
@@ -2516,6 +2515,7 @@ function initPasses(data) {
     passes = [{ id: uid(), name: 'Мой пасс', emoji: '🎯', quests: [], megaQuests: [] }];
     currentPassId = passes[0].id;
   }
+  passes = normalizePassesList(passes);
   // ensure currentPassId is valid
   if (!passes.find(p => p.id === currentPassId)) currentPassId = passes[0].id;
 }
@@ -2560,6 +2560,25 @@ function renderPassMenuList() {
     </div>`).join('');
 }
 
+function normalizeArray(arr) {
+  return Array.isArray(arr) ? arr : Object.values(arr || {});
+}
+
+function normalizePass(pass) {
+  if (!pass || typeof pass !== 'object') return pass;
+  return {
+    ...pass,
+    quests: normalizeArray(pass.quests),
+    megaQuests: normalizeArray(pass.megaQuests).map(mq => mq && typeof mq === 'object'
+      ? { ...mq, tasks: normalizeArray(mq.tasks) }
+      : mq)
+  };
+}
+
+function normalizePassesList(list) {
+  return normalizeArray(list).map(normalizePass);
+}
+
 function switchPass(id) {
   currentPassId = id;
   save('currentPassId', currentPassId);
@@ -2583,7 +2602,8 @@ function updatePassMenuTrigger() {
   let otherPassesWithTasks = 0;
   passes.forEach(op => {
     if (op.id === currentPassId) return;
-    const incomplete = (op.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q) && (q.current || 0) < q.max).length;
+    const quests = normalizeArray(op.quests);
+    const incomplete = quests.filter(q => q && !q.frozen && isQuestActiveToday(q) && (q.current || 0) < q.max).length;
     if (incomplete > 0) { otherIncomplete += incomplete; otherPassesWithTasks++; }
   });
 
@@ -2867,13 +2887,13 @@ function getLobbySnapshotDate() {
   return today;
 }
 function getLobbyQuestProgressFromPass(pass) {
-  const quests = ((pass && pass.quests) || []).filter(q => q && !q.frozen && isQuestActiveToday(q));
+  const quests = normalizeArray(pass && pass.quests).filter(q => q && !q.frozen && isQuestActiveToday(q));
   const total = quests.length;
   const done = quests.filter(q => (q.current || 0) >= q.max).length;
   return { done, total, ratio: total ? done / total : 0 };
 }
 function getLobbyTaskLeaders() {
-  return (getCurrentPass()?.quests || [])
+  return normalizeArray(getCurrentPass()?.quests)
     .filter(q => q && !q.frozen)
     .sort((a, b) => (b.xp || 0) - (a.xp || 0))
     .slice(0, 2);
@@ -3050,7 +3070,7 @@ function selectXP(el) { document.querySelectorAll('.xp-opt').forEach(o => o.clas
 
 // ====== PASS LEVELS (horizontal scroll) ======
 function updatePass() {
-  const allQuests = getCurrentPass()?.quests || [];
+  const allQuests = normalizeArray(getCurrentPass()?.quests);
   const quests = allQuests.filter(q => q !== null && !q.frozen && isQuestActiveToday(q));
   const totalMaxXP = quests.reduce((s, q) => s + q.xp, 0);
   const totalEarnedXP = quests.reduce((s, q) => s + (Math.min(q.current || 0, q.max) / q.max) * q.xp, 0);
@@ -3151,8 +3171,9 @@ function copyQuest(i) {
 function pasteQuest() {
   if (!questClipboard) return;
   const p = getCurrentPass();
+  p.quests = normalizeArray(p.quests);
   const maxQ = userIsPro ? 18 : 9;
-  const filled = (p.quests || []).filter(q => q !== null).length;
+  const filled = normalizeArray(p.quests).filter(q => q !== null).length;
   if (filled >= maxQ) { showToast('Нет свободных слотов!'); return; }
   const copy = JSON.parse(JSON.stringify(questClipboard));
   const firstNull = p.quests.indexOf(null);
@@ -3183,7 +3204,7 @@ function updateAuthorIfOpen() {
   if (authorScreenOpen) updateAuthorPassUI();
 }
 function renderQuests() {
-  const quests = getCurrentPass()?.quests || [];
+  const quests = normalizeArray(getCurrentPass()?.quests);
   const grid = document.getElementById('questsGrid');
   const maxQ = userIsPro ? 18 : 9;
   const COLS = 3;
@@ -3323,6 +3344,7 @@ function renderQuests() {
             div.style.borderColor = '';
             if (dragSrcIndex === null) return;
             const p = getCurrentPass();
+            p.quests = normalizeArray(p.quests);
             // перемещаем квест в пустой слот, старый слот становится null
             const targetIdx = parseInt(div.dataset.snakeIdx);
             // расширяем массив если нужно
@@ -3384,9 +3406,10 @@ function setupTouchDrag(el, snakeIdx) {
     document.querySelectorAll('.quest-card').forEach(c => c.classList.remove('drag-over'));
     const target = document.elementFromPoint(tx, ty)?.closest('[data-snake-idx]');
     if (target && dragSrcIndex !== null) {
+      const p = getCurrentPass();
+      p.quests = normalizeArray(p.quests);
       const targetIdx = parseInt(target.dataset.snakeIdx);
       if (dragSrcIndex !== targetIdx) {
-        const p = getCurrentPass();
         // swap positions
         while (p.quests.length <= targetIdx) p.quests.push(null);
         const tmp = p.quests[dragSrcIndex];
@@ -3415,6 +3438,7 @@ function toggleFreezeQuest(i) {
 
 function deleteQuest(i) {
   const p = getCurrentPass();
+  p.quests = normalizeArray(p.quests);
   const q = p.quests[i];
   if (!q) return;
   if (q.repeat?.type === 'once') {
@@ -3423,6 +3447,7 @@ function deleteQuest(i) {
   } else {
     if (!confirm(`Удалить квест «${q.name}»?`)) return;
   }
+  p.quests = normalizeArray(p.quests);
   p.quests[i] = null;
   while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
   savePasses();
@@ -3478,7 +3503,7 @@ function deleteMega(i) {
 }
 
 function renderMega() {
-  const megaQuests = getCurrentPass()?.megaQuests || [];
+  const megaQuests = getMegaQuests();
   const listEl = document.getElementById('mqList');
   const focusEl = document.getElementById('mqFocus');
 
@@ -3503,7 +3528,7 @@ function renderMega() {
 }
 
 function renderMqList() {
-  const megaQuests = getCurrentPass()?.megaQuests || [];
+  const megaQuests = getMegaQuests();
   const listEl = document.getElementById('mqList');
   listEl.innerHTML = megaQuests.map((mq, i) => {
     const pc = mqPct(mq);
@@ -3534,9 +3559,9 @@ function mqOpenFocus(i) { mqFocused = i; renderMega(); }
 function mqGoBack() { mqFocused = -1; renderMega(); }
 
 function renderMqFocus(i) {
-  const megaQuests = getCurrentPass()?.megaQuests || [];
+  const megaQuests = getMegaQuests();
   const mq = megaQuests[i];
-  const tasks = mq.tasks || [];
+  const tasks = normalizeArray(mq.tasks);
   let cur, maxVal;
   if (mq.taskMode) {
     cur = tasks.filter(t => t.done).length;
@@ -3687,6 +3712,7 @@ function addQuest() {
   const startDate = document.getElementById('questStartDate').value || null;
   if (!name || !metric || metric < 1) { showToast('Заполни название и метрику!'); return; }
   const newQuest = { id: uid(), emoji: selectedQuestEmoji, name, sub: sub || '', max: metric, xp, current: 0, repeat, deadline, deadlineActiveDay, trackDebt, startDate };
+  p.quests = normalizeArray(p.quests);
   // найти первый свободный слот
   const firstNull = p.quests.indexOf(null);
   if (firstNull !== -1) {
@@ -3720,14 +3746,14 @@ function addMega() {
 function onAddMega() {
   const p = getCurrentPass();
   const limit = userIsPro ? 5 : 3;
-  if ((p?.megaQuests || []).length >= limit) { openSubPopup(); return; }
+  if (normalizeArray(p?.megaQuests).length >= limit) { openSubPopup(); return; }
   openMegaPopup();
 }
 
 function onAddQuest() {
   const p = getCurrentPass();
   const limit = userIsPro ? 18 : 9;
-  const filled = (p?.quests || []).filter(q => q !== null).length;
+  const filled = normalizeArray(p?.quests).filter(q => q !== null).length;
   if (filled >= limit) { openSubPopup(); return; }
   openQuestPopup();
 }
@@ -3814,7 +3840,7 @@ let editMegaEmoji = EMOJIS[0];
 
 function openEditMega(i) {
   editMegaIndex = i;
-  const mq = getCurrentPass().megaQuests[i];
+  const mq = getMegaQuests()[i];
   editMegaEmoji = mq.emoji;
   renderEmojiGrid('editMegaEmojiGrid', editMegaEmoji, (el, e) => { editMegaEmoji = e; document.querySelectorAll('#editMegaEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); });
   document.getElementById('editMegaName').value = mq.name;
@@ -5276,7 +5302,7 @@ function getUnlockedSeasonStatuses() {
 // ====== ACHIEVEMENTS ======
 const ACHIEVEMENTS = [
   { id: 'first_quest', emoji: '⚡', name: 'Первый квест', desc: 'Выполни любой квест', reward: '🎁 Бокс', rewardType: 'box', rewardAmount: 1, check: () => {
-    return passes.some(p => (p.quests||[]).some(q => q && (q.current||0) >= q.max));
+    return passes.some(p => normalizeArray(p.quests).some(q => q && (q.current||0) >= q.max));
   }},
   { id: 'first_mega', emoji: '🏆', name: 'Мегастарт', desc: 'Заверши первый мегаквест', reward: '🎁 Бокс', rewardType: 'box', rewardAmount: 1, check: () => {
     return getCompletedMegas().length >= 1;
@@ -5288,11 +5314,11 @@ const ACHIEVEMENTS = [
     return getStreakCount() >= 7;
   }},
   { id: 'all_quests', emoji: '💯', name: 'Идеальный день', desc: 'Выполни все активные квесты в текущем пассе за день', reward: '💰 200 монет', rewardType: 'coins', rewardAmount: 200, check: () => {
-    const allQ = (getCurrentPass()?.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q));
+    const allQ = normalizeArray(getCurrentPass()?.quests).filter(q => q && !q.frozen && isQuestActiveToday(q));
     return allQ.length > 0 && allQ.every(q=>(q.current||0)>=q.max);
   }},
   { id: 'full_pass', emoji: '🎯', name: 'Заполни пасс', desc: 'Создай 9 квестов в одном пассе', reward: '💰 150 монет', rewardType: 'coins', rewardAmount: 150, check: () => {
-    return passes.some(p=>(p.quests||[]).filter(q=>q).length>=9);
+    return passes.some(p=>normalizeArray(p.quests).filter(q=>q).length>=9);
   }},
 ];
 
@@ -5407,7 +5433,7 @@ function completeMega(i) {
   if (!confirm(`Завершить мегаквест «${mq.name}»? Он уйдёт в архив.`)) return;
 
   // считаем XP по формуле
-  const maxVal = mq.taskMode ? Math.max(mq.minMetric || 0, (mq.tasks || []).length) : mq.max;
+  const maxVal = mq.taskMode ? Math.max(mq.minMetric || 0, normalizeArray(mq.tasks).length) : mq.max;
   const xp = Math.round(300 + 700 * (maxVal / (maxVal + 100)));
 
   // логируем ДО splice, пока mq ещё жив
@@ -5489,7 +5515,7 @@ function performDayReset(isManual) {
   // добавляем долги только без дублей (проверка по имени + дата долга)
   const existingDebts = getDebts();
   passes.forEach(p => {
-    (p.quests || []).forEach(q => {
+    normalizeArray(p.quests).forEach(q => {
       if (!q || q.frozen) return;
       if (!wasActiveOn(q, debtDate, debtDow)) return;
       if (!q.trackDebt) return;
@@ -5513,7 +5539,7 @@ function performDayReset(isManual) {
 
   // сброс активных квестов
   passes.forEach(p => {
-    (p.quests || []).forEach(q => {
+    normalizeArray(p.quests).forEach(q => {
       if (!q || q.frozen) return;
       if (isQuestActiveToday(q)) {
         q.current = 0;
@@ -5666,6 +5692,12 @@ function render() {
   renderMega();
   renderQuests();
   renderLobby();
+}
+
+let renderTimeout;
+function scheduleRender() {
+  clearTimeout(renderTimeout);
+  renderTimeout = setTimeout(render, 50);
 }
 
 // ====== SUBSCRIPTION ======
@@ -6220,6 +6252,7 @@ function cleanupExpiredQuests() {
   const today = todayStr();
   let changed = false;
   passes.forEach(p => {
+    p.quests = normalizeArray(p.quests);
     const before = p.quests.length;
     p.quests = p.quests.map(q => {
       if (!q) return null;
@@ -6336,7 +6369,7 @@ function addDebtToPass(i) {
   if (!d) return;
   const p = getCurrentPass();
   const maxQ = userIsPro ? 18 : 9;
-  const nonNull = (p.quests || []).filter(q => q !== null).length;
+  const nonNull = normalizeArray(p.quests).filter(q => q !== null).length;
   if (nonNull >= maxQ) { showToast('Пасс заполнен — освободи место'); return; }
 
   const questName = `${d.name} (долг от ${d.date})`;
@@ -6352,6 +6385,7 @@ function addDebtToPass(i) {
     repeat: { type: 'once' },
     trackDebt: false,
   };
+  p.quests = normalizeArray(p.quests);
   p.quests.push(quest);
   debts.splice(i, 1);
   saveDebts(debts);
@@ -6490,7 +6524,7 @@ function checkStreakToday() {
   const today = todayStr();
   const streak = getStreak();
 
-  const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
+  const allQuests = passes.flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen));
   const activeToday = allQuests.filter(q => isQuestActiveToday(q));
 
   // если нет активных квестов вообще — не трогаем стрик
@@ -6607,7 +6641,7 @@ function renderStreakWidget() {
 function getWeeklyXP() { return load('passit_weekly_xp', { xp: 0, weekStart: null, target: null, completed: false }); }
 function saveWeeklyXP(w) { save('passit_weekly_xp', w); }
 function getWeeklyTargetBase() {
-  const allPersonalQ = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
+  const allPersonalQ = passes.flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen));
   return Math.max(allPersonalQ.reduce((sum, q) => sum + (q.xp || 100), 0), 500) * 3;
 }
 function getWeeklyChallengeState() {
@@ -6659,7 +6693,7 @@ function qowFindQuest() {
   const d = qowGetData();
   if (!d.id && !d.name) return null;
   for (const p of passes) {
-    for (const q of (p.quests || [])) {
+    for (const q of normalizeArray(p.quests)) {
       if (!q) continue;
       // ищем по id если есть, иначе по имени
       if (d.id && q.id && String(q.id) === String(d.id)) return q;
@@ -6683,7 +6717,7 @@ function qowInit() {
 
   // выбираем один раз на неделю среди всех живых личных квестов
   const all = passes.flatMap(p =>
-    (p.quests || []).filter(q => q && !q.frozen)
+    normalizeArray(p.quests).filter(q => q && !q.frozen)
   );
   if (!all.length) return { id: null, name: null, emoji: null, dates: [] };
   const chosen = [...all].sort((a, b) => (a.current||0)/a.max - (b.current||0)/b.max)[0];
@@ -6795,7 +6829,7 @@ function processAuthorDailyReward() {
   const weeklyGuardKey = 'passit_weekly_saved_' + today;
   if (!load(weeklyGuardKey, false)) {
     save(weeklyGuardKey, true);
-    const personalQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
+    const personalQuests = passes.flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen && isQuestActiveToday(q)));
     const personalXPToday = personalQuests.reduce((sum, q) => {
       const pct = Math.min(1, (q.current || 0) / q.max);
       return sum + Math.round(pct * (q.xp || 100));
@@ -6815,7 +6849,7 @@ function getAuthorXP() { return load('passit_author_xp', 0); }
 // Ежедневки: +200, +300, +500 XP — пропорционально прогрессу каждой
 // Итого макс за день = 1000 XP = 2 уровня при полном выполнении
 function getTodayLiveXP() {
-  const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
+  const allQuests = passes.flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen));
   const activeToday = allQuests.filter(q => {
     if (!isQuestActiveToday(q)) return false;
     if (q.deadline) {
@@ -6846,15 +6880,16 @@ function getTodayLiveXP() {
   const weekStored = weekly.xp;
   const personalLive = activeToday.reduce((s, q) => s + Math.round(Math.min(1,(q.current||0)/q.max)*(q.xp||100)), 0);
   // вклад мегаквестов пропорционально прогрессу
-  const megaLive = passes.flatMap(p => (p.megaQuests || [])).reduce((s, mq) => {
+  const megaLive = passes.flatMap(p => normalizeArray(p.megaQuests)).reduce((s, mq) => {
     if (!mq) return s;
-    const maxVal = mq.taskMode ? Math.max(mq.minMetric || 0, (mq.tasks || []).length) : (mq.max || 1);
-    const cur = mq.taskMode ? (mq.tasks || []).filter(t => t.done).length : (mq.current || 0);
+    const tasks = normalizeArray(mq.tasks);
+    const maxVal = mq.taskMode ? Math.max(mq.minMetric || 0, tasks.length) : (mq.max || 1);
+    const cur = mq.taskMode ? tasks.filter(t => t.done).length : (mq.current || 0);
     const xp = Math.round(300 + 700 * (maxVal / (maxVal + 100)));
     return s + Math.round(Math.min(1, cur / maxVal) * xp);
   }, 0);
   // цель недели = сумма XP всех личных квестов × 3 дня
-  const allPersonalQuests = passes.flatMap(p => (p.quests||[]).filter(q => q && !q.frozen));
+  const allPersonalQuests = passes.flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen));
   const weekTarget = weekly.target;
   const liveWeekComplete = (weekStored + personalLive + megaLive) >= weekTarget;
   if (liveWeekComplete && !weekly.completed) saveWeeklyChallengeState({ completed: true });
@@ -6969,7 +7004,7 @@ function renderAuthorCircles() {
   if (scrollEl) scrollEl.scrollLeft = Math.max(0, level * 68 - 150);
 }
 function updateAuthorPassUI() {
-  const allQuests = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen));
+  const allQuests = passes.flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen));
   // исключаем задачи с дедлайном дальше 7 дней
   const activeToday = allQuests.filter(q => {
     if (!isQuestActiveToday(q)) return false;
@@ -7013,7 +7048,7 @@ function updateAuthorPassUI() {
   // ЕЖЕНЕДЕЛЬНЫЕ — XP
   const weeklyState = getWeeklyChallengeState();
   const weekXPstored = weeklyState.xp;
-  const personalQuestsLive = passes.flatMap(p => (p.quests || []).filter(q => q && !q.frozen && isQuestActiveToday(q)));
+  const personalQuestsLive = passes.flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen && isQuestActiveToday(q)));
   const personalLiveToday = personalQuestsLive.reduce((sum, q) => sum + Math.round(Math.min(1, (q.current||0)/q.max) * (q.xp||100)), 0);
   const weekTarget = weeklyState.target;
   const weekXP = weeklyState.completed ? weekTarget : Math.min(weekXPstored + personalLiveToday, weekTarget);
@@ -7241,22 +7276,18 @@ firebase.auth().onAuthStateChanged(function(user) {
           cloudCurId = cloudData.currentPassId;
         } else if (cloudData.quests || cloudData.megaQuests) {
           // старый формат — мигрируем
-          cloudPasses = [{ id: 'migrated', name: 'Мой пасс', emoji: '🎯', quests: cloudData.quests || [], megaQuests: cloudData.megaQuests || [] }];
+          cloudPasses = [{ id: 'migrated', name: 'Мой пасс', emoji: '🎯', quests: normalizeArray(cloudData.quests), megaQuests: normalizeArray(cloudData.megaQuests) }];
           cloudCurId = 'migrated';
         }
       }
 
       // Нормализуем пассы — у каждого должны быть массивы
       if (cloudPasses) {
-        cloudPasses = cloudPasses.map(p => ({
-          ...p,
-          quests: p.quests || [],
-          megaQuests: p.megaQuests || []
-        }));
+        cloudPasses = normalizePassesList(cloudPasses);
       }
 
-      var localHasData = passes.some(p => (p.quests||[]).length > 0 || (p.megaQuests||[]).length > 0);
-      var cloudHasData = cloudPasses && cloudPasses.some(p => (p.quests||[]).filter(q=>q).length > 0 || (p.megaQuests||[]).length > 0);
+      var localHasData = passes.some(p => normalizeArray(p.quests).length > 0 || normalizeArray(p.megaQuests).length > 0);
+      var cloudHasData = cloudPasses && cloudPasses.some(p => normalizeArray(p.quests).filter(q=>q).length > 0 || normalizeArray(p.megaQuests).length > 0);
       var isReturningUser = !!load('lastAutoReset', null) || !!load('lastNewDay', null) || !!load('passit_onboarding_done', false);
 
       if (cloudHasData) {
@@ -7292,18 +7323,18 @@ firebase.auth().onAuthStateChanged(function(user) {
           save('passit_last_day_summary', cloudData.lastDaySummary);
         }
         if (cloudData.levelRewardsGranted != null) save('passit_level_rewards_granted', cloudData.levelRewardsGranted);
-        render();
+        scheduleRender();
         checkAndAutoReset();
-        renderLobby();
+        scheduleRender();
         recoverMissingRewards();
         recoverMissingAchievementRewards(false);
       } else if (localHasData && !cloudHasData) {
         // первый вход с локальными данными — тихо сохраняем в облако
-        cloudSave(); render(); checkAndAutoReset(); renderLobby(); recoverMissingRewards(); recoverMissingAchievementRewards(false);
+        cloudSave(); scheduleRender(); checkAndAutoReset(); scheduleRender(); recoverMissingRewards(); recoverMissingAchievementRewards(false);
       } else {
-        render();
+        scheduleRender();
         checkAndAutoReset();
-        renderLobby();
+        scheduleRender();
         recoverMissingAchievementRewards(false);
       }
     });
@@ -7314,8 +7345,8 @@ firebase.auth().onAuthStateChanged(function(user) {
 });
 
 function showMergeModal(localPasses, cloudPasses, cloudCurId) {
-  var localTotal = localPasses.reduce((s,p) => s + (p.quests||[]).length + (p.megaQuests||[]).length, 0);
-  var cloudTotal = cloudPasses.reduce((s,p) => s + (p.quests||[]).length + (p.megaQuests||[]).length, 0);
+  var localTotal = localPasses.reduce((s,p) => s + normalizeArray(p.quests).length + normalizeArray(p.megaQuests).length, 0);
+  var cloudTotal = cloudPasses.reduce((s,p) => s + normalizeArray(p.quests).length + normalizeArray(p.megaQuests).length, 0);
   document.getElementById('mergeModalDesc').innerHTML =
     'В облаке: <b>' + cloudPasses.length + '</b> пасс(ов), <b>' + cloudTotal + '</b> элементов.<br>' +
     'Локально: <b>' + localPasses.length + '</b> пасс(ов), <b>' + localTotal + '</b> элементов.';
@@ -7334,7 +7365,7 @@ function showMergeModal(localPasses, cloudPasses, cloudCurId) {
     const today = todayStr();
     if (load('lastAutoReset', null) === today) {
       passes.forEach(p => {
-        (p.quests || []).forEach(q => {
+        normalizeArray(p.quests).forEach(q => {
           if (!q || q.frozen) return;
           if (isQuestActiveToday(q)) q.current = 0;
         });
