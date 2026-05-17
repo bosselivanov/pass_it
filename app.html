@@ -444,15 +444,19 @@ body {
 }
 .pass-author-xp-hint strong { color: var(--accent); font-weight: 800; }
 .pass-author-compact {
-  display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;
+  position: relative; display: block;
   background: linear-gradient(135deg, rgba(232,150,10,0.08), rgba(150,160,226,0.08));
   border: 1px solid rgba(232,150,10,0.18);
   border-radius: 12px;
-  padding: 8px 10px;
+  padding: 10px 116px 10px 168px;
   min-width: 0;
+  min-height: 88px;
 }
 .pass-author-compact-head {
-  display: flex; flex-direction: column; gap: 2px; min-width: 126px; flex-shrink: 0;
+  position: absolute; left: 10px; top: 8px; bottom: 8px; width: 150px;
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  padding-right: 18px; z-index: 3;
+  background: linear-gradient(90deg, rgba(255,250,237,0.98) 0%, rgba(255,245,225,0.96) 78%, rgba(255,245,225,0) 100%);
 }
 .pass-author-compact-label {
   font-size: 9px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #8B5E00;
@@ -460,15 +464,20 @@ body {
 .pass-author-compact-level {
   font-size: 14px; font-weight: 800; color: var(--text);
 }
+.pass-author-compact-next {
+  font-size: 10px; font-weight: 700; color: var(--text2);
+}
 .pass-author-compact-boxes {
-  margin-left: auto; flex-shrink: 0;
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  z-index: 3;
   background: rgba(232,150,10,0.14); border: 1px solid rgba(232,150,10,0.22);
   border-radius: 10px; padding: 6px 10px; cursor: pointer;
   font-size: 11px; font-weight: 800; color: #8B5E00;
+  white-space: nowrap;
 }
 .pass-author-compact-boxes:hover { border-color: #E8960A; color: #C07800; }
 .pass-author-track-shell {
-  flex: 1 1 100%; min-width: 0; display: flex; align-items: center; gap: 10px;
+  width: 100%; min-width: 0; display: flex; align-items: center; gap: 10px;
 }
 .pass-author-track-nav {
   width: 26px; height: 26px; border-radius: 50%;
@@ -502,6 +511,15 @@ body {
 .pass-author-track-node.level-reward { cursor: pointer; }
 .pass-author-track-node:hover { transform: translateY(-1px); transition: transform 0.15s; }
 .pass-author-track-value { font-size: 28px; line-height: 1; font-weight: 800; }
+.pass-author-track-line {
+  width: 52px; min-width: 52px; height: 6px; border-radius: 999px;
+  background: rgba(180,120,0,0.15); overflow: hidden; flex-shrink: 0;
+}
+.pass-author-track-line-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #E8960A, #F5C842);
+  border-radius: inherit;
+}
 .pass-level {
   width: 38px; height: 38px; border-radius: 50%; background: var(--surface);
   border: 2px solid var(--border); display: flex; align-items: center;
@@ -3087,11 +3105,16 @@ function renderCompactAuthorPass() {
   const totalXP = getTotalAuthorXP();
   const level = syncAuthorLevel();
   const boxes = getPendingBoxes();
+  const xpPerLevel = 500;
+  const xpInLevel = totalXP % xpPerLevel;
+  const xpToNext = level >= 150 ? 0 : Math.max(0, xpPerLevel - xpInLevel);
+  const levelProgressPct = level >= 150 ? 100 : Math.round((xpInLevel / xpPerLevel) * 100);
 
   let html = `
     <div class="pass-author-compact-head">
       <div class="pass-author-compact-label">Author Pass</div>
       <div class="pass-author-compact-level">Lvl ${level} · ${totalXP} XP</div>
+      <div class="pass-author-compact-next">${level >= 150 ? 'Макс. уровень' : `${xpToNext} XP до следующего`}</div>
     </div>
     <div class="pass-author-track-shell">
       <button class="pass-author-track-nav" type="button" onclick="scrollAuthorCompactTrack(-1)">‹</button>
@@ -3112,6 +3135,10 @@ function renderCompactAuthorPass() {
       <div class="pass-author-track-node ${rewardClass} ${done ? 'done' : ''} ${current ? 'current' : ''} ${levelRewardClass}" data-level="${i}" title="${title}"${click}>
         <div class="pass-author-track-value">${icon}</div>
       </div>`;
+    if (i < 150) {
+      const segmentPct = i < level - 1 ? 100 : i === level ? levelProgressPct : 0;
+      html += `<div class="pass-author-track-line"><div class="pass-author-track-line-fill" style="width:${segmentPct}%"></div></div>`;
+    }
   }
 
   html += `
@@ -3127,8 +3154,7 @@ function renderCompactAuthorPass() {
   const currentNode = root.querySelector(`.pass-author-track-node[data-level="${level}"]`);
   if (frame && currentNode) {
     requestAnimationFrame(() => {
-      const target = currentNode.offsetLeft - (frame.clientWidth / 2) + (currentNode.clientWidth / 2);
-      frame.scrollLeft = Math.max(0, target);
+      currentNode.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'auto' });
     });
   }
 }
