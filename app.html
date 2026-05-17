@@ -281,7 +281,7 @@ body {
 .header.author-mode .header-btn { color: #A07020; }
 .header.author-mode .header-btn:hover { background: rgba(180,120,0,0.1); color: #6B4400; }
 .pass-switch-wrap {
-  display: flex; justify-content: center;
+  display: none; justify-content: center;
   padding: 4px 24px 0; flex-shrink: 0;
   transition: background 0.4s;
 }
@@ -443,25 +443,65 @@ body {
   letter-spacing: 0.2px; opacity: 0.95;
 }
 .pass-author-xp-hint strong { color: var(--accent); font-weight: 800; }
-.pass-author-xp-milestones {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+.pass-author-compact {
+  display: flex; align-items: center; gap: 12px; flex-wrap: nowrap;
+  background: linear-gradient(135deg, rgba(232,150,10,0.08), rgba(150,160,226,0.08));
+  border: 1px solid rgba(232,150,10,0.18);
+  border-radius: 12px;
+  padding: 8px 10px;
+  min-width: 0;
 }
-.pass-author-xp-milestone {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text2);
-  text-align: center;
-  background: var(--bar-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 4px 6px;
+.pass-author-compact-head {
+  display: flex; flex-direction: column; gap: 2px; min-width: 126px; flex-shrink: 0;
 }
-.pass-author-xp-milestone strong {
-  color: var(--accent);
-  font-weight: 800;
+.pass-author-compact-label {
+  font-size: 9px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #8B5E00;
 }
+.pass-author-compact-level {
+  font-size: 14px; font-weight: 800; color: var(--text);
+}
+.pass-author-compact-boxes {
+  margin-left: auto; flex-shrink: 0;
+  background: rgba(232,150,10,0.14); border: 1px solid rgba(232,150,10,0.22);
+  border-radius: 10px; padding: 6px 10px; cursor: pointer;
+  font-size: 11px; font-weight: 800; color: #8B5E00;
+}
+.pass-author-compact-boxes:hover { border-color: #E8960A; color: #C07800; }
+.pass-author-track-shell {
+  flex: 1 1 100%; min-width: 0; display: flex; align-items: center; gap: 10px;
+}
+.pass-author-track-nav {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+}
+.pass-author-track-nav:hover { border-color: var(--accent2); color: #8B5E00; }
+.pass-author-track-frame {
+  width: 100%; flex: 1 1 auto; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  scroll-snap-type: x mandatory; scroll-behavior: smooth;
+}
+.pass-author-track-frame::-webkit-scrollbar { display: none; }
+.pass-author-track-row {
+  display: flex; align-items: center; gap: 16px; width: max-content; padding: 2px 0;
+}
+.pass-author-track-node {
+  width: 126px; min-width: 126px; height: 68px; border-radius: 18px;
+  border: 1.5px solid rgba(180,120,0,0.18); background: rgba(255,255,255,0.72);
+  display: flex; align-items: center; justify-content: center;
+  color: #7A4E00; scroll-snap-align: center; flex-shrink: 0;
+}
+.pass-author-track-node.reward { background: rgba(255,248,230,0.9); }
+.pass-author-track-node.done {
+  background: linear-gradient(135deg,#E8960A,#F5C842);
+  border-color: #C07800; color: white;
+}
+.pass-author-track-node.current {
+  border-color: #E8960A; box-shadow: 0 0 0 3px rgba(232,150,10,0.18);
+  color: #6B4400;
+}
+.pass-author-track-node.level-reward { cursor: pointer; }
+.pass-author-track-node:hover { transform: translateY(-1px); transition: transform 0.15s; }
+.pass-author-track-value { font-size: 28px; line-height: 1; font-weight: 800; }
 .pass-level {
   width: 38px; height: 38px; border-radius: 50%; background: var(--surface);
   border: 2px solid var(--border); display: flex; align-items: center;
@@ -1020,7 +1060,7 @@ body {
     <div class="header-title" id="headerTitle">Your Daily Pass</div>
   </div>
   <button class="header-btn" onclick="returnToLobby()" data-tooltip="Вернуться в лобби" id="lobbyBackBtn">↩</button>
-  <button class="header-btn" onclick="toggleAuthorScreen()" data-tooltip="Авторский пасс" id="authorPassBtn">🏆</button>
+  <button class="header-btn" onclick="toggleAuthorScreen()" data-tooltip="Авторский пасс" id="authorPassBtn" style="display:none;">🏆</button>
   <button class="header-btn" id="shopBtn" onclick="openShop()" data-tooltip="Обменять коины" style="display:none;">🛒</button>
   <button class="header-btn" id="achievementsBtn" onclick="openAchievements()" data-tooltip="Достижения">🎖️</button>
   <div class="header-btn-wrap" id="headerDebtWrap">
@@ -1085,9 +1125,9 @@ body {
             <div class="pass-title" id="passTitle">Battle Pass</div>
             <div class="daily-xp-counter" id="dailyXpCounter">0 / 0 XP сегодня</div>
           </div>
+          <div class="pass-author-compact" id="passAuthorCompact"></div>
           <div class="pass-levels-wrap" id="passLevels"></div>
           <div class="pass-author-xp-hint" id="passAuthorXpHint">В авторский пасс сегодня: <strong>+0 XP</strong></div>
-          <div class="pass-author-xp-milestones" id="passAuthorXpMilestones"></div>
         </div>
       </div>
     </div>
@@ -3034,6 +3074,65 @@ function renderWeeklyAuthorQuestCards(ids) {
   }
 }
 
+function scrollAuthorCompactTrack(dir) {
+  const frame = document.getElementById('passAuthorTrackFrame');
+  if (!frame) return;
+  frame.scrollBy({ left: dir * 142, behavior: 'smooth' });
+}
+
+function renderCompactAuthorPass() {
+  const root = document.getElementById('passAuthorCompact');
+  if (!root) return;
+
+  const totalXP = getTotalAuthorXP();
+  const level = syncAuthorLevel();
+  const boxes = getPendingBoxes();
+
+  let html = `
+    <div class="pass-author-compact-head">
+      <div class="pass-author-compact-label">Author Pass</div>
+      <div class="pass-author-compact-level">Lvl ${level} · ${totalXP} XP</div>
+    </div>
+    <div class="pass-author-track-shell">
+      <button class="pass-author-track-nav" type="button" onclick="scrollAuthorCompactTrack(-1)">‹</button>
+      <div class="pass-author-track-frame" id="passAuthorTrackFrame">
+        <div class="pass-author-track-row">`;
+
+  for (let i = 0; i <= 150; i++) {
+    const isBox = i > 0 && i % 5 === 0;
+    const isPiece = i > 0 && i % 3 === 0 && !isBox;
+    const done = i < level;
+    const current = i === level;
+    const rewardClass = (isBox || isPiece) ? 'reward' : '';
+    const levelRewardClass = (isBox && i <= level) ? 'level-reward' : '';
+    const icon = isBox ? '📦' : isPiece ? '🧩' : String(i);
+    const title = isBox ? `Уровень ${i} · бокс` : isPiece ? `Уровень ${i} · кусочек` : `Уровень ${i}`;
+    const click = (isBox && i <= level) ? ` onclick="openShop()"` : '';
+    html += `
+      <div class="pass-author-track-node ${rewardClass} ${done ? 'done' : ''} ${current ? 'current' : ''} ${levelRewardClass}" data-level="${i}" title="${title}"${click}>
+        <div class="pass-author-track-value">${icon}</div>
+      </div>`;
+  }
+
+  html += `
+        </div>
+      </div>
+      <button class="pass-author-track-nav" type="button" onclick="scrollAuthorCompactTrack(1)">›</button>
+    </div>
+    <button class="pass-author-compact-boxes" type="button" onclick="openShop()">📦 ${boxes}</button>`;
+
+  root.innerHTML = html;
+
+  const frame = document.getElementById('passAuthorTrackFrame');
+  const currentNode = root.querySelector(`.pass-author-track-node[data-level="${level}"]`);
+  if (frame && currentNode) {
+    requestAnimationFrame(() => {
+      const target = currentNode.offsetLeft - (frame.clientWidth / 2) + (currentNode.clientWidth / 2);
+      frame.scrollLeft = Math.max(0, target);
+    });
+  }
+}
+
 function renderLobby() {
   renderLobbyShop();
 
@@ -3204,17 +3303,7 @@ function updatePass() {
     const lvlText = lvlGain > 0 ? ` · ≈ +${lvlGain} ур.` : '';
     authorHintEl.innerHTML = `Прогноз в авторский пасс: <strong>+${currentProjection.total} XP</strong>${lvlText}`;
   }
-  const milestonesEl = document.getElementById('passAuthorXpMilestones');
-  if (milestonesEl) {
-    const m20 = estimateAuthorXpByDoneUnits(quests.length * 0.2, quests.length);
-    const m60 = estimateAuthorXpByDoneUnits(quests.length * 0.6, quests.length);
-    const m100 = estimateAuthorXpByDoneUnits(quests.length, quests.length);
-    milestonesEl.innerHTML = `
-      <div class="pass-author-xp-milestone">20%: <strong>+${m20.total} XP</strong></div>
-      <div class="pass-author-xp-milestone">60%: <strong>+${m60.total} XP</strong></div>
-      <div class="pass-author-xp-milestone">100%: <strong>+${m100.total} XP</strong></div>
-    `;
-  }
+  renderCompactAuthorPass();
 
   const container = document.getElementById('passLevels');
   container.innerHTML = '';
