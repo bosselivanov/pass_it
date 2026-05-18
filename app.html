@@ -757,6 +757,39 @@ body {
 .popup { background: var(--blur-bg); backdrop-filter: blur(20px); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px 28px; width: 340px; max-width: 90vw; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: popIn 0.2s ease; }
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .popup-title { font-size: 14px; font-weight: 800; color: var(--text); }
+
+/* PASS TYPE PICKER */
+.pass-type-popup {
+  background: var(--blur-bg); backdrop-filter: blur(20px);
+  border: 1.5px solid var(--border); border-radius: 20px;
+  padding: 22px 24px 20px; width: 520px; max-width: 94vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  animation: popIn 0.2s ease;
+}
+.pass-type-title {
+  text-align: center; font-size: 15px; font-weight: 800;
+  color: var(--text); letter-spacing: 0.5px; margin-bottom: 16px;
+}
+.pass-type-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.pass-type-card {
+  background: var(--card-bg); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 16px 14px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  text-align: center; transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.pass-type-card:hover {
+  border-color: var(--accent); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.pass-type-card-name {
+  font-size: 13px; font-weight: 800; color: var(--text);
+}
+.pass-type-card-emoji { font-size: 32px; line-height: 1; }
+.pass-type-card-desc {
+  font-size: 11px; font-weight: 600; color: var(--text2); line-height: 1.35;
+}
 .popup-field { display: flex; flex-direction: column; gap: 5px; }
 .popup-label { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
 .popup-input { background: var(--bar-bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px; font-size: 13px; color: var(--text); outline: none; width: 100%; transition: border-color 0.2s; }
@@ -1194,7 +1227,7 @@ body {
         </div>
 
         <!-- МЕГАКВЕСТ -->
-        <div class="mega-quests-section" style="flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;">
+        <div class="mega-quests-section" id="megaQuestsSection" style="flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;">
           <div class="flangs-header-row">
             <div class="section-header">✦ Mega Quests</div>
             <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
@@ -1209,7 +1242,7 @@ body {
       </div>
       <div class="quests-section">
         <div class="quests-header-row">
-          <div class="section-header">⚡ Quests</div>
+          <div class="section-header" id="questsSectionHeader">⚡ Quests</div>
           <button class="add-quest-btn" id="addQuestBtn" onclick="onAddQuest()">+ Добавить квест</button>
         </div>
         <div class="quests-scroll-wrap">
@@ -1332,7 +1365,7 @@ body {
     <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="questName" type="text" placeholder="Название квеста..." maxlength="100"></div>
     <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="questSub" type="text" placeholder="Подзаголовок..." maxlength="180"></div>
     <div class="popup-field"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="questMetric" type="number" placeholder="Например: 17" min="1" max="9999"></div>
-    <div class="popup-field"><div class="popup-label">Опыт за квест</div>
+    <div class="popup-field" id="questXpField"><div class="popup-label">Опыт за квест</div>
       <div class="xp-options">
         <div class="xp-opt selected" data-xp="100" onclick="selectXP(this)">100 XP<br><span class="xp-label">Лёгкий</span></div>
         <div class="xp-opt" data-xp="250" onclick="selectXP(this)">250 XP<br><span class="xp-label">Средний</span></div>
@@ -1395,6 +1428,26 @@ body {
   </div>
 </div>
 
+
+<!-- PASS TYPE PICKER -->
+<div class="popup-overlay" id="passTypeOverlay" onmousedown="if(event.target===this)closePassTypePicker()">
+  <div class="pass-type-popup" onmousedown="event.stopPropagation()">
+    <div class="pass-type-title">Тип пасса</div>
+    <div class="pass-type-cards">
+      <button type="button" class="pass-type-card" onclick="selectPassType('standard')">
+        <div class="pass-type-card-name">Обычный пасс</div>
+        <div class="pass-type-card-emoji">📝</div>
+        <div class="pass-type-card-desc">6 квестов, с опытом за каждый, многозадачность</div>
+      </button>
+      <button type="button" class="pass-type-card" onclick="selectPassType('focus')">
+        <div class="pass-type-card-name">Мегазадача</div>
+        <div class="pass-type-card-emoji">🎯</div>
+        <div class="pass-type-card-desc">9 подзадач, опыт фиксирован, упор на одно направление</div>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- CREATE PASS POPUP -->
 <div class="popup-overlay" id="createPassOverlay" onmousedown="if(event.target===this)closePopup('createPassOverlay')">
   <div class="popup" onmousedown="event.stopPropagation()">
@@ -1429,7 +1482,7 @@ body {
     <div class="popup-field"><div class="popup-label">Название</div><input class="popup-input" id="editQuestName" type="text" maxlength="100"></div>
     <div class="popup-field"><div class="popup-label">Подзаголовок</div><input class="popup-input" id="editQuestSub" type="text" maxlength="180"></div>
     <div class="popup-field"><div class="popup-label">Метрика (максимум)</div><input class="popup-input" id="editQuestMetric" type="number" min="1" max="9999"></div>
-    <div class="popup-field"><div class="popup-label">Опыт за квест</div>
+    <div class="popup-field" id="editQuestXpField"><div class="popup-label">Опыт за квест</div>
       <div class="xp-options" id="editXpOptions">
         <div class="xp-opt" data-xp="100" onclick="selectEditXP(this)">100 XP<br><span class="xp-label">Лёгкий</span></div>
         <div class="xp-opt" data-xp="250" onclick="selectEditXP(this)">250 XP<br><span class="xp-label">Средний</span></div>
@@ -2625,12 +2678,13 @@ function initPasses(data) {
     passes = [{
       id: uid(), name: 'Мой пасс', emoji: '🎯',
       quests: normalizeArray(data.quests),
-      megaQuests: normalizeArray(data.megaQuests)
+      megaQuests: normalizeArray(data.megaQuests),
+      passType: 'legacy'
     }];
     currentPassId = passes[0].id;
   } else {
     // fresh start
-    passes = [{ id: uid(), name: 'Мой пасс', emoji: '🎯', quests: [], megaQuests: [] }];
+    passes = [{ id: uid(), name: 'Мой пасс', emoji: '🎯', quests: [], megaQuests: [], passType: 'standard' }];
     currentPassId = passes[0].id;
   }
   passes = normalizePassesList(passes);
@@ -2653,6 +2707,7 @@ if (localNew) {
 // ====== PASS MENU ======
 let passMenuOpen = false;
 let createPassEmoji = EMOJIS[0];
+let pendingPassType = 'standard';
 let renamePassEmoji = EMOJIS[0];
 
 function togglePassMenu(e) {
@@ -2674,7 +2729,7 @@ function renderPassMenuList() {
   list.innerHTML = passes.map(p => `
     <div class="pass-menu-item ${p.id === currentPassId ? 'active' : ''}" onclick="switchPass('${p.id}')">
       <span class="pass-menu-item-emoji">${escapeHtml(p.emoji)}</span>
-      <span>${escapeHtml(p.name)}</span>
+      <span style="flex:1;min-width:0;">${escapeHtml(p.name)}${p.passType === 'focus' ? ' <span style="opacity:0.55;font-size:10px;">· мега</span>' : ''}</span>
     </div>`).join('');
 }
 
@@ -2691,6 +2746,40 @@ function normalizePass(pass) {
       ? { ...mq, tasks: normalizeArray(mq.tasks) }
       : mq)
   };
+}
+
+
+function getPassType(pass) {
+  const p = pass || getCurrentPass();
+  return p?.passType || 'legacy';
+}
+function isFocusPass(pass) {
+  return getPassType(pass) === 'focus';
+}
+function getPassQuestLimit(pass) {
+  const type = getPassType(pass);
+  if (type === 'focus') return 9;
+  if (type === 'standard') return 6;
+  return userIsPro ? 18 : 9;
+}
+function getPassFixedQuestXp(pass) {
+  const p = pass || getCurrentPass();
+  return p?.fixedQuestXp || 100;
+}
+function applyPassTypeUI() {
+  const focus = isFocusPass();
+  const megaSec = document.getElementById('megaQuestsSection');
+  if (megaSec) megaSec.style.display = focus ? 'none' : '';
+  const questHeader = document.getElementById('questsSectionHeader');
+  if (questHeader) questHeader.textContent = focus ? '◉ Подзадачи' : '⚡ Quests';
+  const addBtn = document.getElementById('addQuestBtn');
+  if (addBtn) addBtn.textContent = focus ? '+ Подзадача' : '+ Добавить квест';
+}
+function setQuestXpFieldsVisible(visible) {
+  const q = document.getElementById('questXpField');
+  const e = document.getElementById('editQuestXpField');
+  if (q) q.style.display = visible ? '' : 'none';
+  if (e) e.style.display = visible ? '' : 'none';
 }
 
 function normalizePassesList(list) {
@@ -2744,31 +2833,63 @@ function plural(n) {
   return 'ов';
 }
 
+function closePassTypePicker() {
+  document.getElementById('passTypeOverlay').classList.remove('open');
+  pendingPassType = null;
+}
+
 function openCreatePassPopup() {
   closePassMenu();
   const maxPasses = userIsPro ? 3 : 1;
   if (passes.length >= maxPasses) { openSubPopup(); return; }
-  createPassEmoji = EMOJIS[0];
+  pendingPassType = null;
+  document.getElementById('passTypeOverlay').classList.add('open');
+}
+
+function selectPassType(type) {
+  pendingPassType = type;
+  closePassTypePicker();
+  openCreatePassDetailsPopup();
+}
+
+function openCreatePassDetailsPopup() {
+  const isFocus = pendingPassType === 'focus';
+  createPassEmoji = isFocus ? '🎯' : '📝';
+  const titleEl = document.querySelector('#createPassOverlay .popup-title');
+  if (titleEl) titleEl.textContent = isFocus ? 'Новая мегазадача' : 'Новый пасс';
+  const nameInput = document.getElementById('createPassName');
+  if (nameInput) {
+    nameInput.placeholder = isFocus ? 'Название мегазадачи...' : 'Название пасса...';
+    nameInput.value = '';
+  }
   renderEmojiGrid('createPassEmojiGrid', createPassEmoji, (el, e) => {
     createPassEmoji = e;
     document.querySelectorAll('#createPassEmojiGrid .emoji-opt').forEach(o => o.classList.remove('selected'));
     el.classList.add('selected');
   });
-  document.getElementById('createPassName').value = '';
   document.getElementById('createPassOverlay').classList.add('open');
 }
 
 function createPass() {
   const name = document.getElementById('createPassName').value.trim();
-  if (!name) { showToast('Введи название пасса!'); return; }
-  const newPass = { id: uid(), name, emoji: createPassEmoji, quests: [], megaQuests: [] };
+  if (!name) { showToast('Введи название!'); return; }
+  const type = pendingPassType || 'standard';
+  const isFocus = type === 'focus';
+  const newPass = {
+    id: uid(), name, emoji: createPassEmoji,
+    quests: isFocus ? Array(9).fill(null) : [],
+    megaQuests: [],
+    passType: type
+  };
+  if (isFocus) newPass.fixedQuestXp = 100;
   passes.push(newPass);
   currentPassId = newPass.id;
   mqFocused = -1;
+  pendingPassType = null;
   savePasses();
   closePopup('createPassOverlay');
   render();
-  showToast('✅ Пасс создан!');
+  showToast(isFocus ? '✅ Мегазадача создана!' : '✅ Пасс создан!');
 }
 
 function openRenamePassPopup() {
@@ -3426,7 +3547,7 @@ function pasteQuest() {
   if (!questClipboard) return;
   const p = getCurrentPass();
   p.quests = normalizeArray(p.quests);
-  const maxQ = userIsPro ? 18 : 9;
+  const maxQ = getPassQuestLimit(p);
   const filled = normalizeArray(p.quests).filter(q => q !== null).length;
   if (filled >= maxQ) { showToast('Нет свободных слотов!'); return; }
   const copy = JSON.parse(JSON.stringify(questClipboard));
@@ -3461,7 +3582,7 @@ function updateAuthorIfOpen() {
 function renderQuests() {
   const quests = normalizeArray(getCurrentPass()?.quests);
   const grid = document.getElementById('questsGrid');
-  const maxQ = userIsPro ? 18 : 9;
+  const maxQ = getPassQuestLimit();
   const COLS = 3;
   const ROWS = 3;
   const BLOCK = COLS * ROWS;
@@ -3470,8 +3591,13 @@ function renderQuests() {
   const nonNull = quests.filter(q => q !== null).length;
   const effectiveLen = Math.max(quests.length, nonNull);
   const filledBlocks = Math.ceil(Math.max(1, effectiveLen) / BLOCK);
-  const totalBlocks = (nonNull % BLOCK === 0 && nonNull < maxQ) ? filledBlocks + 1 : filledBlocks;
-  const cappedBlocks = Math.min(totalBlocks, Math.ceil(maxQ / BLOCK));
+  let cappedBlocks;
+  if (isFocusPass()) {
+    cappedBlocks = 1;
+  } else {
+    const totalBlocks = (nonNull % BLOCK === 0 && nonNull < maxQ) ? filledBlocks + 1 : filledBlocks;
+    cappedBlocks = Math.min(totalBlocks, Math.ceil(maxQ / BLOCK));
+  }
 
   grid.style.gridAutoColumns = `calc((100% - ${(COLS - 1) * 10}px) / ${COLS})`;
   grid.innerHTML = '';
@@ -3903,7 +4029,10 @@ function bindMegaEditables() {
 }
 
 // ====== POPUPS ======
-function closePopup(id) { document.getElementById(id).classList.remove('open'); }
+function closePopup(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'createPassOverlay') pendingPassType = null;
+}
 function closePopupOutside(e, id) { if (e.target === document.getElementById(id)) closePopup(id); }
 
 function openQuestPopup() {
@@ -3924,6 +4053,7 @@ function openQuestPopup() {
   document.querySelectorAll('#questRepeatTabs .repeat-tab').forEach((t,i) => t.classList.toggle('active', i===0));
   document.getElementById('questRepeatExtra').style.display = 'none';
   document.getElementById('questRepeatExtra').innerHTML = '';
+  setQuestXpFieldsVisible(!isFocusPass());
   document.getElementById('questPopupOverlay').classList.add('open');
 }
 
@@ -3959,7 +4089,7 @@ function addQuest() {
   const sub = document.getElementById('questSub').value.trim();
   const metric = parseInt(document.getElementById('questMetric').value);
   const xpEl = document.querySelector('.xp-opt.selected');
-  const xp = xpEl ? parseInt(xpEl.dataset.xp) : 100;
+  const xp = isFocusPass(p) ? getPassFixedQuestXp(p) : (xpEl ? parseInt(xpEl.dataset.xp) : 100);
   const repeat = getRepeatFromPopup('questRepeatTabs');
   const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('questDeadlineActiveDay').checked;
   const deadline = deadlineActiveDay ? null : (document.getElementById('questDeadline').value || null);
@@ -4007,7 +4137,7 @@ function onAddMega() {
 
 function onAddQuest() {
   const p = getCurrentPass();
-  const limit = userIsPro ? 18 : 9;
+  const limit = getPassQuestLimit(p);
   const filled = normalizeArray(p?.quests).filter(q => q !== null).length;
   if (filled >= limit) { openSubPopup(); return; }
   openQuestPopup();
@@ -4065,6 +4195,7 @@ function openEditQuest(i) {
   }
   document.getElementById('editQuestTrackDebt').checked = !!q.trackDebt;
   document.getElementById('editQuestStartDate').value = q.startDate || '';
+  setQuestXpFieldsVisible(!isFocusPass());
   document.getElementById('editQuestOverlay').classList.add('open');
 }
 
@@ -4076,7 +4207,7 @@ function saveEditQuest() {
   const sub = document.getElementById('editQuestSub').value.trim();
   const metric = parseInt(document.getElementById('editQuestMetric').value);
   const xpEl = document.querySelector('#editXpOptions .xp-opt.selected');
-  const xp = xpEl ? parseInt(xpEl.dataset.xp) : p.quests[editQuestIndex].xp;
+  const xp = isFocusPass(p) ? (p.quests[editQuestIndex].xp || getPassFixedQuestXp(p)) : (xpEl ? parseInt(xpEl.dataset.xp) : p.quests[editQuestIndex].xp);
   const repeat = getRepeatFromPopup('editQuestRepeatTabs');
   const deadlineActiveDay = repeat.type === 'weekly' && document.getElementById('editQuestDeadlineActiveDay').checked;
   const deadline = deadlineActiveDay ? null : (document.getElementById('editQuestDeadline').value || null);
@@ -5944,6 +6075,7 @@ function openHistory() {
 
 function render() {
   updatePassMenuTrigger();
+  applyPassTypeUI();
   renderCompactAuthorPass();
   renderMega();
   renderQuests();
