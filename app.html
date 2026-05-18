@@ -211,7 +211,7 @@ body {
 
 /* PASS AREA */
 .pass-area {
-  flex-shrink: 0; display: flex; align-items: stretch;
+  flex-shrink: 0; display: flex; align-items: stretch; flex-wrap: wrap;
   margin: 12px 24px 0; gap: 10px;
 }
 
@@ -432,7 +432,7 @@ body {
 .pass-container-wrap::-webkit-scrollbar { display: none; }
 .pass-container {
   border: 1.5px solid var(--border); border-radius: 16px;
-  background: var(--card-bg);
+  background: var(--card-bg); backdrop-filter: blur(12px);
   padding: 14px 24px 16px; display: flex; flex-direction: column; gap: 10px;
   min-height: 92px; min-width: max-content; width: 100%;
 }
@@ -443,6 +443,30 @@ body {
   letter-spacing: 0.2px; opacity: 0.95;
 }
 .pass-author-xp-hint strong { color: var(--accent); font-weight: 800; }
+.pass-author-xp-milestones {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.pass-author-xp-milestone {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text2);
+  text-align: center;
+  background: var(--bar-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+.pass-author-xp-milestone strong {
+  color: var(--accent);
+  font-weight: 800;
+}
+.pass-author-compact-wrap {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+}
 .pass-author-compact {
   position: relative; display: block;
   background: linear-gradient(135deg, rgba(232,150,10,0.08), rgba(150,160,226,0.08));
@@ -454,10 +478,13 @@ body {
   overflow: hidden;
 }
 .pass-author-compact-head {
-  position: absolute; left: 10px; top: 8px; bottom: 8px; width: 150px;
-  display: flex; flex-direction: column; justify-content: center; gap: 2px;
-  padding-right: 18px; z-index: 3;
-  background: linear-gradient(90deg, rgba(255,250,237,0.98) 0%, rgba(255,245,225,0.96) 78%, rgba(255,245,225,0) 100%);
+  position: absolute; left: 10px; top: 8px; bottom: 8px; width: 168px;
+  display: flex; flex-direction: column; justify-content: center; gap: 4px;
+  padding-right: 12px; z-index: 3;
+  background: linear-gradient(90deg, rgba(255,250,237,0.98) 0%, rgba(255,245,225,0.96) 72%, rgba(255,245,225,0) 100%);
+}
+.pass-author-compact-head-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px;
 }
 .pass-author-compact-label {
   font-size: 9px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: #8B5E00;
@@ -469,11 +496,11 @@ body {
   font-size: 10px; font-weight: 700; color: var(--text2);
 }
 .pass-author-compact-boxes {
-  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-  z-index: 3;
+  position: relative; top: auto; right: auto; transform: none;
+  flex-shrink: 0;
   background: rgba(232,150,10,0.14); border: 1px solid rgba(232,150,10,0.22);
-  border-radius: 10px; padding: 6px 10px; cursor: pointer;
-  font-size: 11px; font-weight: 800; color: #8B5E00;
+  border-radius: 10px; padding: 4px 8px; cursor: pointer;
+  font-size: 10px; font-weight: 800; color: #8B5E00;
   white-space: nowrap;
 }
 .pass-author-compact-boxes:hover { border-color: #E8960A; color: #C07800; }
@@ -492,10 +519,10 @@ body {
 }
 .pass-author-track-frame::-webkit-scrollbar { display: none; }
 .pass-author-track-row {
-  display: flex; align-items: center; gap: 16px; width: max-content; padding: 2px 0;
+  display: flex; align-items: center; gap: 18px; width: max-content; padding: 2px 0 2px 2px;
 }
 .pass-author-track-node {
-  width: 126px; min-width: 126px; height: 68px; border-radius: 18px;
+  width: 112px; min-width: 112px; height: 64px; border-radius: 16px;
   border: 1.5px solid rgba(180,120,0,0.18); background: rgba(255,255,255,0.72);
   display: flex; align-items: center; justify-content: center;
   color: #7A4E00; scroll-snap-align: center; flex-shrink: 0;
@@ -511,9 +538,9 @@ body {
 }
 .pass-author-track-node.level-reward { cursor: pointer; }
 .pass-author-track-node:hover { transform: translateY(-1px); transition: transform 0.15s; }
-.pass-author-track-value { font-size: 28px; line-height: 1; font-weight: 800; }
+.pass-author-track-value { font-size: 22px; line-height: 1; font-weight: 800; }
 .pass-author-track-line {
-  width: 52px; min-width: 52px; height: 6px; border-radius: 999px;
+  width: 48px; min-width: 48px; height: 8px; border-radius: 999px;
   background: rgba(180,120,0,0.15); overflow: hidden; flex-shrink: 0;
 }
 .pass-author-track-line-fill {
@@ -1119,6 +1146,9 @@ body {
   <!-- SCREEN 1: ЛИЧНЫЙ ПАСС -->
   <div class="screen" id="screenPersonal">
     <div class="pass-area">
+      <div class="pass-author-compact-wrap" id="passAuthorCompactWrap">
+        <div class="pass-author-compact" id="passAuthorCompact"></div>
+      </div>
       <!-- PASS MENU -->
       <div class="pass-menu-wrap" id="passMenuWrap">
         <div class="pass-menu-card" id="passMenuCard">
@@ -1144,9 +1174,9 @@ body {
             <div class="pass-title" id="passTitle">Battle Pass</div>
             <div class="daily-xp-counter" id="dailyXpCounter">0 / 0 XP сегодня</div>
           </div>
-          <div class="pass-author-compact" id="passAuthorCompact"></div>
           <div class="pass-levels-wrap" id="passLevels"></div>
           <div class="pass-author-xp-hint" id="passAuthorXpHint">В авторский пасс сегодня: <strong>+0 XP</strong></div>
+          <div class="pass-author-xp-milestones" id="passAuthorXpMilestones"></div>
         </div>
       </div>
     </div>
@@ -3096,7 +3126,7 @@ function renderWeeklyAuthorQuestCards(ids) {
 function scrollAuthorCompactTrack(dir) {
   const frame = document.getElementById('passAuthorTrackFrame');
   if (!frame) return;
-  frame.scrollBy({ left: dir * 142, behavior: 'smooth' });
+  frame.scrollBy({ left: dir * 178, behavior: 'smooth' });
 }
 
 function renderCompactAuthorPass() {
@@ -3113,9 +3143,12 @@ function renderCompactAuthorPass() {
 
   let html = `
     <div class="pass-author-compact-head">
-      <div class="pass-author-compact-label">Author Pass</div>
-      <div class="pass-author-compact-level">Lvl ${level} · ${totalXP} XP</div>
-      <div class="pass-author-compact-next">${level >= 150 ? 'Макс. уровень' : `${xpToNext} XP до следующего`}</div>
+      <div class="pass-author-compact-head-top">
+        <div class="pass-author-compact-label">Авторский пасс</div>
+        <button class="pass-author-compact-boxes" type="button" onclick="openShop()">📦 ${boxes}</button>
+      </div>
+      <div class="pass-author-compact-level">Ур. ${level} · ${totalXP} XP</div>
+      <div class="pass-author-compact-next">${level >= 150 ? 'Макс. уровень' : `${xpToNext} XP до след. уровня`}</div>
     </div>
     <div class="pass-author-track-shell">
       <button class="pass-author-track-nav" type="button" onclick="scrollAuthorCompactTrack(-1)">‹</button>
@@ -3129,7 +3162,7 @@ function renderCompactAuthorPass() {
     const current = i === level;
     const rewardClass = (isBox || isPiece) ? 'reward' : '';
     const levelRewardClass = (isBox && i <= level) ? 'level-reward' : '';
-    const icon = isBox ? '📦' : isPiece ? '🧩' : String(i);
+    const icon = isBox ? '📦' : isPiece ? '🧩' : (current ? '◉' : done ? '✓' : '');
     const title = isBox ? `Уровень ${i} · бокс` : isPiece ? `Уровень ${i} · кусочек` : `Уровень ${i}`;
     const click = (isBox && i <= level) ? ` onclick="openShop()"` : '';
     html += `
@@ -3146,8 +3179,7 @@ function renderCompactAuthorPass() {
         </div>
       </div>
       <button class="pass-author-track-nav" type="button" onclick="scrollAuthorCompactTrack(1)">›</button>
-    </div>
-    <button class="pass-author-compact-boxes" type="button" onclick="openShop()">📦 ${boxes}</button>`;
+    </div>`;
 
   root.innerHTML = html;
 
@@ -3155,7 +3187,7 @@ function renderCompactAuthorPass() {
   const currentNode = root.querySelector(`.pass-author-track-node[data-level="${level}"]`);
   if (frame && currentNode) {
     requestAnimationFrame(() => {
-      const hiddenLeft = 156;
+      const hiddenLeft = 172;
       const target = currentNode.offsetLeft - hiddenLeft;
       frame.scrollLeft = Math.max(0, target);
     });
@@ -3332,7 +3364,17 @@ function updatePass() {
     const lvlText = lvlGain > 0 ? ` · ≈ +${lvlGain} ур.` : '';
     authorHintEl.innerHTML = `Прогноз в авторский пасс: <strong>+${currentProjection.total} XP</strong>${lvlText}`;
   }
-  renderCompactAuthorPass();
+  const milestonesEl = document.getElementById('passAuthorXpMilestones');
+  if (milestonesEl) {
+    const m20 = estimateAuthorXpByDoneUnits(quests.length * 0.2, quests.length);
+    const m60 = estimateAuthorXpByDoneUnits(quests.length * 0.6, quests.length);
+    const m100 = estimateAuthorXpByDoneUnits(quests.length, quests.length);
+    milestonesEl.innerHTML = `
+      <div class="pass-author-xp-milestone">20%: <strong>+${m20.total} XP</strong></div>
+      <div class="pass-author-xp-milestone">60%: <strong>+${m60.total} XP</strong></div>
+      <div class="pass-author-xp-milestone">100%: <strong>+${m100.total} XP</strong></div>
+    `;
+  }
 
   const container = document.getElementById('passLevels');
   container.innerHTML = '';
@@ -3413,6 +3455,7 @@ function updateAuthorIfOpen() {
   checkStreakToday();
   qowCheck();
   syncAuthorLevel();
+  renderCompactAuthorPass();
   if (authorScreenOpen) updateAuthorPassUI();
 }
 function renderQuests() {
@@ -5901,6 +5944,7 @@ function openHistory() {
 
 function render() {
   updatePassMenuTrigger();
+  renderCompactAuthorPass();
   renderMega();
   renderQuests();
   renderLobby();
@@ -7156,6 +7200,7 @@ function addAuthorXP(xp) {
   save('passit_author_xp', newXP);
   if (currentUser) fbdb.ref('passit_users/' + currentUser.uid + '/authorXP').set(newXP);
   syncAuthorLevel(); // syncAuthorLevel выдаёт награды и тост
+  renderCompactAuthorPass();
 }
 
 function renderAuthorCircles() {
