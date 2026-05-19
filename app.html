@@ -671,7 +671,8 @@ body {
 .add-quest-btn:hover { opacity: 0.85; }
 .quests-scroll-wrap { flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 .quests-scroll-wrap::-webkit-scrollbar { display: none; }
-.quests-grid { display: grid; grid-template-rows: repeat(2, 1fr); grid-auto-flow: column; grid-auto-columns: calc((100% - 20px) / 3); column-gap: 10px; row-gap: 11px; height: 100%; min-width: 100%; }
+.quests-grid { display: grid; grid-template-rows: repeat(3, 1fr); grid-auto-flow: column; grid-auto-columns: calc((100% - 20px) / 3); column-gap: 10px; row-gap: 11px; height: 100%; min-width: 100%; }
+.quests-scroll-wrap.quests-scroll-focus { overflow-x: hidden; }
 .quest-card { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; min-height: 0; cursor: grab; transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s, border-color 0.15s; user-select: none; }
 .quest-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
 .quest-card.dragging { opacity: 0.4; cursor: grabbing; transform: scale(0.97); }
@@ -2690,6 +2691,7 @@ function initPasses(data) {
   passes = normalizePassesList(passes);
   // ensure currentPassId is valid
   if (!passes.find(p => p.id === currentPassId)) currentPassId = passes[0].id;
+  if (typeof migrateMegaQuestsToFocusPasses === 'function') migrateMegaQuestsToFocusPasses();
 }
 
 // Load local
@@ -2739,13 +2741,99 @@ function normalizeArray(arr) {
 
 function normalizePass(pass) {
   if (!pass || typeof pass !== 'object') return pass;
+  let quests = normalizeArray(pass.quests);
+  if (pass.passType === 'focus') {
+    while (quests.length < 9) quests.push(null);
+    if (quests.length > 9) quests = quests.slice(0, 9);
+  }
   return {
     ...pass,
-    quests: normalizeArray(pass.quests),
+    quests,
     megaQuests: normalizeArray(pass.megaQuests).map(mq => mq && typeof mq === 'object'
       ? { ...mq, tasks: normalizeArray(mq.tasks) }
       : mq)
   };
+}
+
+function ensureFocusPassQuestSlots(pass) {
+  const p = pass || getCurrentPass();
+  if (!p || !isFocusPass(p)) return;
+  p.quests = normalizeArray(p.quests);
+  while (p.quests.length < 9) p.quests.push(null);
+  if (p.quests.length > 9) p.quests.length = 9;
+}
+
+function trimPassQuestTrailingNulls(pass) {
+  const p = pass || getCurrentPass();
+  if (!p) return;
+  if (isFocusPass(p)) {
+    ensureFocusPassQuestSlots(p);
+    return;
+  }
+  p.quests = normalizeArray(p.quests);
+  while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
+}
+
+function megaQuestToFocusQuests(mq) {
+  const fixedXp = 100;
+  const quests = Array(9).fill(null);
+  const tasks = normalizeArray(mq.tasks).filter(t => t && (t.text || '').trim());
+  if (mq.taskMode && tasks.length > 0) {
+    tasks.slice(0, 9).forEach((task, i) => {
+      quests[i] = {
+        id: uid(),
+        emoji: mq.emoji || '🎯',
+        name: (task.text || '').trim() || `Подзадача ${i + 1}`,
+        sub: mq.sub || '',
+        max: 1,
+        current: task.done ? 1 : 0,
+        xp: fixedXp,
+        repeat: { type: 'daily' }
+      };
+    });
+  } else {
+    quests[0] = {
+      id: uid(),
+      emoji: mq.emoji || '🎯',
+      name: mq.name || 'Мегазадача',
+      sub: mq.sub || '',
+      max: Math.max(1, mq.max || 1),
+      current: mq.current || 0,
+      xp: fixedXp,
+      repeat: { type: 'daily' }
+    };
+  }
+  return quests;
+}
+
+function migrateMegaQuestsToFocusPasses() {
+  const newPasses = [];
+  let migrated = 0;
+
+  passes.forEach(parentPass => {
+    const megas = normalizeArray(parentPass.megaQuests).filter(Boolean);
+    if (megas.length === 0) return;
+    parentPass.megaQuests = [];
+
+    megas.forEach(mq => {
+      newPasses.push({
+        id: uid(),
+        name: mq.name || 'Мегазадача',
+        emoji: mq.emoji || '🎯',
+        quests: megaQuestToFocusQuests(mq),
+        megaQuests: [],
+        passType: 'focus',
+        fixedQuestXp: 100
+      });
+      migrated++;
+    });
+  });
+
+  if (newPasses.length > 0) {
+    passes.push(...newPasses);
+    savePasses();
+    showToast(`Мегаквесты перенесены в пассы: ${migrated}`);
+  }
 }
 
 
@@ -2840,8 +2928,6 @@ function closePassTypePicker() {
 
 function openCreatePassPopup() {
   closePassMenu();
-  const maxPasses = userIsPro ? 3 : 1;
-  if (passes.length >= maxPasses) { openSubPopup(); return; }
   pendingPassType = null;
   document.getElementById('passTypeOverlay').classList.add('open');
 }
@@ -3580,9 +3666,13 @@ function updateAuthorIfOpen() {
   if (authorScreenOpen) updateAuthorPassUI();
 }
 function renderQuests() {
-  const quests = normalizeArray(getCurrentPass()?.quests);
+  const pass = getCurrentPass();
+  if (isFocusPass(pass)) ensureFocusPassQuestSlots(pass);
+  const quests = normalizeArray(pass?.quests);
   const grid = document.getElementById('questsGrid');
-  const maxQ = getPassQuestLimit();
+  const scrollWrap = document.querySelector('.quests-scroll-wrap');
+  if (scrollWrap) scrollWrap.classList.toggle('quests-scroll-focus', isFocusPass(pass));
+  const maxQ = getPassQuestLimit(pass);
   const COLS = 3;
   const ROWS = 3;
   const BLOCK = COLS * ROWS;
@@ -3732,8 +3822,7 @@ function renderQuests() {
             while (p.quests.length <= targetIdx) p.quests.push(null);
             p.quests[targetIdx] = p.quests[dragSrcIndex];
             p.quests[dragSrcIndex] = null;
-            // trim trailing nulls
-            while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
+            trimPassQuestTrailingNulls(p);
             dragSrcIndex = null;
             savePasses();
             renderQuests();
@@ -3796,7 +3885,7 @@ function setupTouchDrag(el, snakeIdx) {
         const tmp = p.quests[dragSrcIndex];
         p.quests[dragSrcIndex] = p.quests[targetIdx];
         p.quests[targetIdx] = tmp;
-        while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
+        trimPassQuestTrailingNulls(p);
         savePasses();
         renderQuests();
       }
@@ -3830,7 +3919,7 @@ function deleteQuest(i) {
   }
   p.quests = normalizeArray(p.quests);
   p.quests[i] = null;
-  while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
+  trimPassQuestTrailingNulls(p);
   savePasses();
   renderQuests();
 }
@@ -7604,6 +7693,7 @@ document.addEventListener('keydown', (e) => {
 });
 function openFeedback() { document.getElementById('feedbackOverlay').classList.add('open'); }
 
+migrateMegaQuestsToFocusPasses();
 applyTheme();
 render();
 checkAchievements(false);
