@@ -2681,7 +2681,7 @@ function initPasses(data) {
       id: uid(), name: 'Мой пасс', emoji: '🎯',
       quests: normalizeArray(data.quests),
       megaQuests: normalizeArray(data.megaQuests),
-      passType: 'legacy'
+      passType: 'standard'
     }];
     currentPassId = passes[0].id;
   } else {
@@ -2694,6 +2694,7 @@ function initPasses(data) {
   if (!passes.find(p => p.id === currentPassId)) currentPassId = passes[0].id;
   if (typeof migrateMegaQuestsToFocusPasses === 'function') migrateMegaQuestsToFocusPasses();
   if (typeof migratePassLayoutOnce === 'function') migratePassLayoutOnce();
+  if (typeof migrateBattlePassesToStandardOnce === 'function') migrateBattlePassesToStandardOnce();
 }
 
 // Load local
@@ -2851,9 +2852,22 @@ function migratePassLayoutOnce() {
   savePasses();
 }
 
+function migrateBattlePassesToStandardOnce() {
+  if (load('passit_layout_v3')) return;
+  passes.forEach(p => {
+    if (p?.passType === 'focus') return;
+    p.passType = 'standard';
+    p.quests = normalizeArray(p.quests);
+    while (p.quests.length > 0 && p.quests[p.quests.length - 1] === null) p.quests.pop();
+    p.megaQuests = normalizeArray(p.megaQuests);
+  });
+  save('passit_layout_v3', true);
+  savePasses();
+}
+
 function getPassType(pass) {
   const p = pass || getCurrentPass();
-  return p?.passType || 'legacy';
+  return p?.passType === 'focus' ? 'focus' : 'standard';
 }
 function isFocusPass(pass) {
   return getPassType(pass) === 'focus';
