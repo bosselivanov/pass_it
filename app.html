@@ -1229,7 +1229,7 @@ body {
         </div>
 
         <!-- МЕГАКВЕСТ -->
-        <div class="mega-quests-section" id="megaQuestsSection" style="flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;">
+        <div class="mega-quests-section" id="megaQuestsSection" style="display:none;">
           <div class="flangs-header-row">
             <div class="section-header">✦ Mega Quests</div>
             <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
@@ -2883,9 +2883,9 @@ function getPassFixedQuestXp(pass) {
   return p?.fixedQuestXp || 100;
 }
 function applyPassTypeUI() {
-  const focus = isFocusPass();
+  const focus = getCurrentPass()?.passType === 'focus';
   const megaSec = document.getElementById('megaQuestsSection');
-  if (megaSec) megaSec.style.display = focus ? 'none' : '';
+  if (megaSec) megaSec.style.display = 'none';
   const questHeader = document.getElementById('questsSectionHeader');
   if (questHeader) questHeader.textContent = focus ? '◉ Подзадачи' : '⚡ Quests';
   const addBtn = document.getElementById('addQuestBtn');
@@ -3695,11 +3695,11 @@ function updateAuthorIfOpen() {
 }
 function renderQuests() {
   const pass = getCurrentPass();
-  const focus = isFocusPass(pass);
+  const focus = pass?.passType === 'focus';
   if (focus) ensureFocusPassQuestSlots(pass);
   const quests = normalizeArray(pass?.quests);
   const grid = document.getElementById('questsGrid');
-  const scrollWrap = document.querySelector('.quests-scroll-wrap');
+  const scrollWrap = grid?.closest('.quests-scroll-wrap');
   if (scrollWrap) scrollWrap.classList.toggle('quests-scroll-focus', focus);
   if (grid) grid.className = 'quests-grid' + (focus ? ' quests-grid-focus' : '');
   const maxQ = getPassQuestLimit(pass);
