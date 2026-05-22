@@ -3719,7 +3719,10 @@ function renderQuests() {
     cappedBlocks = Math.min(totalBlocks, Math.ceil(maxQ / BLOCK));
   }
 
+  grid.style.gridTemplateRows = `repeat(${ROWS}, minmax(0, 1fr))`;
   grid.style.gridAutoColumns = `calc((100% - ${(COLS - 1) * 10}px) / ${COLS})`;
+  grid.style.height = '100%';
+  grid.style.alignContent = 'stretch';
   grid.innerHTML = '';
 
   for (let blockIdx = 0; blockIdx < cappedBlocks; blockIdx++) {
