@@ -4749,56 +4749,98 @@ function applyThemePreview(themeId) {
 }
 
 // ====== ONBOARDING ======
+function ensureOnboardingLobby() {
+  if (authorScreenOpen) toggleAuthorScreen();
+  setLobbyVisible(true);
+}
+
+function ensureOnboardingPersonalPass() {
+  setLobbyVisible(false);
+  if (authorScreenOpen) toggleAuthorScreen();
+}
+
+function ensureOnboardingAuthorPass() {
+  setLobbyVisible(false);
+  if (!authorScreenOpen) toggleAuthorScreen();
+}
+
 const ONBOARDING_STEPS = [
   {
     emoji: '👋',
     title: 'Хэй! Добро пожаловать в PASS IT',
     text: 'Здесь ты превращаешь свои цели в квесты, фармишь опыт и открываешь оформления — как в любимых играх, только в реальной жизни 😉 Расскажу всё по порядку.',
-    highlight: null, pos: 'center'
+    highlight: null, pos: 'center',
+    action: ensureOnboardingLobby
   },
   {
     emoji: '🗂️',
     title: 'Твои пассы',
     text: 'Каждый пасс — отдельная сфера жизни: учёба, спорт, проекты. Создавай, переименовывай, переключайся. На Free плане доступен один пасс — хочешь больше, прокачай план 😜',
-    highlight: '.pass-menu-wrap', pos: 'right', arrow: 'left'
+    highlight: '#lobbyTodayTrack', pos: 'bottom', arrow: 'up',
+    action: ensureOnboardingLobby
   },
   {
     emoji: '⚡',
     title: 'Квесты — твои ежедневные задачи',
     text: 'При создании задаёшь название, метрику, повторяемость и опыт за выполнение. Перетаскивай квесты как удобно, замораживай временно неактуальные. Счётчик XP дня — на полоске пасса.',
-    highlight: '.quests-section', pos: 'left', arrow: 'right'
+    highlight: '#lobbyTask1Name', pos: 'right', arrow: 'left',
+    action: ensureOnboardingLobby
   },
   {
     emoji: '🏆',
     title: 'Мегаквесты — большие цели',
     text: 'Задачи которые не закроешь за день. Составляй список внутри, отслеживай метрику, и когда готово — завершай. Мегаквест уходит в архив, а опыт засчитывается в еженедельный прогресс.',
-    highlight: '.flangs-section', pos: 'right', arrow: 'left'
+    highlight: '.lobby-enter-card', pos: 'left', arrow: 'right',
+    action: ensureOnboardingLobby
   },
   {
     emoji: '🌅',
     title: 'Сброс дня и долги',
     text: 'Каждый день начинается заново — прогресс квестов обнуляется, а невыполненные уходят в долговую книгу. Там можно доделать их позже. Это не штраф, просто память 🙂',
-    highlight: '.header-btn', pos: 'top', arrow: 'down'
+    highlight: '.pass-menu-wrap', pos: 'right', arrow: 'left',
+    action: ensureOnboardingPersonalPass
   },
   {
     emoji: '📈',
     title: 'Авторский пасс',
     text: 'Сезонный трек на 150 уровней — 500 XP равно одному уровню. Выполняй ежедневные задания, закрывай еженедельные цели, поддерживай стрик хотя бы 4 дня из 7. Есть 3 заморозки в неделю.',
-    highlight: '.pass-switch-wrap', pos: 'top', arrow: 'down',
-    action: () => { if (!authorScreenOpen) toggleAuthorScreen(); }
+    highlight: '.quests-section', pos: 'left', arrow: 'right',
+    action: ensureOnboardingPersonalPass
   },
   {
     emoji: '📦',
     title: 'Боксы и оформления',
     text: 'За уровни авторского пасса получаешь боксы с кусочками сезонных тем. В этом сезоне три темы: Мира, Зои и Руми ✦ — каждая открывается поэтапно. Руми легендарная — там особый финал. ',
-    highlight: null, pos: 'center',
-    action: () => { if (authorScreenOpen) toggleAuthorScreen(); }
+    highlight: '.flangs-section', pos: 'right', arrow: 'left',
+    action: ensureOnboardingPersonalPass
   },
   {
     emoji: '🔥',
+    title: 'Авторский пасс теперь здесь',
+    text: 'Он больше не открывается отдельным окном: эта кнопка переключает тебя на соседний экран внутри приложения.',
+    highlight: '.pass-switch-wrap', pos: 'top', arrow: 'down',
+    action: ensureOnboardingPersonalPass
+  },
+  {
+    emoji: 'AP',
+    title: 'Авторский пасс теперь здесь',
+    text: 'Он больше не открывается отдельным окном: кнопка переключает тебя на соседний экран внутри приложения.',
+    highlight: '#screenAuthor .pass-levels-wrap', pos: 'bottom', arrow: 'up',
+    action: ensureOnboardingAuthorPass
+  },
+  {
+    emoji: 'BOX',
+    title: 'Магазин и награды',
+    text: 'Боксы, монеты и обмен теперь находятся прямо на авторском экране, слева от заданий.',
+    highlight: '#screenAuthor .flangs-section', pos: 'right', arrow: 'left',
+    action: ensureOnboardingAuthorPass
+  },
+  {
+    emoji: 'OK',
     title: 'Всё готово!',
-    text: 'Создай первый квест и начни сезон. Первый сезон скоро начнётся — всё готово! 🔥',
-    highlight: null, pos: 'center', isLast: true
+    text: 'Создай первый квест и начни сезон. Основные зоны теперь на своих местах: лобби, личный пасс и авторский экран.',
+    highlight: null, pos: 'center', isLast: true,
+    action: ensureOnboardingPersonalPass
   }
 ];
 
@@ -5062,13 +5104,13 @@ const AUTHOR_ONBOARDING_STEPS = [
     emoji: '📊',
     title: 'Полоска прогресса',
     text: 'Каждые 500 XP — новый уровень. Кружки с 📦 — это боксы, с 🧩 — кусочки бокса. Скролль вправо чтобы увидеть что тебя ждёт впереди.',
-    highlight: '.pass-levels-wrap', pos: 'bottom', arrow: 'up'
+    highlight: '#screenAuthor .pass-levels-wrap', pos: 'bottom', arrow: 'up'
   },
   {
     emoji: '⚡',
     title: 'Задания двигают полоску',
     text: 'Ежедневные задания обновляются каждое утро — выполни 25%, 50% или все квесты. Еженедельные дают больше XP за стабильность на неделе.',
-    highlight: '.quests-section', pos: 'left', arrow: 'right', art: 1
+    highlight: '#screenAuthor .quests-section', pos: 'left', arrow: 'right', art: 1
   },
   {
     emoji: '🔥',
@@ -5080,7 +5122,7 @@ const AUTHOR_ONBOARDING_STEPS = [
     emoji: '📦',
     title: 'Магазин и боксы',
     text: 'Боксы накапливаются автоматически с каждым уровнем. Открывай их здесь — 3 слота, каждый выдаёт кусочек темы или монетки. Монетки трать на конкретные кусочки.',
-    highlight: '.flangs-section', pos: 'right', arrow: 'left'
+    highlight: '#screenAuthor .flangs-section', pos: 'right', arrow: 'left'
   },
   {
     emoji: '🎨',
