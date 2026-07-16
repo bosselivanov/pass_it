@@ -175,12 +175,103 @@ body {
   color: var(--text2); transition: color 0.18s ease, transform 0.18s ease;
 }
 .lobby-enter-card:hover .lobby-enter-arrow { color: var(--accent); transform: translateX(6px); }
+.lobby-hero-card {
+  margin-top: 20px;
+  padding: 22px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+.lobby-hero-title {
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1.05;
+  color: var(--text);
+}
+.lobby-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.lobby-summary-item {
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lobby-summary-item span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.lobby-summary-item strong {
+  font-size: 18px;
+  line-height: 1.2;
+  color: var(--text);
+}
+.lobby-progress-note {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.38);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text);
+}
+.lobby-task-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text2);
+}
+.lobby-enter-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text2);
+}
+.lobby-enter-stats {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lobby-enter-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.38);
+  border: 1px solid rgba(255,255,255,0.4);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+}
+.lobby-enter-stat strong {
+  color: var(--text);
+  text-align: right;
+}
 
 @media (max-width: 1200px) {
   .lobby-shell { grid-template-columns: 1fr; overflow-y: auto; }
   .lobby-enter-card { min-height: 150px; }
   .lobby-welcome { font-size: 38px; }
   .week-shop-card { min-height: 200px; flex-basis: 200px; }
+  .lobby-hero-card { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {
   .lobby-overlay { padding: 12px; }
@@ -191,6 +282,8 @@ body {
   .lobby-task-grid { grid-template-columns: 1fr; }
   .lobby-pass-node { width: 34px; height: 34px; font-size: 10px; }
   .week-shop-name { font-size: 28px; }
+  .lobby-hero-title { font-size: 28px; }
+  .lobby-summary-grid { grid-template-columns: 1fr; }
 }
 
 /* HEADER */
@@ -548,6 +641,94 @@ body {
   background: linear-gradient(90deg, #E8960A, #F5C842);
   border-radius: inherit;
 }
+.today-loop-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.today-loop-chip {
+  border-radius: 12px;
+  background: rgba(255,255,255,0.42);
+  border: 1px solid rgba(255,255,255,0.42);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.today-loop-chip-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.today-loop-chip-value {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--text);
+}
+.reward-spotlight {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.95fr);
+  gap: 10px;
+}
+.reward-spotlight-main {
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(150,160,226,0.18), rgba(255,255,255,0.45));
+  border: 1px solid rgba(150,160,226,0.24);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reward-spotlight-side {
+  background: linear-gradient(135deg, rgba(232,150,10,0.14), rgba(255,255,255,0.45));
+  border-color: rgba(232,150,10,0.22);
+}
+.reward-spotlight-kicker {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.reward-spotlight-title {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.2;
+}
+.reward-spotlight-sub {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+  line-height: 1.45;
+}
+.reward-spotlight-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--bar-bg);
+}
+.reward-spotlight-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), #bcc4ff);
+  transition: width 0.45s ease;
+}
+.reward-spotlight-side .reward-spotlight-fill {
+  background: linear-gradient(90deg, #E8960A, #F5C842);
+}
+.reward-spotlight-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+}
 .pass-level {
   width: 38px; height: 38px; border-radius: 50%; background: var(--surface);
   border: 2px solid var(--border); display: flex; align-items: center;
@@ -561,6 +742,117 @@ body {
 
 /* MEGA QUESTS */
 .flangs-section { display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow: hidden; }
+.meta-progress-card,
+.completion-pulse-card {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.meta-progress-copy,
+.completion-pulse-sub {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text2);
+}
+.meta-progress-stats {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.meta-progress-stat {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.38);
+  border: 1px solid rgba(255,255,255,0.34);
+}
+.meta-progress-stat-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.meta-progress-stat-value {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--text);
+}
+.meta-loop-board {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.meta-loop-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.meta-loop-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text2);
+  padding-left: 2px;
+}
+.completion-pulse-card {
+  position: relative;
+  overflow: hidden;
+}
+.completion-pulse-card::after {
+  content: '';
+  position: absolute;
+  inset: auto -20% -45% auto;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(150,160,226,0.18) 0%, rgba(150,160,226,0) 70%);
+  pointer-events: none;
+}
+.completion-pulse-title {
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.2;
+}
+.completion-pulse-chain {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.completion-pulse-item {
+  padding: 10px 8px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.42);
+  border: 1px solid rgba(255,255,255,0.36);
+  text-align: center;
+}
+.completion-pulse-item span {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.completion-pulse-item strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: var(--text);
+}
 .section-header { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--text2); text-transform: uppercase; padding-left: 2px; flex-shrink: 0; }
 .flangs-header-row { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .add-mega-btn { font-size: 10px; font-weight: 700; background: var(--accent2); border: none; border-radius: 8px; padding: 4px 10px; cursor: pointer; transition: opacity 0.2s; color: var(--text); }
@@ -698,8 +990,11 @@ body {
 .emoji-more-btn:hover { background: var(--border) !important; }
 .quest-bottom { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
 .quest-metric { font-size: 13px; font-weight: 700; color: var(--text); display: flex; gap: 2px; align-items: center; }
-.quest-empty { border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 11px; opacity: 0.5; transition: opacity 0.15s, border-color 0.15s; }
-.quest-empty:hover { opacity: 0.85; border-color: var(--accent); }
+.quest-empty { border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 11px; opacity: 0.8; transition: opacity 0.15s, border-color 0.15s, transform 0.15s, background 0.15s; background: rgba(255,255,255,0.24); padding: 10px; text-align: center; }
+.quest-empty:hover { opacity: 0.85; border-color: var(--accent); transform: translateY(-1px); background: rgba(255,255,255,0.34); }
+.quest-empty-copy { display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; }
+.quest-empty-title { font-size: 12px; font-weight: 800; line-height: 1.2; color: var(--text); }
+.quest-empty-meta { font-size: 10px; font-weight: 700; line-height: 1.35; color: var(--text2); max-width: 130px; }
 .quest-delete { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text2); opacity: 0.4; padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
 .quest-delete:hover { opacity: 1; color: #e04040; }
 .quest-edit { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text2); opacity: 0.4; padding: 0; line-height: 1; transition: opacity 0.2s, color 0.2s; flex-shrink: 0; }
@@ -822,6 +1117,12 @@ body {
   opacity: 0; pointer-events: none; white-space: nowrap;
 }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.progress-pulse { animation: progressPulse 0.75s ease; }
+@keyframes progressPulse {
+  0% { box-shadow: 0 0 0 0 rgba(150,160,226,0); transform: translateY(0); }
+  25% { box-shadow: 0 0 0 5px rgba(150,160,226,0.12); transform: translateY(-1px); }
+  100% { box-shadow: 0 0 0 0 rgba(150,160,226,0); transform: translateY(0); }
+}
 
 /* PRO BADGE */
 .pro-badge { font-size: 9px; font-weight: 800; letter-spacing: 1px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; margin-left: 4px; vertical-align: middle; }
@@ -863,6 +1164,9 @@ body {
   .header-title { font-size: 11px; letter-spacing: 2px; }
   .header-btn { font-size: 17px; padding: 3px 6px; }
   .main-layout { grid-template-columns: 180px 1fr; }
+  .today-loop-strip,
+  .completion-pulse-chain { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reward-spotlight { grid-template-columns: 1fr; }
 }
 @media (max-width: 900px) {
   .header-title { display: none; }
@@ -872,6 +1176,11 @@ body {
 @media (max-height: 700px) {
   .pass-area { margin: 6px 12px 0; }
   .main-layout { margin: 4px 12px 6px; }
+}
+@media (max-width: 520px) {
+  .today-loop-strip,
+  .meta-progress-stats,
+  .completion-pulse-chain { grid-template-columns: 1fr; }
 }
 .unlock-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.7);
@@ -1072,6 +1381,20 @@ body {
 
     <div class="lobby-col lobby-center">
       <div class="lobby-welcome">Welcome home<span id="lobbyWelcomeName" class="lobby-username"></span></div>
+      <div class="lobby-card lobby-hero-card">
+        <div>
+          <div class="lobby-title">Today Loop</div>
+          <div class="lobby-hero-title" id="lobbyHeroTitle">0 quests ready to move your pass</div>
+          <div class="lobby-subtitle" id="lobbyHeroSubtitle">Finish regular quests to gain XP, fill today pass, complete daily and weekly goals, and push author pass.</div>
+          <div class="lobby-progress-note" id="lobbyProgressNote">No active momentum yet</div>
+        </div>
+        <div class="lobby-summary-grid">
+          <div class="lobby-summary-item"><span>Best next move</span><strong id="lobbyHeroFocus">Add your first quest</strong></div>
+          <div class="lobby-summary-item"><span>Today pass</span><strong id="lobbyHeroPass">0 / 0 XP</strong></div>
+          <div class="lobby-summary-item"><span>Meta goals</span><strong id="lobbyHeroGoals">0 daily complete</strong></div>
+          <div class="lobby-summary-item"><span>Author reward</span><strong id="lobbyHeroAuthor">No reward in sight yet</strong></div>
+        </div>
+      </div>
 
       <div class="lobby-section">
         <div class="lobby-section-title">Last day progress</div>
@@ -1091,10 +1414,12 @@ body {
           <div class="lobby-card lobby-task-card">
             <div class="lobby-task-name" id="lobbyTask1Name">No task yet</div>
             <div class="lobby-task-xp" id="lobbyTask1XP">0 XP</div>
+            <div class="lobby-task-hint" id="lobbyTask1Hint">Create a quest to start today's loop.</div>
           </div>
           <div class="lobby-card lobby-task-card">
             <div class="lobby-task-name" id="lobbyTask2Name">No task yet</div>
             <div class="lobby-task-xp" id="lobbyTask2XP">0 XP</div>
+            <div class="lobby-task-hint" id="lobbyTask2Hint">Your second strongest quest will appear here.</div>
           </div>
         </div>
       </div>
@@ -1108,7 +1433,13 @@ body {
 
     <div class="lobby-col">
       <div class="lobby-card lobby-enter-card" onclick="enterAppFromLobby()">
-        <div class="lobby-enter-text">GET INTO</div>
+        <div class="lobby-enter-kicker" id="lobbyEnterKicker">Today's command center</div>
+        <div class="lobby-enter-text" id="lobbyEnterTitle">GET INTO</div>
+        <div class="lobby-enter-stats" id="lobbyEnterStats">
+          <div class="lobby-enter-stat"><span>Ready now</span><strong>0 quests</strong></div>
+          <div class="lobby-enter-stat"><span>Pass progress</span><strong>0 / 0 XP</strong></div>
+          <div class="lobby-enter-stat"><span>Closest unlock</span><strong>Start the loop</strong></div>
+        </div>
         <div class="lobby-enter-arrow">→</div>
       </div>
     </div>
@@ -1209,6 +1540,23 @@ body {
             <div class="pass-title" id="passTitle">Battle Pass</div>
             <div class="daily-xp-counter" id="dailyXpCounter">0 / 0 XP сегодня</div>
           </div>
+          <div class="today-loop-strip" id="todayLoopStrip"></div>
+          <div class="reward-spotlight">
+            <div class="reward-spotlight-main">
+              <div class="reward-spotlight-kicker">Best next move</div>
+              <div class="reward-spotlight-title" id="personalFocusTitle">Add your first quest</div>
+              <div class="reward-spotlight-sub" id="personalFocusSub">The top quest here should tell you what to do next and how it fills today's pass.</div>
+              <div class="reward-spotlight-bar"><div class="reward-spotlight-fill" id="personalFocusFill" style="width:0%"></div></div>
+              <div class="reward-spotlight-meta"><span id="personalFocusMetaLeft">0 quests active</span><span id="personalFocusMetaRight">0 XP in play</span></div>
+            </div>
+            <div class="reward-spotlight-main reward-spotlight-side">
+              <div class="reward-spotlight-kicker">Next author reward</div>
+              <div class="reward-spotlight-title" id="authorFocusTitle">No reward yet</div>
+              <div class="reward-spotlight-sub" id="authorFocusSub">Daily and weekly goals turn today's work into author pass progress.</div>
+              <div class="reward-spotlight-bar"><div class="reward-spotlight-fill" id="authorFocusFill" style="width:0%"></div></div>
+              <div class="reward-spotlight-meta"><span id="authorFocusMetaLeft">0 / 500 XP</span><span id="authorFocusMetaRight">0 daily goals done</span></div>
+            </div>
+          </div>
           <div class="pass-levels-wrap" id="passLevels"></div>
           <div class="pass-author-xp-hint" id="passAuthorXpHint">В авторский пасс сегодня: <strong>+0 XP</strong></div>
           <div class="pass-author-xp-milestones" id="passAuthorXpMilestones"></div>
@@ -1219,8 +1567,30 @@ body {
     <div class="main-layout">
       <div class="flangs-section">
         <!-- ЕЖЕДНЕВКИ -->
-        <div class="daily-quests-section" style="flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;">
+        <div class="meta-progress-card" id="metaProgressCard">
+          <div class="section-header">Meta Progress</div>
+          <div class="meta-progress-copy" id="metaProgressCopy">Regular quests are not a separate mini-game: they fill these daily and weekly goals, then move author pass forward.</div>
+          <div class="meta-progress-stats">
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Daily goals</div><div class="meta-progress-stat-value" id="metaDailyValue">0 / 3</div></div>
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Week XP</div><div class="meta-progress-stat-value" id="metaWeekValue">0 / 0</div></div>
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Quest of week</div><div class="meta-progress-stat-value" id="metaQowValue">0 / 3</div></div>
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Next reward</div><div class="meta-progress-stat-value" id="metaRewardValue">No reward</div></div>
+          </div>
+        </div>
+        <div class="completion-pulse-card" id="completionPulseCard">
+          <div class="section-header">Completion Pulse</div>
+          <div class="completion-pulse-title" id="completionPulseTitle">Finish a quest to see the full chain react.</div>
+          <div class="completion-pulse-sub" id="completionPulseSub">When you complete a regular quest, this panel should confirm XP gain, pass movement, meta-goal updates, and the next author reward approach.</div>
+          <div class="completion-pulse-chain">
+            <div class="completion-pulse-item"><span>XP</span><strong id="completionPulseXP">+0</strong></div>
+            <div class="completion-pulse-item"><span>Pass</span><strong id="completionPulsePass">0%</strong></div>
+            <div class="completion-pulse-item"><span>Goals</span><strong id="completionPulseGoals">0 / 3</strong></div>
+            <div class="completion-pulse-item"><span>Author</span><strong id="completionPulseAuthor">0 XP</strong></div>
+          </div>
+        </div>
+        <div class="daily-quests-section" style="flex:1;display:flex;flex-direction:column;gap:8px;min-height:0;">
           <div class="section-header">ЕЖЕДНЕВКИ</div>
+          <div class="meta-progress-copy" id="goalSectionCopy" style="margin-top:0;">These counters are fed by your normal quests and unlock author pass progress layer by layer.</div>
           <div class="daily-quests-grid" style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;min-height:0;">
             <div class="author-quest-card" id="dailyAdq0"><div class="author-quest-name" id="dailyAdq0name">Выполни квесты</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="dailyAdq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="dailyAdq0meta">0 / ? · +200 XP</div></div>
             <div class="author-quest-card" id="dailyAdq1"><div class="author-quest-name" id="dailyAdq1name">Выполни больше</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="dailyAdq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="dailyAdq1meta">0 / ? · +200 XP</div></div>
@@ -3358,6 +3728,289 @@ function renderWeeklyAuthorQuestCards(ids) {
   }
 }
 
+let lastCompletionPulse = null;
+
+function estimateAuthorXpByDoneUnits(doneUnits, totalUnits) {
+  const safeTotal = Math.max(totalUnits, 1);
+  const done = Math.max(0, Math.min(doneUnits, safeTotal));
+  const t1 = Math.max(1, Math.ceil(safeTotal * 0.25));
+  const t2 = Math.max(1, Math.ceil(safeTotal * 0.5));
+  const t3 = safeTotal;
+  const xp0 = Math.round(Math.min(done / t1, 1) * 200);
+  const xp1 = Math.round(Math.min(done / t2, 1) * 300);
+  const xp2 = Math.round(Math.min(done / t3, 1) * 500);
+  return { total: xp0 + xp1 + xp2 };
+}
+
+function getAuthorRelevantQuestPool() {
+  return passes
+    .flatMap(p => normalizeArray(p.quests).filter(q => q && !q.frozen))
+    .filter(q => {
+      if (!isQuestActiveToday(q)) return false;
+      if (!q.deadline) return true;
+      const days = daysUntilDeadline(q.deadline);
+      return days === null || days <= 7;
+    });
+}
+
+function getPersonalPassSnapshot(pass = getCurrentPass()) {
+  const quests = normalizeArray(pass?.quests).filter(q => q && !q.frozen && isQuestActiveToday(q));
+  const totalXP = quests.reduce((sum, q) => sum + (q.xp || 0), 0);
+  const earnedXP = quests.reduce((sum, q) => sum + Math.min(q.current || 0, q.max) / q.max * (q.xp || 0), 0);
+  const doneUnits = quests.reduce((sum, q) => sum + Math.min(1, (q.current || 0) / q.max), 0);
+  const completedCount = quests.filter(q => (q.current || 0) >= q.max).length;
+  return {
+    quests,
+    totalXP,
+    earnedXP,
+    doneUnits,
+    completedCount,
+    totalCount: quests.length,
+    pct: totalXP > 0 ? Math.min(earnedXP / totalXP, 1) * 100 : 0
+  };
+}
+
+function getBestNextQuest(pass = getCurrentPass()) {
+  const snapshot = getPersonalPassSnapshot(pass);
+  return snapshot.quests
+    .filter(q => (q.current || 0) < q.max)
+    .sort((a, b) => {
+      const xpDiff = (b.xp || 0) - (a.xp || 0);
+      if (xpDiff !== 0) return xpDiff;
+      return (b.current || 0) / b.max - (a.current || 0) / a.max;
+    })[0] || null;
+}
+
+function getNextAuthorRewardInfo(totalXP = getTotalAuthorXP()) {
+  const level = Math.min(Math.floor(totalXP / 500), 150);
+  const xpIntoLevel = totalXP - level * 500;
+  if (level >= 150) {
+    return {
+      label: 'Max author level reached',
+      hint: 'All major rewards are already unlocked',
+      progressPct: 100,
+      meta: '150 / 150',
+      xpToReward: 0
+    };
+  }
+
+  for (let rewardLevel = level + 1; rewardLevel <= 150; rewardLevel++) {
+    const isBox = rewardLevel % 5 === 0;
+    const isPiece = rewardLevel % 3 === 0 && !isBox;
+    if (!isBox && !isPiece) continue;
+    const xpToReward = Math.max(0, rewardLevel * 500 - totalXP);
+    return {
+      label: isBox ? `Box on level ${rewardLevel}` : `Piece on level ${rewardLevel}`,
+      hint: `${xpToReward} XP to go`,
+      progressPct: Math.round(Math.min(xpIntoLevel / 500, 1) * 100),
+      meta: `${xpIntoLevel} / 500 XP`,
+      xpToReward
+    };
+  }
+
+  return {
+    label: `Level ${level + 1}`,
+    hint: `${Math.max(0, 500 - xpIntoLevel)} XP to next level`,
+    progressPct: Math.round(Math.min(xpIntoLevel / 500, 1) * 100),
+    meta: `${xpIntoLevel} / 500 XP`,
+    xpToReward: Math.max(0, 500 - xpIntoLevel)
+  };
+}
+
+function getMetaLoopSnapshot() {
+  const activeToday = getAuthorRelevantQuestPool();
+  const totalActive = activeToday.length;
+  const doneUnits = activeToday.reduce((sum, q) => sum + Math.min(1, (q.current || 0) / q.max), 0);
+  const targets = [
+    Math.max(1, Math.ceil(totalActive * 0.25)),
+    Math.max(1, Math.ceil(totalActive * 0.5)),
+    totalActive || 1
+  ];
+
+  const dailyGoals = targets.map((target, index) => {
+    const fallbackNames = [
+      'Add first quest',
+      'Build some XP',
+      'Clear the full loop'
+    ];
+    const activeNames = [
+      `Finish ${target} quest${target > 1 ? 's' : ''}`,
+      `Push ${target} quest units`,
+      `Clear all ${totalActive}`
+    ];
+    return {
+      name: totalActive ? activeNames[index] : fallbackNames[index],
+      target,
+      progress: Math.min(doneUnits, target),
+      shown: Math.min(Math.floor(doneUnits), target),
+      pct: Math.min(100, Math.round((doneUnits / target) * 100)),
+      xp: [200, 300, 500][index],
+      done: doneUnits >= target
+    };
+  });
+
+  const weeklyState = getWeeklyChallengeState();
+  const personalLiveToday = activeToday.reduce((sum, q) => sum + Math.round(Math.min(1, (q.current || 0) / q.max) * (q.xp || 100)), 0);
+  const weekTarget = weeklyState.target;
+  const weekXP = weeklyState.completed ? weekTarget : Math.min(weeklyState.xp + personalLiveToday, weekTarget);
+  const qow = qowGetProgress();
+  const streakCount = getStreakCount();
+  const totalAuthorXP = getTotalAuthorXP();
+  const nextReward = getNextAuthorRewardInfo(totalAuthorXP);
+
+  return {
+    activeToday,
+    totalActive,
+    doneUnits,
+    dailyGoals,
+    dailyCompleted: dailyGoals.filter(goal => goal.done).length,
+    weekXP,
+    weekTarget,
+    weekPct: weekTarget ? Math.min(100, Math.round((weekXP / weekTarget) * 100)) : 0,
+    qow,
+    streakCount,
+    streakTarget: 4,
+    totalAuthorXP,
+    authorTodayXP: getTodayLiveXP(),
+    authorLevel: Math.min(Math.floor(totalAuthorXP / 500), 150),
+    nextReward
+  };
+}
+
+function renderDailyGoalCards(prefix, meta) {
+  meta.dailyGoals.forEach((goal, index) => {
+    const card = document.getElementById(`${prefix}${index}`);
+    const name = document.getElementById(`${prefix}${index}name`);
+    const bar = document.getElementById(`${prefix}${index}bar`);
+    const info = document.getElementById(`${prefix}${index}meta`);
+    if (!card || !name || !bar || !info) return;
+    name.textContent = goal.name;
+    bar.style.width = `${goal.pct}%`;
+    info.textContent = `${goal.shown} / ${goal.target} · +${goal.xp} XP`;
+    card.style.opacity = goal.done ? '1' : '0.78';
+    card.style.borderColor = goal.done ? 'rgba(200,140,0,0.6)' : '';
+  });
+}
+
+function ensurePersonalWeeklyCards() {
+  if (document.getElementById('leftAwq0card')) return;
+  const grid = document.querySelector('#screenPersonal .daily-quests-grid');
+  if (!grid) return;
+
+  const label = document.createElement('div');
+  label.className = 'meta-loop-label';
+  label.textContent = 'This Week';
+  label.style.marginTop = '8px';
+  grid.appendChild(label);
+
+  [
+    ['leftAwq0', 'XP за неделю', '0 / ? XP · +1500 XP'],
+    ['leftAwq1', 'Квест недели', '0 / 3 · +1000 XP'],
+    ['leftAwq2', '🔥 Продли стрик', '0 / 4 дней · +1000 XP']
+  ].forEach(([prefix, title, meta]) => {
+    const card = document.createElement('div');
+    card.className = 'author-quest-card';
+    card.id = `${prefix}card`;
+    card.innerHTML = `<div class="author-quest-name" id="${prefix}name">${title}</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="${prefix}bar" style="width:0%"></div></div><div class="author-quest-meta" id="${prefix}meta">${meta}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderMetaProgressPanel() {
+  ensurePersonalWeeklyCards();
+  const meta = getMetaLoopSnapshot();
+  renderDailyGoalCards('dailyAdq', meta);
+  renderWeeklyAuthorQuestCards({
+    weekBar: 'leftAwq0bar',
+    weekMeta: 'leftAwq0meta',
+    weekCard: 'leftAwq0card',
+    qowBar: 'leftAwq1bar',
+    qowName: 'leftAwq1name',
+    qowMeta: 'leftAwq1meta',
+    qowCard: 'leftAwq1card',
+    streakBar: 'leftAwq2bar',
+    streakName: 'leftAwq2name',
+    streakMeta: 'leftAwq2meta',
+    streakCard: 'leftAwq2card'
+  });
+
+  const metaCopy = document.getElementById('metaProgressCopy');
+  if (metaCopy) metaCopy.textContent = meta.totalActive
+    ? `Your regular quest work is currently filling ${meta.dailyCompleted}/3 daily goals, ${meta.weekPct}% of the weekly track, and building toward ${meta.nextReward.label.toLowerCase()}.`
+    : 'Start with one regular quest. That single action will create today pass progress, daily goal movement, and the first step toward author rewards.';
+
+  const metaDaily = document.getElementById('metaDailyValue');
+  const metaWeek = document.getElementById('metaWeekValue');
+  const metaQow = document.getElementById('metaQowValue');
+  const metaReward = document.getElementById('metaRewardValue');
+  if (metaDaily) metaDaily.textContent = `${meta.dailyCompleted} / 3`;
+  if (metaWeek) metaWeek.textContent = `${meta.weekXP} / ${meta.weekTarget}`;
+  if (metaQow) metaQow.textContent = `${meta.qow.done} / ${meta.qow.target}`;
+  if (metaReward) metaReward.textContent = meta.nextReward.label;
+
+  const focus = getBestNextQuest();
+  const fallbackTitle = focus ? `Next best move: ${focus.name}` : 'Finish a quest to wake this chain up.';
+  const fallbackSub = focus
+    ? `This quest adds up to ${focus.xp || 0} XP, pushes today's pass, and counts toward daily and weekly goals.`
+    : 'Your next completion should update XP, pass progress, daily goals, and author reward proximity all at once.';
+  const pulse = lastCompletionPulse || {
+    title: fallbackTitle,
+    sub: fallbackSub,
+    xp: '+0',
+    pass: `${Math.round(getPersonalPassSnapshot().pct)}%`,
+    goals: `${meta.dailyCompleted} / 3`,
+    author: `${meta.authorTodayXP} XP`
+  };
+
+  const titleEl = document.getElementById('completionPulseTitle');
+  const subEl = document.getElementById('completionPulseSub');
+  const xpEl = document.getElementById('completionPulseXP');
+  const passEl = document.getElementById('completionPulsePass');
+  const goalsEl = document.getElementById('completionPulseGoals');
+  const authorEl = document.getElementById('completionPulseAuthor');
+  if (titleEl) titleEl.textContent = pulse.title;
+  if (subEl) subEl.textContent = pulse.sub;
+  if (xpEl) xpEl.textContent = pulse.xp;
+  if (passEl) passEl.textContent = pulse.pass;
+  if (goalsEl) goalsEl.textContent = pulse.goals;
+  if (authorEl) authorEl.textContent = pulse.author;
+}
+
+function captureProgressSnapshot(pass = getCurrentPass()) {
+  return {
+    personal: getPersonalPassSnapshot(pass),
+    meta: getMetaLoopSnapshot()
+  };
+}
+
+function pulseProgressTargets() {
+  ['metaProgressCard', 'completionPulseCard', 'passAuthorCompact', 'passLevels'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('progress-pulse');
+    void el.offsetWidth;
+    el.classList.add('progress-pulse');
+    setTimeout(() => el.classList.remove('progress-pulse'), 760);
+  });
+}
+
+function rememberCompletionPulse(quest, before, after, deltaXP, completed = false) {
+  const authorDelta = Math.max(0, after.meta.authorTodayXP - before.meta.authorTodayXP);
+  lastCompletionPulse = {
+    title: completed ? `${quest.name} completed` : `${quest.name} progressed`,
+    sub: completed
+      ? `XP landed, today's pass moved, meta goals updated, and ${after.meta.nextReward.label.toLowerCase()} is now closer.`
+      : `Progress on this quest is already feeding today's pass and the meta loop.`
+      ,
+    xp: `+${deltaXP}`,
+    pass: `${Math.round(after.personal.pct)}%`,
+    goals: `${after.meta.dailyCompleted} / 3`,
+    author: `+${authorDelta} XP`
+  };
+  renderMetaProgressPanel();
+  pulseProgressTargets();
+}
+
 function scrollAuthorCompactTrack(dir) {
   const frame = document.getElementById('passAuthorTrackFrame');
   if (!frame) return;
@@ -3439,6 +4092,9 @@ function renderLobby() {
   }
 
   const currentPass = getCurrentPass();
+  const passSnapshot = getPersonalPassSnapshot(currentPass);
+  const metaSnapshot = getMetaLoopSnapshot();
+  const bestQuest = getBestNextQuest(currentPass);
   const todayProg = getLobbyQuestProgressFromPass(currentPass);
   const todayMeta = document.getElementById('lobbyTodayMeta');
   if (todayMeta) todayMeta.textContent = `${todayProg.done}/${todayProg.total} quests completed today`;
@@ -3460,12 +4116,20 @@ function renderLobby() {
   const t2 = topTasks[1] || null;
   const task1Name = document.getElementById('lobbyTask1Name');
   const task1XP = document.getElementById('lobbyTask1XP');
+  const task1Hint = document.getElementById('lobbyTask1Hint');
   const task2Name = document.getElementById('lobbyTask2Name');
   const task2XP = document.getElementById('lobbyTask2XP');
+  const task2Hint = document.getElementById('lobbyTask2Hint');
   if (task1Name) task1Name.textContent = t1 ? t1.name : 'No task yet';
   if (task1XP) task1XP.textContent = t1 ? `${t1.xp || 0} XP` : '0 XP';
+  if (task1Hint) task1Hint.textContent = t1
+    ? `${Math.round(((t1.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% of today's pass if completed.`
+    : 'Create a quest to start today\'s loop.';
   if (task2Name) task2Name.textContent = t2 ? t2.name : 'No task yet';
   if (task2XP) task2XP.textContent = t2 ? `${t2.xp || 0} XP` : '0 XP';
+  if (task2Hint) task2Hint.textContent = t2
+    ? `${Math.round(((t2.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% of today's pass if completed.`
+    : 'Your second strongest quest will appear here.';
 
   const totalAuthorXP = getTotalAuthorXP();
   const authorLevel = Math.min(Math.floor(totalAuthorXP / 500), 150);
@@ -3491,6 +4155,38 @@ function renderLobby() {
     streakMeta: 'lobbyAwq2meta',
     streakCard: 'lobbyAwq2card'
   });
+
+  const heroTitle = document.getElementById('lobbyHeroTitle');
+  const heroSubtitle = document.getElementById('lobbyHeroSubtitle');
+  const heroNote = document.getElementById('lobbyProgressNote');
+  const heroFocus = document.getElementById('lobbyHeroFocus');
+  const heroPass = document.getElementById('lobbyHeroPass');
+  const heroGoals = document.getElementById('lobbyHeroGoals');
+  const heroAuthor = document.getElementById('lobbyHeroAuthor');
+  const enterTitle = document.getElementById('lobbyEnterTitle');
+  const enterStats = document.getElementById('lobbyEnterStats');
+
+  if (heroTitle) heroTitle.textContent = passSnapshot.totalCount
+    ? `${passSnapshot.totalCount} quests ready to move your pass`
+    : 'No quests ready yet';
+  if (heroSubtitle) heroSubtitle.textContent = bestQuest
+    ? `${bestQuest.name} is the strongest next move: +${bestQuest.xp || 0} XP into today pass, plus progress for daily and weekly goals.`
+    : 'Start with one regular quest so the full chain becomes visible: task, XP, today pass, daily goals, weekly goals, and author pass.';
+  if (heroNote) heroNote.textContent = passSnapshot.totalCount
+    ? `${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP already in motion • ${metaSnapshot.dailyCompleted}/3 daily goals done`
+    : 'Add a quest to activate today pass and meta progress';
+  if (heroFocus) heroFocus.textContent = bestQuest ? `${bestQuest.name} · ${bestQuest.xp || 0} XP` : 'Add your first quest';
+  if (heroPass) heroPass.textContent = `${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP`;
+  if (heroGoals) heroGoals.textContent = `${metaSnapshot.dailyCompleted}/3 daily · ${metaSnapshot.weekPct}% weekly`;
+  if (heroAuthor) heroAuthor.textContent = `${metaSnapshot.nextReward.label} · ${metaSnapshot.nextReward.hint}`;
+  if (enterTitle) enterTitle.textContent = passSnapshot.totalCount ? 'ENTER LOOP' : 'START LOOP';
+  if (enterStats) {
+    enterStats.innerHTML = `
+      <div class="lobby-enter-stat"><span>Ready now</span><strong>${passSnapshot.totalCount} quests</strong></div>
+      <div class="lobby-enter-stat"><span>Pass progress</span><strong>${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP</strong></div>
+      <div class="lobby-enter-stat"><span>Closest unlock</span><strong>${metaSnapshot.nextReward.label}</strong></div>
+    `;
+  }
 }
 
 function isQuestActiveToday(q) {
@@ -3559,6 +4255,104 @@ function selectXP(el) { document.querySelectorAll('.xp-opt').forEach(o => o.clas
 
 // ====== PASS LEVELS (horizontal scroll) ======
 function updatePass() {
+  {
+    const passSnapshot = getPersonalPassSnapshot(getCurrentPass());
+    const quests = passSnapshot.quests;
+    const totalMaxXP = passSnapshot.totalXP;
+    const totalEarnedXP = passSnapshot.earnedXP;
+    const pct = passSnapshot.pct;
+    const meta = getMetaLoopSnapshot();
+    const bestQuest = getBestNextQuest();
+
+    const xpEl = document.getElementById('dailyXpCounter');
+    if (xpEl) {
+      const earned = Math.round(totalEarnedXP);
+      const pctClass = earned === totalMaxXP && totalMaxXP > 0 ? 'color:var(--accent);font-weight:800;' : '';
+      xpEl.innerHTML = `<span style="${pctClass}">${earned}</span> / ${totalMaxXP} XP`;
+    }
+
+    const todayLoopStrip = document.getElementById('todayLoopStrip');
+    if (todayLoopStrip) {
+      todayLoopStrip.innerHTML = `
+        <div class="today-loop-chip"><div class="today-loop-chip-label">Today</div><div class="today-loop-chip-value">${passSnapshot.completedCount}/${passSnapshot.totalCount} quests cleared</div></div>
+        <div class="today-loop-chip"><div class="today-loop-chip-label">Pass XP</div><div class="today-loop-chip-value">${Math.round(totalEarnedXP)} / ${totalMaxXP}</div></div>
+        <div class="today-loop-chip"><div class="today-loop-chip-label">Meta goals</div><div class="today-loop-chip-value">${meta.dailyCompleted}/3 daily · ${meta.weekPct}% weekly</div></div>
+        <div class="today-loop-chip"><div class="today-loop-chip-label">Author reward</div><div class="today-loop-chip-value">${meta.nextReward.hint}</div></div>
+      `;
+    }
+
+    const authorHintEl = document.getElementById('passAuthorXpHint');
+    if (authorHintEl) {
+      const projection = estimateAuthorXpByDoneUnits(passSnapshot.doneUnits, quests.length);
+      authorHintEl.innerHTML = `Today's regular quests are currently projecting <strong>+${projection.total} author XP</strong> into the meta pass.`;
+    }
+    const milestonesEl = document.getElementById('passAuthorXpMilestones');
+    if (milestonesEl) {
+      const nextQuestUnits = bestQuest ? passSnapshot.doneUnits + (1 - Math.min(1, (bestQuest.current || 0) / bestQuest.max)) : passSnapshot.doneUnits;
+      const nextQuestProjection = estimateAuthorXpByDoneUnits(nextQuestUnits, Math.max(quests.length, 1));
+      const halfProjection = estimateAuthorXpByDoneUnits(Math.max(passSnapshot.doneUnits, Math.ceil(Math.max(quests.length, 1) * 0.5)), Math.max(quests.length, 1));
+      const fullProjection = estimateAuthorXpByDoneUnits(Math.max(quests.length, 1), Math.max(quests.length, 1));
+      milestonesEl.innerHTML = `
+        <div class="pass-author-xp-milestone">Next move: <strong>+${nextQuestProjection.total} XP</strong></div>
+        <div class="pass-author-xp-milestone">Half loop: <strong>+${halfProjection.total} XP</strong></div>
+        <div class="pass-author-xp-milestone">Full clear: <strong>+${fullProjection.total} XP</strong></div>
+      `;
+    }
+
+    const personalFocusTitle = document.getElementById('personalFocusTitle');
+    const personalFocusSub = document.getElementById('personalFocusSub');
+    const personalFocusFill = document.getElementById('personalFocusFill');
+    const personalFocusMetaLeft = document.getElementById('personalFocusMetaLeft');
+    const personalFocusMetaRight = document.getElementById('personalFocusMetaRight');
+    if (personalFocusTitle) personalFocusTitle.textContent = bestQuest ? `${bestQuest.name} · ${bestQuest.xp || 0} XP` : 'Add your first quest';
+    if (personalFocusSub) personalFocusSub.textContent = bestQuest
+      ? `${Math.round(((bestQuest.xp || 0) / Math.max(totalMaxXP, 1)) * 100)}% of today's pass sits in this quest, and it also advances daily and weekly goals.`
+      : 'Your first regular quest should immediately make the task -> XP -> pass -> goals chain visible.';
+    if (personalFocusFill) personalFocusFill.style.width = `${pct}%`;
+    if (personalFocusMetaLeft) personalFocusMetaLeft.textContent = `${passSnapshot.completedCount}/${passSnapshot.totalCount} quests cleared`;
+    if (personalFocusMetaRight) personalFocusMetaRight.textContent = `${Math.round(totalEarnedXP)} / ${totalMaxXP} XP in play`;
+
+    const authorFocusTitle = document.getElementById('authorFocusTitle');
+    const authorFocusSub = document.getElementById('authorFocusSub');
+    const authorFocusFill = document.getElementById('authorFocusFill');
+    const authorFocusMetaLeft = document.getElementById('authorFocusMetaLeft');
+    const authorFocusMetaRight = document.getElementById('authorFocusMetaRight');
+    if (authorFocusTitle) authorFocusTitle.textContent = meta.nextReward.label;
+    if (authorFocusSub) authorFocusSub.textContent = `Today's work is already generating ${meta.authorTodayXP} live author XP. ${meta.nextReward.hint}.`;
+    if (authorFocusFill) authorFocusFill.style.width = `${meta.nextReward.progressPct}%`;
+    if (authorFocusMetaLeft) authorFocusMetaLeft.textContent = meta.nextReward.meta;
+    if (authorFocusMetaRight) authorFocusMetaRight.textContent = `${meta.dailyCompleted}/3 daily goals complete`;
+
+    const container = document.getElementById('passLevels');
+    if (container) {
+      container.innerHTML = '';
+      const n = Math.max(quests.length, 1);
+      const circles = n + 1;
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;align-items:center;justify-content:space-between;position:relative;width:100%;min-width:' + (circles * 46) + 'px;';
+
+      const track = document.createElement('div');
+      track.style.cssText = 'position:absolute;top:50%;left:19px;right:19px;height:5px;background:var(--bar-bg);border-radius:2px;transform:translateY(-50%);z-index:0;';
+      const fill = document.createElement('div');
+      fill.style.cssText = `height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s ease;width:${pct}%;`;
+      track.appendChild(fill);
+      wrap.appendChild(track);
+
+      for (let i = 0; i < circles; i++) {
+        const threshold = i === 0 ? 0 : (i / n) * 100;
+        const filled = i === 0 || pct >= threshold;
+        const div = document.createElement('div');
+        div.className = 'pass-level' + (filled ? ' filled' : '');
+        div.textContent = i;
+        div.style.zIndex = 1;
+        wrap.appendChild(div);
+      }
+      container.appendChild(wrap);
+    }
+
+    renderMetaProgressPanel();
+    return;
+  }
   const allQuests = normalizeArray(getCurrentPass()?.quests);
   const quests = allQuests.filter(q => q !== null && !q.frozen && isQuestActiveToday(q));
   const totalMaxXP = quests.reduce((s, q) => s + q.xp, 0);
@@ -3835,6 +4629,15 @@ function renderQuests() {
             ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0.6;"><span style="font-size:14px;">📋</span><span style="font-size:9px;font-weight:700;">вставить</span></div>`
             : `<span style="font-size:18px;opacity:0.3;">+</span>`;
           div.title = questClipboard ? 'Вставить квест' : 'Добавить квест';
+          const emptyTitle = questClipboard ? 'Paste quest' : 'Add quest';
+          const emptyMeta = questClipboard
+            ? "Drop the copied quest here to keep today's loop moving."
+            : 'Create the next task, collect XP, and unlock the next pass step.';
+          div.innerHTML = `<div class="quest-empty-copy"><span style="font-size:${questClipboard ? 14 : 18}px;opacity:${questClipboard ? 1 : 0.6};">${questClipboard ? 'рџ“‹' : '+'}</span><span class="quest-empty-title">${emptyTitle}</span><span class="quest-empty-meta">${emptyMeta}</span></div>`;
+          if (questClipboard) {
+            const iconEl = div.querySelector('.quest-empty-copy span');
+            if (iconEl) iconEl.innerHTML = '&#128203;';
+          }
           div.style.cursor = 'pointer';
           div.addEventListener('click', () => {
             if (dragSrcIndex !== null) return;
@@ -3964,6 +4767,7 @@ function bindQuestEditables() {
       const i = parseInt(this.dataset.quest);
       const q = p.quests[i];
       if (!q) return;
+      const beforeSnapshot = captureProgressSnapshot(p);
       const val = Math.min(Math.max(parseInt(this.innerText) || 0, 0), q.max);
       this.innerText = val;
       const oldVal = q.current || 0;
@@ -3983,6 +4787,10 @@ function bindQuestEditables() {
           xp: Math.round(delta * (q.xp || 100)),
           detail: `${val}/${q.max} ${q.unit||''}`.trim(),
         });
+        if (delta > 0) {
+          const afterSnapshot = captureProgressSnapshot(p);
+          rememberCompletionPulse(q, beforeSnapshot, afterSnapshot, Math.round(delta * (q.xp || 100)), val >= q.max);
+        }
       }
       if (val >= q.max) onQuestCompleted(q.name);
       else updateAuthorIfOpen(); // обновить даже если не 100% — для снятия QOW дня
@@ -4577,6 +5385,7 @@ function saveMetricChange() {
     }
   } else if (changeMetricType === 'quest') {
     const q = p.quests[changeMetricIndex];
+    const beforeSnapshot = captureProgressSnapshot(p);
     if (!q) { showToast('Ошибка: квест не найден'); return; }
     const oldPct = Math.min(1, (q.current || 0) / q.max);
     q.current = val;
@@ -4597,6 +5406,10 @@ function saveMetricChange() {
     savePasses();
     closePopup('changeMetricOverlay');
     renderQuests();
+    if (delta > 0) {
+      const afterSnapshot = captureProgressSnapshot(p);
+      rememberCompletionPulse(q, beforeSnapshot, afterSnapshot, Math.round(delta * (q.xp || 100)), val >= q.max);
+    }
     updateAuthorIfOpen();
   } else {
     p.megaQuests[changeMetricIndex].current = val;
