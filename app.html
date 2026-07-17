@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>YOUR DAILY PASS</title>
+<title>Твой дневной пасс</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1342,13 +1342,13 @@ body {
 <div class="lobby-overlay" id="lobbyOverlay">
   <div class="lobby-shell">
     <div class="lobby-col lobby-left">
-      <div class="lobby-title">Week Shop</div>
+      <div class="lobby-title">Магазин недели</div>
       <div class="lobby-card week-shop-card">
         <div>
-          <div class="week-shop-name" id="lobbyShopName">Night Shift</div>
-          <div class="lobby-subtitle" id="lobbyShopFlavor">Weekly pick</div>
+          <div class="week-shop-name" id="lobbyShopName">Ночная смена</div>
+          <div class="lobby-subtitle" id="lobbyShopFlavor">Выбор недели</div>
         </div>
-        <div class="week-shop-price" id="lobbyShopPrice">200 Coins</div>
+        <div class="week-shop-price" id="lobbyShopPrice">200 монет</div>
         <div class="week-shop-nav">
           <button type="button" onclick="stepLobbyShop(-1)">‹</button>
           <div class="week-shop-count" id="lobbyShopCount">1/3</div>
@@ -1356,7 +1356,7 @@ body {
         </div>
       </div>
       <div class="lobby-weekly-wrap">
-        <div class="lobby-title">Weekly Author Quests</div>
+        <div class="lobby-title">Недельные авторские квесты</div>
         <div class="lobby-card lobby-weekly-card">
           <div class="lobby-weekly-meta">Авторский прогресс за неделю прямо из лобби</div>
           <div class="daily-quests-section lobby-weekly-grid" style="margin-top:12px;">
@@ -1369,65 +1369,65 @@ body {
     </div>
 
     <div class="lobby-col lobby-center">
-      <div class="lobby-welcome">Welcome home<span id="lobbyWelcomeName" class="lobby-username"></span></div>
+      <div class="lobby-welcome">С возвращением<span id="lobbyWelcomeName" class="lobby-username"></span></div>
       <div class="lobby-card lobby-hero-card">
         <div>
-          <div class="lobby-title">Today Loop</div>
-          <div class="lobby-hero-title" id="lobbyHeroTitle">0 quests ready to move your pass</div>
-          <div class="lobby-subtitle" id="lobbyHeroSubtitle">Finish regular quests to gain XP, fill today pass, complete daily and weekly goals, and push author pass.</div>
-          <div class="lobby-progress-note" id="lobbyProgressNote">No active momentum yet</div>
+          <div class="lobby-title">Цикл дня</div>
+          <div class="lobby-hero-title" id="lobbyHeroTitle">0 квестов готовы двигать твой пасс</div>
+          <div class="lobby-subtitle" id="lobbyHeroSubtitle">Завершай обычные квесты, чтобы получать XP, заполнять пасс дня, закрывать ежедневные и недельные цели и двигать авторский пасс.</div>
+          <div class="lobby-progress-note" id="lobbyProgressNote">Пока нет активного движения</div>
         </div>
         <div class="lobby-summary-grid">
-          <div class="lobby-summary-item"><span>Best next move</span><strong id="lobbyHeroFocus">Add your first quest</strong></div>
-          <div class="lobby-summary-item"><span>Today pass</span><strong id="lobbyHeroPass">0 / 0 XP</strong></div>
-          <div class="lobby-summary-item"><span>Meta goals</span><strong id="lobbyHeroGoals">0 daily complete</strong></div>
-          <div class="lobby-summary-item"><span>Author reward</span><strong id="lobbyHeroAuthor">No reward in sight yet</strong></div>
+          <div class="lobby-summary-item"><span>Лучший следующий ход</span><strong id="lobbyHeroFocus">Добавь первый квест</strong></div>
+          <div class="lobby-summary-item"><span>Пасс дня</span><strong id="lobbyHeroPass">0 / 0 XP</strong></div>
+          <div class="lobby-summary-item"><span>Мета-цели</span><strong id="lobbyHeroGoals">0 ежедневок выполнено</strong></div>
+          <div class="lobby-summary-item"><span>Авторская награда</span><strong id="lobbyHeroAuthor">Награды пока не видно</strong></div>
         </div>
       </div>
 
       <div class="lobby-section">
-        <div class="lobby-section-title">Last day progress</div>
-        <div class="lobby-meta" id="lobbyLastDayMeta">No previous snapshot yet</div>
+        <div class="lobby-section-title">Прогресс прошлого дня</div>
+        <div class="lobby-meta" id="lobbyLastDayMeta">Снимка прошлого дня пока нет</div>
         <div class="lobby-pass-track" id="lobbyLastDayTrack"></div>
       </div>
 
       <div class="lobby-section">
-        <div class="lobby-section-title">Today pass</div>
-        <div class="lobby-meta" id="lobbyTodayMeta">0/0 quests</div>
+        <div class="lobby-section-title">Пасс дня</div>
+        <div class="lobby-meta" id="lobbyTodayMeta">0/0 квестов</div>
         <div class="lobby-pass-track" id="lobbyTodayTrack"></div>
       </div>
 
       <div class="lobby-section">
-        <div class="lobby-section-title">Tasks (most XP)</div>
+        <div class="lobby-section-title">Задачи (максимум XP)</div>
         <div class="lobby-task-grid">
           <div class="lobby-card lobby-task-card">
-            <div class="lobby-task-name" id="lobbyTask1Name">No task yet</div>
+            <div class="lobby-task-name" id="lobbyTask1Name">Пока нет задачи</div>
             <div class="lobby-task-xp" id="lobbyTask1XP">0 XP</div>
-            <div class="lobby-task-hint" id="lobbyTask1Hint">Create a quest to start today's loop.</div>
+            <div class="lobby-task-hint" id="lobbyTask1Hint">Создай квест, чтобы запустить сегодняшний цикл.</div>
           </div>
           <div class="lobby-card lobby-task-card">
-            <div class="lobby-task-name" id="lobbyTask2Name">No task yet</div>
+            <div class="lobby-task-name" id="lobbyTask2Name">Пока нет задачи</div>
             <div class="lobby-task-xp" id="lobbyTask2XP">0 XP</div>
-            <div class="lobby-task-hint" id="lobbyTask2Hint">Your second strongest quest will appear here.</div>
+            <div class="lobby-task-hint" id="lobbyTask2Hint">Здесь появится вторая по силе задача.</div>
           </div>
         </div>
       </div>
 
       <div class="lobby-section">
-        <div class="lobby-section-title">Author Pass</div>
-        <div class="lobby-meta" id="lobbyAuthorMeta">Level 0 · 0 XP</div>
+        <div class="lobby-section-title">Авторский пасс</div>
+        <div class="lobby-meta" id="lobbyAuthorMeta">Ур. 0 · 0 XP</div>
         <div class="lobby-pass-track" id="lobbyAuthorTrack"></div>
       </div>
     </div>
 
     <div class="lobby-col">
       <div class="lobby-card lobby-enter-card" onclick="enterAppFromLobby()">
-        <div class="lobby-enter-kicker" id="lobbyEnterKicker">Today's command center</div>
-        <div class="lobby-enter-text" id="lobbyEnterTitle">GET INTO</div>
+        <div class="lobby-enter-kicker" id="lobbyEnterKicker">Центр управления днём</div>
+        <div class="lobby-enter-text" id="lobbyEnterTitle">ВОЙТИ</div>
         <div class="lobby-enter-stats" id="lobbyEnterStats">
-          <div class="lobby-enter-stat"><span>Ready now</span><strong>0 quests</strong></div>
-          <div class="lobby-enter-stat"><span>Pass progress</span><strong>0 / 0 XP</strong></div>
-          <div class="lobby-enter-stat"><span>Closest unlock</span><strong>Start the loop</strong></div>
+          <div class="lobby-enter-stat"><span>Готово сейчас</span><strong>0 квестов</strong></div>
+          <div class="lobby-enter-stat"><span>Прогресс пасса</span><strong>0 / 0 XP</strong></div>
+          <div class="lobby-enter-stat"><span>Ближайшая награда</span><strong>Начни цикл</strong></div>
         </div>
         <div class="lobby-enter-arrow">→</div>
       </div>
@@ -1458,7 +1458,7 @@ body {
         <div class="streak-freeze-info">Заморозок: <span id="streakFreezeCount">3</span>/3 на неделе</div>
       </div>
     </div>
-    <div class="header-title" id="headerTitle">Your Daily Pass</div>
+    <div class="header-title" id="headerTitle">Твой дневной пасс</div>
   </div>
   <button class="header-btn" onclick="returnToLobby()" data-tooltip="Вернуться в лобби" id="lobbyBackBtn">↩</button>
   <button class="header-btn" onclick="toggleAuthorScreen()" data-tooltip="Авторский пасс" id="authorPassBtn" style="display:none;">🏆</button>
@@ -1526,24 +1526,24 @@ body {
       <div class="pass-container-wrap">
         <div class="pass-container">
           <div class="pass-top-row" style="display:flex;align-items:center;justify-content:space-between;">
-            <div class="pass-title" id="passTitle">Battle Pass</div>
+            <div class="pass-title" id="passTitle">Пасс дня</div>
             <div class="daily-xp-counter" id="dailyXpCounter">0 / 0 XP сегодня</div>
           </div>
           <div class="today-loop-strip" id="todayLoopStrip"></div>
           <div class="reward-spotlight">
             <div class="reward-spotlight-main">
-              <div class="reward-spotlight-kicker">Best next move</div>
-              <div class="reward-spotlight-title" id="personalFocusTitle">Add your first quest</div>
-              <div class="reward-spotlight-sub" id="personalFocusSub">The top quest here should tell you what to do next and how it fills today's pass.</div>
+              <div class="reward-spotlight-kicker">Лучший следующий ход</div>
+              <div class="reward-spotlight-title" id="personalFocusTitle">Добавь первый квест</div>
+              <div class="reward-spotlight-sub" id="personalFocusSub">Главный квест здесь должен подсказывать следующий шаг и показывать, как он наполняет пасс дня.</div>
               <div class="reward-spotlight-bar"><div class="reward-spotlight-fill" id="personalFocusFill" style="width:0%"></div></div>
-              <div class="reward-spotlight-meta"><span id="personalFocusMetaLeft">0 quests active</span><span id="personalFocusMetaRight">0 XP in play</span></div>
+              <div class="reward-spotlight-meta"><span id="personalFocusMetaLeft">0 активных квестов</span><span id="personalFocusMetaRight">0 XP в работе</span></div>
             </div>
             <div class="reward-spotlight-main reward-spotlight-side">
-              <div class="reward-spotlight-kicker">Next author reward</div>
-              <div class="reward-spotlight-title" id="authorFocusTitle">No reward yet</div>
-              <div class="reward-spotlight-sub" id="authorFocusSub">Daily and weekly goals turn today's work into author pass progress.</div>
+              <div class="reward-spotlight-kicker">Следующая авторская награда</div>
+              <div class="reward-spotlight-title" id="authorFocusTitle">Награды пока нет</div>
+              <div class="reward-spotlight-sub" id="authorFocusSub">Ежедневные и недельные цели превращают сегодняшнюю работу в прогресс авторского пасса.</div>
               <div class="reward-spotlight-bar"><div class="reward-spotlight-fill" id="authorFocusFill" style="width:0%"></div></div>
-              <div class="reward-spotlight-meta"><span id="authorFocusMetaLeft">0 / 500 XP</span><span id="authorFocusMetaRight">0 daily goals done</span></div>
+              <div class="reward-spotlight-meta"><span id="authorFocusMetaLeft">0 / 500 XP</span><span id="authorFocusMetaRight">0 ежедневок выполнено</span></div>
             </div>
           </div>
           <div class="pass-levels-wrap" id="passLevels"></div>
@@ -1557,29 +1557,29 @@ body {
       <div class="flangs-section">
         <!-- ЕЖЕДНЕВКИ -->
         <div class="meta-progress-card" id="metaProgressCard">
-          <div class="section-header">Meta Progress</div>
-          <div class="meta-progress-copy" id="metaProgressCopy">Regular quests are not a separate mini-game: they fill these daily and weekly goals, then move author pass forward.</div>
+          <div class="section-header">Мета-прогресс</div>
+          <div class="meta-progress-copy" id="metaProgressCopy">Обычные квесты не живут отдельно: они заполняют ежедневные и недельные цели, а затем двигают авторский пасс вперёд.</div>
           <div class="meta-progress-stats">
-            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Daily goals</div><div class="meta-progress-stat-value" id="metaDailyValue">0 / 3</div></div>
-            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Week XP</div><div class="meta-progress-stat-value" id="metaWeekValue">0 / 0</div></div>
-            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Quest of week</div><div class="meta-progress-stat-value" id="metaQowValue">0 / 3</div></div>
-            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Next reward</div><div class="meta-progress-stat-value" id="metaRewardValue">No reward</div></div>
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Ежедневки</div><div class="meta-progress-stat-value" id="metaDailyValue">0 / 3</div></div>
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Недельный XP</div><div class="meta-progress-stat-value" id="metaWeekValue">0 / 0</div></div>
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Квест недели</div><div class="meta-progress-stat-value" id="metaQowValue">0 / 3</div></div>
+            <div class="meta-progress-stat"><div class="meta-progress-stat-label">Следующая награда</div><div class="meta-progress-stat-value" id="metaRewardValue">Нет награды</div></div>
           </div>
         </div>
         <div class="completion-pulse-card" id="completionPulseCard">
-          <div class="section-header">Completion Pulse</div>
-          <div class="completion-pulse-title" id="completionPulseTitle">Finish a quest to see the full chain react.</div>
-          <div class="completion-pulse-sub" id="completionPulseSub">When you complete a regular quest, this panel should confirm XP gain, pass movement, meta-goal updates, and the next author reward approach.</div>
+          <div class="section-header">Пульс прогресса</div>
+          <div class="completion-pulse-title" id="completionPulseTitle">Заверши квест, чтобы увидеть реакцию всей цепочки.</div>
+          <div class="completion-pulse-sub" id="completionPulseSub">Когда ты закрываешь обычный квест, эта панель подтверждает прирост XP, движение пасса, обновление мета-целей и приближение следующей авторской награды.</div>
           <div class="completion-pulse-chain">
             <div class="completion-pulse-item"><span>XP</span><strong id="completionPulseXP">+0</strong></div>
-            <div class="completion-pulse-item"><span>Pass</span><strong id="completionPulsePass">0%</strong></div>
-            <div class="completion-pulse-item"><span>Goals</span><strong id="completionPulseGoals">0 / 3</strong></div>
-            <div class="completion-pulse-item"><span>Author</span><strong id="completionPulseAuthor">0 XP</strong></div>
+            <div class="completion-pulse-item"><span>Пасс</span><strong id="completionPulsePass">0%</strong></div>
+            <div class="completion-pulse-item"><span>Цели</span><strong id="completionPulseGoals">0 / 3</strong></div>
+            <div class="completion-pulse-item"><span>Автор</span><strong id="completionPulseAuthor">0 XP</strong></div>
           </div>
         </div>
         <div class="daily-quests-section" style="flex:1;display:flex;flex-direction:column;gap:8px;min-height:0;">
           <div class="section-header">ЕЖЕДНЕВКИ</div>
-          <div class="meta-progress-copy" id="goalSectionCopy" style="margin-top:0;">These counters are fed by your normal quests and unlock author pass progress layer by layer.</div>
+          <div class="meta-progress-copy" id="goalSectionCopy" style="margin-top:0;">Эти счётчики питаются от обычных квестов и шаг за шагом открывают прогресс авторского пасса.</div>
           <div class="daily-quests-grid" style="display:flex;flex-direction:column;gap:6px;flex:1;overflow-y:auto;min-height:0;">
             <div class="author-quest-card" id="dailyAdq0"><div class="author-quest-name" id="dailyAdq0name">Выполни квесты</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="dailyAdq0bar" style="width:0%"></div></div><div class="author-quest-meta" id="dailyAdq0meta">0 / ? · +200 XP</div></div>
             <div class="author-quest-card" id="dailyAdq1"><div class="author-quest-name" id="dailyAdq1name">Выполни больше</div><div class="author-quest-bar-bg"><div class="author-quest-bar-fill" id="dailyAdq1bar" style="width:0%"></div></div><div class="author-quest-meta" id="dailyAdq1meta">0 / ? · +200 XP</div></div>
@@ -1590,7 +1590,7 @@ body {
         <!-- МЕГАКВЕСТ -->
         <div class="mega-quests-section" id="megaQuestsSection" style="display:none;">
           <div class="flangs-header-row">
-            <div class="section-header">✦ Mega Quests</div>
+            <div class="section-header">✦ Мегаквесты</div>
             <button class="add-mega-btn" id="addMegaBtn" onclick="onAddMega()">+ Добавить</button>
           </div>
           <div class="mq-list" id="mqList"></div>
@@ -1603,7 +1603,7 @@ body {
       </div>
       <div class="quests-section">
         <div class="quests-header-row">
-          <div class="section-header" id="questsSectionHeader">⚡ Quests</div>
+          <div class="section-header" id="questsSectionHeader">⚡ Квесты</div>
           <button class="add-quest-btn" id="addQuestBtn" onclick="onAddQuest()">+ Добавить квест</button>
         </div>
         <div class="quests-scroll-wrap">
@@ -2318,7 +2318,7 @@ body {
     <!-- PREVIEW AREA -->
     <div id="themePreviewArea" style="margin-top:16px;border-radius:16px;overflow:hidden;position:relative;padding:16px;min-height:200px;">
       <!-- Pass bar mockup -->
-      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;opacity:0.6;margin-bottom:8px;" id="pvPassTitle">MY PASS</div>
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;opacity:0.6;margin-bottom:8px;" id="pvPassTitle">МОЙ ПАСС</div>
       <div style="height:4px;border-radius:4px;background:rgba(255,255,255,0.15);margin-bottom:16px;overflow:hidden;">
         <div id="pvPassBar" style="height:100%;width:60%;border-radius:4px;background:var(--accent);transition:width 0.5s;"></div>
       </div>
@@ -2419,7 +2419,7 @@ body {
 <div class="sub-overlay" id="subOverlay" onclick="closeSubOutside(event)">
   <div class="sub-popup">
     <div class="sub-title">Выбери свой план</div>
-    <div class="sub-subtitle">Разблокируй полный потенциал Your Daily Pass</div>
+    <div class="sub-subtitle">Разблокируй полный потенциал своего пасса</div>
     <div class="sub-plans">
       <div class="sub-plan" id="subPlanFree">
         <div class="sub-plan-name">Free</div>
@@ -2762,6 +2762,90 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+const UI_TEXT = {
+  ru: {
+    appTitle: 'Твой дневной пасс',
+    commander: 'Командир',
+    noTaskYet: 'Пока нет задачи',
+    noPreviousSnapshot: 'Снимка прошлого дня пока нет',
+    lastSeen: 'Последний снимок: {weekday} · {done}/{total} квестов',
+    nextRewardMaxLabel: 'Максимальный уровень автора',
+    nextRewardMaxHint: 'Все крупные награды уже открыты',
+    boxOnLevel: 'Бокс на уровне {level}',
+    pieceOnLevel: 'Кусочек на уровне {level}',
+    xpToGo: 'Осталось {xp} XP',
+    nextLevel: 'Уровень {level}',
+    xpToNextLevel: '{xp} XP до следующего уровня',
+    goalAddFirstQuest: 'Добавь первый квест',
+    goalBuildSomeXp: 'Набери немного XP',
+    goalClearLoop: 'Закрой весь цикл',
+    goalFinishQuests: 'Закрой {target} {questWord}',
+    goalPushQuestUnits: 'Продвинь {target} ед. квестов',
+    goalClearAll: 'Закрой все {total}',
+    thisWeek: 'На этой неделе',
+    metaCopyActive: 'Обычные квесты сейчас закрывают {daily}/3 ежедневок, {week}% недельной шкалы и двигают тебя к награде «{label}».',
+    metaCopyEmpty: 'Начни с одного обычного квеста. Это сразу создаст прогресс в пассе дня, движение ежедневок и первый шаг к авторским наградам.',
+    completionFallbackTitleActive: 'Следующий лучший ход: {name}',
+    completionFallbackTitleEmpty: 'Заверши квест, чтобы разбудить эту цепочку.',
+    completionFallbackSubActive: 'Этот квест даёт до {xp} XP, двигает пасс дня и засчитывается в ежедневки и недельные цели.',
+    completionFallbackSubEmpty: 'Следующее завершение должно одновременно обновить XP, прогресс пасса, ежедневки и приближение авторской награды.',
+    completionCompleted: '{name} завершён',
+    completionProgressed: '{name} продвинут',
+    completionCompletedSub: 'XP начислен, пасс дня сдвинулся, мета-цели обновились, а награда «{label}» стала ближе.',
+    completionProgressedSub: 'Прогресс по этому квесту уже питает пасс дня и мета-цикл.',
+    questHeader: '⚡ Квесты',
+    subtaskHeader: '◉ Подзадачи',
+    seasonPass: 'Сезонный пасс',
+    personalPass: 'Твой дневной пасс',
+    questsReady: '{count} квестов готовы двигать твой пасс',
+    noQuestsReady: 'Пока нет готовых квестов',
+    bestQuestSubtitle: '{name} — лучший следующий ход: +{xp} XP в пасс дня, плюс прогресс в ежедневках и недельных целях.',
+    emptyQuestSubtitle: 'Начни с одного обычного квеста, чтобы увидеть всю цепочку: задача, XP, пасс дня, ежедневки, недельные цели и авторский пасс.',
+    progressNoteActive: '{earned} / {total} XP уже в движении · {daily}/3 ежедневок выполнено',
+    progressNoteEmpty: 'Добавь квест, чтобы включить пасс дня и мета-прогресс',
+    addFirstQuest: 'Добавь первый квест',
+    dailyGoalsShort: '{daily}/3 ежедневки · {week}% недели',
+    authorRewardShort: '{label} · {hint}',
+    enterLoop: 'ВОЙТИ',
+    startLoop: 'НАЧАТЬ',
+    readyNow: 'Готово сейчас',
+    passProgress: 'Прогресс пасса',
+    closestUnlock: 'Ближайшая награда',
+    questsCleared: '{done}/{total} квестов закрыто',
+    today: 'Сегодня',
+    passXp: 'XP пасса',
+    metaGoals: 'Мета-цели',
+    dailyWeekly: '{daily}/3 ежедневки · {week}% недели',
+    authorReward: 'Авторская награда',
+    authorProjection: 'Обычные квесты сегодня уже проецируют <strong>+{xp} XP автора</strong> в мета-пасс.',
+    nextMove: 'Следующий ход',
+    halfLoop: 'Половина цикла',
+    fullClear: 'Полный цикл',
+    questShare: 'В этой задаче {percent}% пасса дня, и она же двигает ежедневки и недельные цели.',
+    firstQuestChain: 'Первый обычный квест сразу покажет цепочку задача -> XP -> пасс -> цели.',
+    xpInPlay: '{earned} / {total} XP в работе',
+    questsActive: '{done}/{total} квестов закрыто',
+    authorFocusSub: 'Сегодняшняя работа уже даёт {xp} живого XP автора. {hint}.',
+    dailyGoalsDone: '{count}/3 ежедневок выполнено'
+  }
+};
+
+let currentLanguage = load('passit_lang', 'ru');
+
+function t(key, vars = {}) {
+  const dict = UI_TEXT[currentLanguage] || UI_TEXT.ru;
+  const template = dict[key] ?? UI_TEXT.ru[key] ?? key;
+  return template.replace(/\{(\w+)\}/g, (_, token) => String(vars[token] ?? ''));
+}
+
+function pluralQuestRu(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'квест';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'квеста';
+  return 'квестов';
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -3020,7 +3104,7 @@ function applyPassTypeUI() {
   const megaSec = document.getElementById('megaQuestsSection');
   if (megaSec) megaSec.style.display = 'none';
   const questHeader = document.getElementById('questsSectionHeader');
-  if (questHeader) questHeader.textContent = focus ? '◉ Подзадачи' : '⚡ Quests';
+  if (questHeader) questHeader.textContent = focus ? t('subtaskHeader') : t('questHeader');
   const addBtn = document.getElementById('addQuestBtn');
   if (addBtn) addBtn.textContent = focus ? '+ Подзадача' : '+ Добавить квест';
 }
@@ -3549,8 +3633,8 @@ function getNextAuthorRewardInfo(totalXP = getTotalAuthorXP()) {
   const xpIntoLevel = totalXP - level * 500;
   if (level >= 150) {
     return {
-      label: 'Max author level reached',
-      hint: 'All major rewards are already unlocked',
+      label: t('nextRewardMaxLabel'),
+      hint: t('nextRewardMaxHint'),
       progressPct: 100,
       meta: '150 / 150',
       xpToReward: 0
@@ -3563,8 +3647,8 @@ function getNextAuthorRewardInfo(totalXP = getTotalAuthorXP()) {
     if (!isBox && !isPiece) continue;
     const xpToReward = Math.max(0, rewardLevel * 500 - totalXP);
     return {
-      label: isBox ? `Box on level ${rewardLevel}` : `Piece on level ${rewardLevel}`,
-      hint: `${xpToReward} XP to go`,
+      label: isBox ? t('boxOnLevel', { level: rewardLevel }) : t('pieceOnLevel', { level: rewardLevel }),
+      hint: t('xpToGo', { xp: xpToReward }),
       progressPct: Math.round(Math.min(xpIntoLevel / 500, 1) * 100),
       meta: `${xpIntoLevel} / 500 XP`,
       xpToReward
@@ -3572,8 +3656,8 @@ function getNextAuthorRewardInfo(totalXP = getTotalAuthorXP()) {
   }
 
   return {
-    label: `Level ${level + 1}`,
-    hint: `${Math.max(0, 500 - xpIntoLevel)} XP to next level`,
+    label: t('nextLevel', { level: level + 1 }),
+    hint: t('xpToNextLevel', { xp: Math.max(0, 500 - xpIntoLevel) }),
     progressPct: Math.round(Math.min(xpIntoLevel / 500, 1) * 100),
     meta: `${xpIntoLevel} / 500 XP`,
     xpToReward: Math.max(0, 500 - xpIntoLevel)
@@ -3592,14 +3676,14 @@ function getMetaLoopSnapshot() {
 
   const dailyGoals = targets.map((target, index) => {
     const fallbackNames = [
-      'Add first quest',
-      'Build some XP',
-      'Clear the full loop'
+      t('goalAddFirstQuest'),
+      t('goalBuildSomeXp'),
+      t('goalClearLoop')
     ];
     const activeNames = [
-      `Finish ${target} quest${target > 1 ? 's' : ''}`,
-      `Push ${target} quest units`,
-      `Clear all ${totalActive}`
+      t('goalFinishQuests', { target, questWord: pluralQuestRu(target) }),
+      t('goalPushQuestUnits', { target }),
+      t('goalClearAll', { total: totalActive })
     ];
     return {
       name: totalActive ? activeNames[index] : fallbackNames[index],
@@ -3662,7 +3746,7 @@ function ensurePersonalWeeklyCards() {
 
   const label = document.createElement('div');
   label.className = 'meta-loop-label';
-  label.textContent = 'This Week';
+  label.textContent = t('thisWeek');
   label.style.marginTop = '8px';
   grid.appendChild(label);
 
@@ -3699,8 +3783,8 @@ function renderMetaProgressPanel() {
 
   const metaCopy = document.getElementById('metaProgressCopy');
   if (metaCopy) metaCopy.textContent = meta.totalActive
-    ? `Your regular quest work is currently filling ${meta.dailyCompleted}/3 daily goals, ${meta.weekPct}% of the weekly track, and building toward ${meta.nextReward.label.toLowerCase()}.`
-    : 'Start with one regular quest. That single action will create today pass progress, daily goal movement, and the first step toward author rewards.';
+    ? t('metaCopyActive', { daily: meta.dailyCompleted, week: meta.weekPct, label: meta.nextReward.label })
+    : t('metaCopyEmpty');
 
   const metaDaily = document.getElementById('metaDailyValue');
   const metaWeek = document.getElementById('metaWeekValue');
@@ -3712,10 +3796,10 @@ function renderMetaProgressPanel() {
   if (metaReward) metaReward.textContent = meta.nextReward.label;
 
   const focus = getBestNextQuest();
-  const fallbackTitle = focus ? `Next best move: ${focus.name}` : 'Finish a quest to wake this chain up.';
+  const fallbackTitle = focus ? t('completionFallbackTitleActive', { name: focus.name }) : t('completionFallbackTitleEmpty');
   const fallbackSub = focus
-    ? `This quest adds up to ${focus.xp || 0} XP, pushes today's pass, and counts toward daily and weekly goals.`
-    : 'Your next completion should update XP, pass progress, daily goals, and author reward proximity all at once.';
+    ? t('completionFallbackSubActive', { xp: focus.xp || 0 })
+    : t('completionFallbackSubEmpty');
   const pulse = lastCompletionPulse || {
     title: fallbackTitle,
     sub: fallbackSub,
@@ -3760,10 +3844,10 @@ function pulseProgressTargets() {
 function rememberCompletionPulse(quest, before, after, deltaXP, completed = false) {
   const authorDelta = Math.max(0, after.meta.authorTodayXP - before.meta.authorTodayXP);
   lastCompletionPulse = {
-    title: completed ? `${quest.name} completed` : `${quest.name} progressed`,
+    title: completed ? t('completionCompleted', { name: quest.name }) : t('completionProgressed', { name: quest.name }),
     sub: completed
-      ? `XP landed, today's pass moved, meta goals updated, and ${after.meta.nextReward.label.toLowerCase()} is now closer.`
-      : `Progress on this quest is already feeding today's pass and the meta loop.`
+      ? t('completionCompletedSub', { label: after.meta.nextReward.label })
+      : t('completionProgressedSub')
       ,
     xp: `+${deltaXP}`,
     pass: `${Math.round(after.personal.pct)}%`,
@@ -3850,7 +3934,7 @@ function renderLobby() {
 
   const welcomeName = document.getElementById('lobbyWelcomeName');
   if (welcomeName) {
-    const raw = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Commander';
+    const raw = currentUser?.displayName || currentUser?.email?.split('@')[0] || t('commander');
     welcomeName.textContent = `, ${raw}`;
   }
 
@@ -3860,17 +3944,17 @@ function renderLobby() {
   const bestQuest = getBestNextQuest(currentPass);
   const todayProg = getLobbyQuestProgressFromPass(currentPass);
   const todayMeta = document.getElementById('lobbyTodayMeta');
-  if (todayMeta) todayMeta.textContent = `${todayProg.done}/${todayProg.total} quests completed today`;
+  if (todayMeta) todayMeta.textContent = `${todayProg.done}/${todayProg.total} квестов закрыто сегодня`;
   renderLobbyPassTrack('lobbyTodayTrack', ['1', '2', '3'], todayProg.ratio);
 
   const lastDay = getLobbyLastDaySummary();
   const lastMeta = document.getElementById('lobbyLastDayMeta');
   if (lastDay) {
-    const seenText = `Last seen: ${formatLobbyWeekday(lastDay.date)} · ${lastDay.done}/${lastDay.total} quests`;
+    const seenText = t('lastSeen', { weekday: formatLobbyWeekday(lastDay.date), done: lastDay.done, total: lastDay.total });
     if (lastMeta) lastMeta.textContent = seenText;
     renderLobbyPassTrack('lobbyLastDayTrack', ['1', '2', '3'], lastDay.ratio || 0);
   } else {
-    if (lastMeta) lastMeta.textContent = 'No previous snapshot yet';
+    if (lastMeta) lastMeta.textContent = t('noPreviousSnapshot');
     renderLobbyPassTrack('lobbyLastDayTrack', ['1', '2', '3'], 0);
   }
 
@@ -3883,21 +3967,21 @@ function renderLobby() {
   const task2Name = document.getElementById('lobbyTask2Name');
   const task2XP = document.getElementById('lobbyTask2XP');
   const task2Hint = document.getElementById('lobbyTask2Hint');
-  if (task1Name) task1Name.textContent = t1 ? t1.name : 'No task yet';
+  if (task1Name) task1Name.textContent = t1 ? t1.name : t('noTaskYet');
   if (task1XP) task1XP.textContent = t1 ? `${t1.xp || 0} XP` : '0 XP';
   if (task1Hint) task1Hint.textContent = t1
-    ? `${Math.round(((t1.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% of today's pass if completed.`
-    : 'Create a quest to start today\'s loop.';
-  if (task2Name) task2Name.textContent = t2 ? t2.name : 'No task yet';
+    ? `${Math.round(((t1.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% пасса дня закроется этой задачей.`
+    : 'Создай квест, чтобы запустить сегодняшний цикл.';
+  if (task2Name) task2Name.textContent = t2 ? t2.name : t('noTaskYet');
   if (task2XP) task2XP.textContent = t2 ? `${t2.xp || 0} XP` : '0 XP';
   if (task2Hint) task2Hint.textContent = t2
-    ? `${Math.round(((t2.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% of today's pass if completed.`
-    : 'Your second strongest quest will appear here.';
+    ? `${Math.round(((t2.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% пасса дня закроется этой задачей.`
+    : 'Здесь появится вторая по силе задача.';
 
   const totalAuthorXP = getTotalAuthorXP();
   const authorLevel = Math.min(Math.floor(totalAuthorXP / 500), 150);
   const authorMeta = document.getElementById('lobbyAuthorMeta');
-  if (authorMeta) authorMeta.textContent = `Level ${authorLevel} · ${totalAuthorXP} XP`;
+  if (authorMeta) authorMeta.textContent = `Ур. ${authorLevel} · ${totalAuthorXP} XP`;
   renderLobbyPassTrack(
     'lobbyAuthorTrack',
     [authorLevel, Math.min(authorLevel + 1, 150), Math.min(authorLevel + 2, 150)].map(String),
@@ -3930,24 +4014,24 @@ function renderLobby() {
   const enterStats = document.getElementById('lobbyEnterStats');
 
   if (heroTitle) heroTitle.textContent = passSnapshot.totalCount
-    ? `${passSnapshot.totalCount} quests ready to move your pass`
-    : 'No quests ready yet';
+    ? t('questsReady', { count: passSnapshot.totalCount })
+    : t('noQuestsReady');
   if (heroSubtitle) heroSubtitle.textContent = bestQuest
-    ? `${bestQuest.name} is the strongest next move: +${bestQuest.xp || 0} XP into today pass, plus progress for daily and weekly goals.`
-    : 'Start with one regular quest so the full chain becomes visible: task, XP, today pass, daily goals, weekly goals, and author pass.';
+    ? t('bestQuestSubtitle', { name: bestQuest.name, xp: bestQuest.xp || 0 })
+    : t('emptyQuestSubtitle');
   if (heroNote) heroNote.textContent = passSnapshot.totalCount
-    ? `${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP already in motion • ${metaSnapshot.dailyCompleted}/3 daily goals done`
-    : 'Add a quest to activate today pass and meta progress';
-  if (heroFocus) heroFocus.textContent = bestQuest ? `${bestQuest.name} · ${bestQuest.xp || 0} XP` : 'Add your first quest';
+    ? t('progressNoteActive', { earned: Math.round(passSnapshot.earnedXP), total: passSnapshot.totalXP, daily: metaSnapshot.dailyCompleted })
+    : t('progressNoteEmpty');
+  if (heroFocus) heroFocus.textContent = bestQuest ? `${bestQuest.name} · ${bestQuest.xp || 0} XP` : t('addFirstQuest');
   if (heroPass) heroPass.textContent = `${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP`;
-  if (heroGoals) heroGoals.textContent = `${metaSnapshot.dailyCompleted}/3 daily · ${metaSnapshot.weekPct}% weekly`;
-  if (heroAuthor) heroAuthor.textContent = `${metaSnapshot.nextReward.label} · ${metaSnapshot.nextReward.hint}`;
-  if (enterTitle) enterTitle.textContent = passSnapshot.totalCount ? 'ENTER LOOP' : 'START LOOP';
+  if (heroGoals) heroGoals.textContent = t('dailyGoalsShort', { daily: metaSnapshot.dailyCompleted, week: metaSnapshot.weekPct });
+  if (heroAuthor) heroAuthor.textContent = t('authorRewardShort', { label: metaSnapshot.nextReward.label, hint: metaSnapshot.nextReward.hint });
+  if (enterTitle) enterTitle.textContent = passSnapshot.totalCount ? t('enterLoop') : t('startLoop');
   if (enterStats) {
     enterStats.innerHTML = `
-      <div class="lobby-enter-stat"><span>Ready now</span><strong>${passSnapshot.totalCount} quests</strong></div>
-      <div class="lobby-enter-stat"><span>Pass progress</span><strong>${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP</strong></div>
-      <div class="lobby-enter-stat"><span>Closest unlock</span><strong>${metaSnapshot.nextReward.label}</strong></div>
+      <div class="lobby-enter-stat"><span>${t('readyNow')}</span><strong>${passSnapshot.totalCount} ${pluralQuestRu(passSnapshot.totalCount)}</strong></div>
+      <div class="lobby-enter-stat"><span>${t('passProgress')}</span><strong>${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP</strong></div>
+      <div class="lobby-enter-stat"><span>${t('closestUnlock')}</span><strong>${metaSnapshot.nextReward.label}</strong></div>
     `;
   }
 }
@@ -4037,17 +4121,17 @@ function updatePass() {
     const todayLoopStrip = document.getElementById('todayLoopStrip');
     if (todayLoopStrip) {
       todayLoopStrip.innerHTML = `
-        <div class="today-loop-chip"><div class="today-loop-chip-label">Today</div><div class="today-loop-chip-value">${passSnapshot.completedCount}/${passSnapshot.totalCount} quests cleared</div></div>
-        <div class="today-loop-chip"><div class="today-loop-chip-label">Pass XP</div><div class="today-loop-chip-value">${Math.round(totalEarnedXP)} / ${totalMaxXP}</div></div>
-        <div class="today-loop-chip"><div class="today-loop-chip-label">Meta goals</div><div class="today-loop-chip-value">${meta.dailyCompleted}/3 daily · ${meta.weekPct}% weekly</div></div>
-        <div class="today-loop-chip"><div class="today-loop-chip-label">Author reward</div><div class="today-loop-chip-value">${meta.nextReward.hint}</div></div>
+        <div class="today-loop-chip"><div class="today-loop-chip-label">${t('today')}</div><div class="today-loop-chip-value">${t('questsCleared', { done: passSnapshot.completedCount, total: passSnapshot.totalCount })}</div></div>
+        <div class="today-loop-chip"><div class="today-loop-chip-label">${t('passXp')}</div><div class="today-loop-chip-value">${Math.round(totalEarnedXP)} / ${totalMaxXP}</div></div>
+        <div class="today-loop-chip"><div class="today-loop-chip-label">${t('metaGoals')}</div><div class="today-loop-chip-value">${t('dailyWeekly', { daily: meta.dailyCompleted, week: meta.weekPct })}</div></div>
+        <div class="today-loop-chip"><div class="today-loop-chip-label">${t('authorReward')}</div><div class="today-loop-chip-value">${meta.nextReward.hint}</div></div>
       `;
     }
 
     const authorHintEl = document.getElementById('passAuthorXpHint');
     if (authorHintEl) {
       const projection = estimateAuthorXpByDoneUnits(passSnapshot.doneUnits, quests.length);
-      authorHintEl.innerHTML = `Today's regular quests are currently projecting <strong>+${projection.total} author XP</strong> into the meta pass.`;
+      authorHintEl.innerHTML = t('authorProjection', { xp: projection.total });
     }
     const milestonesEl = document.getElementById('passAuthorXpMilestones');
     if (milestonesEl) {
@@ -4056,9 +4140,9 @@ function updatePass() {
       const halfProjection = estimateAuthorXpByDoneUnits(Math.max(passSnapshot.doneUnits, Math.ceil(Math.max(quests.length, 1) * 0.5)), Math.max(quests.length, 1));
       const fullProjection = estimateAuthorXpByDoneUnits(Math.max(quests.length, 1), Math.max(quests.length, 1));
       milestonesEl.innerHTML = `
-        <div class="pass-author-xp-milestone">Next move: <strong>+${nextQuestProjection.total} XP</strong></div>
-        <div class="pass-author-xp-milestone">Half loop: <strong>+${halfProjection.total} XP</strong></div>
-        <div class="pass-author-xp-milestone">Full clear: <strong>+${fullProjection.total} XP</strong></div>
+        <div class="pass-author-xp-milestone">${t('nextMove')}: <strong>+${nextQuestProjection.total} XP</strong></div>
+        <div class="pass-author-xp-milestone">${t('halfLoop')}: <strong>+${halfProjection.total} XP</strong></div>
+        <div class="pass-author-xp-milestone">${t('fullClear')}: <strong>+${fullProjection.total} XP</strong></div>
       `;
     }
 
@@ -4067,13 +4151,13 @@ function updatePass() {
     const personalFocusFill = document.getElementById('personalFocusFill');
     const personalFocusMetaLeft = document.getElementById('personalFocusMetaLeft');
     const personalFocusMetaRight = document.getElementById('personalFocusMetaRight');
-    if (personalFocusTitle) personalFocusTitle.textContent = bestQuest ? `${bestQuest.name} · ${bestQuest.xp || 0} XP` : 'Add your first quest';
+    if (personalFocusTitle) personalFocusTitle.textContent = bestQuest ? `${bestQuest.name} · ${bestQuest.xp || 0} XP` : t('addFirstQuest');
     if (personalFocusSub) personalFocusSub.textContent = bestQuest
-      ? `${Math.round(((bestQuest.xp || 0) / Math.max(totalMaxXP, 1)) * 100)}% of today's pass sits in this quest, and it also advances daily and weekly goals.`
-      : 'Your first regular quest should immediately make the task -> XP -> pass -> goals chain visible.';
+      ? t('questShare', { percent: Math.round(((bestQuest.xp || 0) / Math.max(totalMaxXP, 1)) * 100) })
+      : t('firstQuestChain');
     if (personalFocusFill) personalFocusFill.style.width = `${pct}%`;
-    if (personalFocusMetaLeft) personalFocusMetaLeft.textContent = `${passSnapshot.completedCount}/${passSnapshot.totalCount} quests cleared`;
-    if (personalFocusMetaRight) personalFocusMetaRight.textContent = `${Math.round(totalEarnedXP)} / ${totalMaxXP} XP in play`;
+    if (personalFocusMetaLeft) personalFocusMetaLeft.textContent = t('questsActive', { done: passSnapshot.completedCount, total: passSnapshot.totalCount });
+    if (personalFocusMetaRight) personalFocusMetaRight.textContent = t('xpInPlay', { earned: Math.round(totalEarnedXP), total: totalMaxXP });
 
     const authorFocusTitle = document.getElementById('authorFocusTitle');
     const authorFocusSub = document.getElementById('authorFocusSub');
@@ -4081,10 +4165,10 @@ function updatePass() {
     const authorFocusMetaLeft = document.getElementById('authorFocusMetaLeft');
     const authorFocusMetaRight = document.getElementById('authorFocusMetaRight');
     if (authorFocusTitle) authorFocusTitle.textContent = meta.nextReward.label;
-    if (authorFocusSub) authorFocusSub.textContent = `Today's work is already generating ${meta.authorTodayXP} live author XP. ${meta.nextReward.hint}.`;
+    if (authorFocusSub) authorFocusSub.textContent = t('authorFocusSub', { xp: meta.authorTodayXP, hint: meta.nextReward.hint });
     if (authorFocusFill) authorFocusFill.style.width = `${meta.nextReward.progressPct}%`;
     if (authorFocusMetaLeft) authorFocusMetaLeft.textContent = meta.nextReward.meta;
-    if (authorFocusMetaRight) authorFocusMetaRight.textContent = `${meta.dailyCompleted}/3 daily goals complete`;
+    if (authorFocusMetaRight) authorFocusMetaRight.textContent = t('dailyGoalsDone', { count: meta.dailyCompleted });
 
     const container = document.getElementById('passLevels');
     if (container) {
@@ -7611,7 +7695,7 @@ function toggleAuthorScreen() {
   if (authorScreenOpen) {
     icon.textContent = '▼';
     label.textContent = 'Личный пасс';
-    headerTitle.textContent = 'Season Pass';
+    headerTitle.textContent = t('seasonPass');
     debtWrap.style.display = 'none';
     themeBtn.style.display = 'none';
     cosmeticsBtn.style.display = 'none';
@@ -7627,7 +7711,7 @@ function toggleAuthorScreen() {
   } else {
     icon.textContent = '▲';
     label.textContent = 'Авторский пасс';
-    headerTitle.textContent = 'Your Daily Pass';
+    headerTitle.textContent = t('personalPass');
     debtWrap.style.display = '';
     themeBtn.style.display = '';
     cosmeticsBtn.style.display = '';
