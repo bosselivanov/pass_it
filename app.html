@@ -15,6 +15,22 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #F8EAFA; --surface: #EEDDFF; --accent: #96A0E2;
+  --accent2: #F9DABB; --text: #2a1a4a; --text2: #7a5ab0;
+  --border: rgba(150,160,226,0.35); --bar-bg: rgba(150,160,226,0.18);
+  --card-bg: rgba(255,255,255,0.55); --overlay: rgba(200,180,255,0.25);
+  --blur-bg: rgba(238,221,255,0.92);
+}
+body.dark { color-scheme: dark; }
+body {
+  height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column;
+  background: var(--bg); font-family: 'Segoe UI', sans-serif;
+  color: var(--text); transition: background 0.3s, color 0.3s;
+}
+
 /* LOBBY */
 .lobby-overlay {
   position: fixed; inset: 0; z-index: 1200;
@@ -2489,6 +2505,263 @@
 
 
 <script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBd0j9J78QI9AFLFS3TPaWwgFdoUMxTsqE",
+    authDomain: "pass-it-auth.firebaseapp.com",
+    databaseURL: "https://pass-it-auth-default-rtdb.firebaseio.com",
+    projectId: "pass-it-auth",
+    storageBucket: "pass-it-auth.firebasestorage.app",
+    messagingSenderId: "513075711876",
+    appId: "1:513075711876:web:3a577b54daca07f17a17d1"
+  });
+  var fbdb = firebase.database();
+
+// ---- DATA ----
+const PIECES = [
+  { type:'common',    label:'РћР±С‹С‡РЅС‹Р№', cls:'piece-common' },
+  { type:'rare',      label:'Р РµРґРєРёР№',  cls:'piece-rare' },
+  { type:'legendary', label:'Р›РµРіРµРЅРґ.', cls:'piece-legendary' },
+];
+const COIN = { type:'coin', label:'РњРѕРЅРµС‚С‹ +10' };
+
+// СЂР°РЅРґРѕРјРЅС‹Р№ РїСѓР» РґР»СЏ СЃР»РѕС‚-РјР°С€РёРЅС‹ (РјРЅРѕРіРѕ РѕР±С‹С‡РЅС‹С…, РјР°Р»Рѕ Р»РµРіРµРЅРґР°СЂРЅС‹С…)
+function buildPool(includeCoin) {
+  let pool = [];
+  for (let i=0; i<8; i++) pool.push(PIECES[0]); // common
+  for (let i=0; i<4; i++) pool.push(PIECES[1]); // rare
+  for (let i=0; i<2; i++) pool.push(PIECES[2]); // legendary
+  if (includeCoin) for (let i=0; i<6; i++) pool.push(COIN);
+  for (let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  return pool;
+}
+
+function randomDrop(isThirdSlot) {
+  if (isThirdSlot) {
+    return Math.random() < 0.4 ? COIN : PIECES[Math.floor(Math.random()*3)];
+  }
+  const r = Math.random();
+  if (r < 0.6) return PIECES[0];
+  if (r < 0.85) return PIECES[1];
+  return PIECES[2];
+}
+
+function makePieceHTML(item) {
+  if (item.type === 'coin') {
+    return `<div class="coin-shape"><span class="coin-letter">H</span></div>
+            <div class="slot-badge badge-coin">РјРѕРЅРµС‚С‹</div>`;
+  }
+  const badgeCls = {common:'badge-common', rare:'badge-rare', legendary:'badge-legendary'}[item.type];
+  return `<div class="piece-shape ${item.cls}"></div>
+          <div class="slot-badge ${badgeCls}">${item.label}</div>`;
+}
+
+function makeResultHTML(item) {
+  if (item.type === 'coin') {
+    return `<div class="result-item">
+      <div class="coin-shape" style="width:44px;height:44px;font-size:18px;"><span class="coin-letter">H</span></div>
+      <div class="result-label">+10 РјРѕРЅРµС‚</div>
+    </div>`;
+  }
+  const badgeCls = {common:'badge-common', rare:'badge-rare', legendary:'badge-legendary'}[item.type];
+  return `<div class="result-item">
+    <div class="piece-shape ${item.cls}" style="width:44px;height:44px;border-radius:8px;"></div>
+    <div class="slot-badge ${badgeCls}" style="font-size:10px;">${item.label}</div>
+  </div>`;
+}
+
+// ---- PHASES ----
+let phase = 0;
+
+function boStartOpen() {
+  if (boPhase !== 0) return;
+  boPhase = 1;
+
+  const box = document.getElementById('boCrystalBox');
+  box.classList.add('fixing');
+
+  setTimeout(() => {
+    document.getElementById('boBoxStage').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('boBoxStage').style.display = 'none';
+      boShowUnfold();
+    }, 400);
+  }, 500);
+}
+
+function boShowUnfold() {
+  const stage = document.getElementById('boUnfoldStage');
+  stage.style.display = 'flex';
+
+  const faces = stage.querySelectorAll('.unfold-face');
+  faces.forEach((f, i) => {
+    setTimeout(() => {
+      f.style.opacity = '1';
+      f.style.transition = 'opacity 0.15s, transform 0.3s';
+    }, i * 80);
+  });
+
+  setTimeout(() => {
+    const offsets = [
+      {x:0,y:0}, {x:0,y:-70}, {x:0,y:70}, {x:-70,y:0}, {x:70,y:0}
+    ];
+    faces.forEach((f, i) => {
+      f.style.transition = 'transform 0.35s cubic-bezier(.4,0,.6,1), opacity 0.35s';
+      f.style.transform = `translate(${offsets[i].x}px, ${offsets[i].y}px)`;
+      f.style.opacity = '0.4';
+    });
+  }, 500);
+
+  setTimeout(() => boDoExplosion(), 750);
+}
+
+function boDoExplosion() {
+  const exp = document.getElementById('boExplosion');
+  exp.style.transition = 'none';
+  exp.style.opacity = '1';
+  exp.style.width = '0px'; exp.style.height = '0px';
+  exp.style.transform = 'translate(-50%,-50%)';
+
+  requestAnimationFrame(() => {
+    exp.style.transition = 'width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s ease-out';
+    exp.style.width = '400px'; exp.style.height = '400px';
+    exp.style.transform = 'translate(-200px,-200px)';
+  });
+
+  boSpawnParticles();
+
+  setTimeout(() => {
+    exp.style.opacity = '0';
+    document.getElementById('boUnfoldStage').style.display = 'none';
+    boShowSlots();
+  }, 600);
+}
+
+function boSpawnParticles() {
+  const scene = document.getElementById('boScene');
+  const colors = ['#867DCE','#CF5C86','#4566BB','#d4af37','#ffffff'];
+  for (let i = 0; i < 24; i++) {
+    const p = document.createElement('div');
+    p.className = 'bo-particle';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.left = '50%'; p.style.top = '50%';
+    const angle = Math.random()*360;
+    const dist = 80 + Math.random()*160;
+    const dx = Math.cos(angle*Math.PI/180)*dist;
+    const dy = Math.sin(angle*Math.PI/180)*dist;
+    p.style.transition = `transform ${0.5+Math.random()*0.4}s ease-out, opacity 0.6s`;
+    scene.appendChild(p);
+    requestAnimationFrame(() => {
+      p.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      p.style.opacity = '0';
+    });
+    setTimeout(() => p.remove(), 1200);
+  }
+}
+
+// ---- SLOTS ----
+const drops = [null, null, null];
+
+function boShowSlots() {
+  const stage = document.getElementById('boSlotsStage');
+  stage.style.display = 'flex';
+  stage.style.transition = 'opacity 0.3s';
+  requestAnimationFrame(() => { stage.style.opacity = '1'; });
+
+  const boDropsToUse = [0,1,2].map(i => {
+    const d = _boDrops && _boDrops[i];
+    if (!d) return randomDrop(i===2);
+    if (d.type === 'coin') return COIN;
+    const rarity = d.themeId === 'rumi' ? 'legendary' : d.themeId === 'zoi' ? 'rare' : 'common';
+    return { type: rarity, label: {mira:'РњРёСЂР°', zoi:'Р—РѕРё', rumi:'Р СѓРјРё вњ¦'}[d.themeId] || d.themeId, cls: 'piece-' + rarity };
+  });
+  drops[0] = boDropsToUse[0]; drops[1] = boDropsToUse[1]; drops[2] = boDropsToUse[2];
+
+  setTimeout(() => boSpinSlot(0, drops[0], () => {
+    setTimeout(() => boSpinSlot(1, drops[1], () => {
+      setTimeout(() => boSpinSlot(2, drops[2], () => {
+        setTimeout(boShowResult, 700);
+      }), 300);
+    }), 300);
+  }), 300);
+}
+
+function boSpinSlot(idx, winItem, cb) {
+  const inner = document.getElementById('boInner' + idx);
+  const slot = document.getElementById('boSlot' + idx);
+  const pool = buildPool(idx===2);
+  const items = [];
+  for (let i=0;i<18;i++) items.push(pool[i % pool.length]);
+  items.push(winItem);
+
+  inner.innerHTML = items.map(item =>
+    `<div class="slot-item">${makePieceHTML(item)}</div>`
+  ).join('');
+
+  const itemH = 90 + 4;
+  const totalItems = items.length;
+  const targetY = -(totalItems - 1) * itemH;
+
+  inner.style.transition = 'none';
+  inner.style.transform = 'translateY(0)';
+
+  requestAnimationFrame(() => {
+    inner.style.transition = `transform ${2.2 + idx*0.4}s cubic-bezier(0.15, 0.05, 0.05, 1.0)`;
+    inner.style.transform = `translateY(${targetY}px)`;
+  });
+
+  const duration = (2.2 + idx*0.4) * 1000;
+  setTimeout(() => {
+    slot.classList.add('winning');
+    if (cb) cb();
+  }, duration);
+}
+
+function boShowResult() {
+  document.getElementById('boSlotsStage').style.display = 'none';
+
+  const stage = document.getElementById('boResultStage');
+  const items = document.getElementById('boResultItems');
+  items.innerHTML = drops.map(d => makeResultHTML(d)).join('');
+
+  if (_boDrops && _boDrops.length) {
+    applyBoxDrops(_boDrops);
+    updateShopUI();
+  }
+
+  stage.style.display = 'flex';
+  stage.style.transition = 'opacity 0.4s';
+  requestAnimationFrame(() => { stage.style.opacity = '1'; });
+}
+
+function boRestart() {
+  return;
+}
+
+// ====== UTILS ======
+function save(k, v) { localStorage.setItem('passit4_' + k, JSON.stringify(v)); }
+function load(k, def) {
+  const v = localStorage.getItem('passit4_' + k);
+  if (v === null) return def;
+  try {
+    return JSON.parse(v);
+  } catch (e) {
+    console.warn('Failed to parse localStorage key:', k, e);
+    return def;
+  }
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function formatLocalDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
