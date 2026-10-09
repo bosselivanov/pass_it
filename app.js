@@ -1210,44 +1210,6 @@ function updatePass() {
     xpEl.innerHTML = `<span style="${pctClass}">${earned}</span> / ${totalMaxXP} XP`;
   }
 
-  function estimateAuthorXpByDoneUnits(doneUnits, totalUnits) {
-    const safeTotal = Math.max(totalUnits, 1);
-    const done = Math.max(0, Math.min(doneUnits, safeTotal));
-    const t1 = Math.max(1, Math.ceil(safeTotal * 0.25));
-    const t2 = Math.max(1, Math.ceil(safeTotal * 0.5));
-    const t3 = safeTotal;
-
-    // Ежедневки авторского пасса (детерминированный расчёт)
-    const xp0 = Math.round(Math.min(done / t1, 1) * 200);
-    const xp1 = Math.round(Math.min(done / t2, 1) * 300);
-    const xp2 = Math.round(Math.min(done / t3, 1) * 500);
-    const dailyPart = xp0 + xp1 + xp2;
-
-    return {
-      total: dailyPart
-    };
-  }
-
-  const authorHintEl = document.getElementById('passAuthorXpHint');
-  if (authorHintEl) {
-    const currentDoneUnits = quests.reduce((sum, q) => sum + Math.min(1, (q.current || 0) / q.max), 0);
-    const currentProjection = estimateAuthorXpByDoneUnits(currentDoneUnits, quests.length);
-    const lvlGain = Math.round((currentProjection.total / 500) * 10) / 10;
-    const lvlText = lvlGain > 0 ? ` · ≈ +${lvlGain} ур.` : '';
-    authorHintEl.innerHTML = `Прогноз в авторский пасс: <strong>+${currentProjection.total} XP</strong>${lvlText}`;
-  }
-  const milestonesEl = document.getElementById('passAuthorXpMilestones');
-  if (milestonesEl) {
-    const m20 = estimateAuthorXpByDoneUnits(quests.length * 0.2, quests.length);
-    const m60 = estimateAuthorXpByDoneUnits(quests.length * 0.6, quests.length);
-    const m100 = estimateAuthorXpByDoneUnits(quests.length, quests.length);
-    milestonesEl.innerHTML = `
-      <div class="pass-author-xp-milestone">20%: <strong>+${m20.total} XP</strong></div>
-      <div class="pass-author-xp-milestone">60%: <strong>+${m60.total} XP</strong></div>
-      <div class="pass-author-xp-milestone">100%: <strong>+${m100.total} XP</strong></div>
-    `;
-  }
-
   const container = document.getElementById('passLevels');
   container.innerHTML = '';
   const n = quests.length; // только активные
