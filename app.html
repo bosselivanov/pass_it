@@ -1370,20 +1370,6 @@ body {
 
     <div class="lobby-col lobby-center">
       <div class="lobby-welcome">С возвращением<span id="lobbyWelcomeName" class="lobby-username"></span></div>
-      <div class="lobby-card lobby-hero-card">
-        <div>
-          <div class="lobby-title">Цикл дня</div>
-          <div class="lobby-hero-title" id="lobbyHeroTitle">0 квестов готовы двигать твой пасс</div>
-          <div class="lobby-subtitle" id="lobbyHeroSubtitle">Завершай обычные квесты, чтобы получать XP, заполнять пасс дня, закрывать ежедневные и недельные цели и двигать авторский пасс.</div>
-          <div class="lobby-progress-note" id="lobbyProgressNote">Пока нет активного движения</div>
-        </div>
-        <div class="lobby-summary-grid">
-          <div class="lobby-summary-item"><span>Лучший следующий ход</span><strong id="lobbyHeroFocus">Добавь первый квест</strong></div>
-          <div class="lobby-summary-item"><span>Пасс дня</span><strong id="lobbyHeroPass">0 / 0 XP</strong></div>
-          <div class="lobby-summary-item"><span>Мета-цели</span><strong id="lobbyHeroGoals">0 ежедневок выполнено</strong></div>
-          <div class="lobby-summary-item"><span>Авторская награда</span><strong id="lobbyHeroAuthor">Награды пока не видно</strong></div>
-        </div>
-      </div>
 
       <div class="lobby-section">
         <div class="lobby-section-title">Прогресс прошлого дня</div>
@@ -1403,12 +1389,10 @@ body {
           <div class="lobby-card lobby-task-card">
             <div class="lobby-task-name" id="lobbyTask1Name">Пока нет задачи</div>
             <div class="lobby-task-xp" id="lobbyTask1XP">0 XP</div>
-            <div class="lobby-task-hint" id="lobbyTask1Hint">Создай квест, чтобы запустить сегодняшний цикл.</div>
           </div>
           <div class="lobby-card lobby-task-card">
             <div class="lobby-task-name" id="lobbyTask2Name">Пока нет задачи</div>
             <div class="lobby-task-xp" id="lobbyTask2XP">0 XP</div>
-            <div class="lobby-task-hint" id="lobbyTask2Hint">Здесь появится вторая по силе задача.</div>
           </div>
         </div>
       </div>
@@ -1422,13 +1406,7 @@ body {
 
     <div class="lobby-col">
       <div class="lobby-card lobby-enter-card" onclick="enterAppFromLobby()">
-        <div class="lobby-enter-kicker" id="lobbyEnterKicker">Центр управления днём</div>
         <div class="lobby-enter-text" id="lobbyEnterTitle">ВОЙТИ</div>
-        <div class="lobby-enter-stats" id="lobbyEnterStats">
-          <div class="lobby-enter-stat"><span>Готово сейчас</span><strong>0 квестов</strong></div>
-          <div class="lobby-enter-stat"><span>Прогресс пасса</span><strong>0 / 0 XP</strong></div>
-          <div class="lobby-enter-stat"><span>Ближайшая награда</span><strong>Начни цикл</strong></div>
-        </div>
         <div class="lobby-enter-arrow">→</div>
       </div>
     </div>
@@ -3799,8 +3777,6 @@ function renderLobby() {
 
   const currentPass = getCurrentPass();
   const passSnapshot = getPersonalPassSnapshot(currentPass);
-  const metaSnapshot = getMetaLoopSnapshot();
-  const bestQuest = getBestNextQuest(currentPass);
   const todayProg = getLobbyQuestProgressFromPass(currentPass);
   const todayMeta = document.getElementById('lobbyTodayMeta');
   if (todayMeta) todayMeta.textContent = `${todayProg.done}/${todayProg.total} квестов закрыто сегодня`;
@@ -3822,20 +3798,12 @@ function renderLobby() {
   const t2 = topTasks[1] || null;
   const task1Name = document.getElementById('lobbyTask1Name');
   const task1XP = document.getElementById('lobbyTask1XP');
-  const task1Hint = document.getElementById('lobbyTask1Hint');
   const task2Name = document.getElementById('lobbyTask2Name');
   const task2XP = document.getElementById('lobbyTask2XP');
-  const task2Hint = document.getElementById('lobbyTask2Hint');
   if (task1Name) task1Name.textContent = t1 ? t1.name : t('noTaskYet');
   if (task1XP) task1XP.textContent = t1 ? `${t1.xp || 0} XP` : '0 XP';
-  if (task1Hint) task1Hint.textContent = t1
-    ? `${Math.round(((t1.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% пасса дня закроется этой задачей.`
-    : 'Создай квест, чтобы запустить сегодняшний цикл.';
   if (task2Name) task2Name.textContent = t2 ? t2.name : t('noTaskYet');
   if (task2XP) task2XP.textContent = t2 ? `${t2.xp || 0} XP` : '0 XP';
-  if (task2Hint) task2Hint.textContent = t2
-    ? `${Math.round(((t2.xp || 0) / Math.max(passSnapshot.totalXP, 1)) * 100)}% пасса дня закроется этой задачей.`
-    : 'Здесь появится вторая по силе задача.';
 
   const totalAuthorXP = getTotalAuthorXP();
   const authorLevel = Math.min(Math.floor(totalAuthorXP / 500), 150);
@@ -3862,37 +3830,8 @@ function renderLobby() {
     streakCard: 'lobbyAwq2card'
   });
 
-  const heroTitle = document.getElementById('lobbyHeroTitle');
-  const heroSubtitle = document.getElementById('lobbyHeroSubtitle');
-  const heroNote = document.getElementById('lobbyProgressNote');
-  const heroFocus = document.getElementById('lobbyHeroFocus');
-  const heroPass = document.getElementById('lobbyHeroPass');
-  const heroGoals = document.getElementById('lobbyHeroGoals');
-  const heroAuthor = document.getElementById('lobbyHeroAuthor');
   const enterTitle = document.getElementById('lobbyEnterTitle');
-  const enterStats = document.getElementById('lobbyEnterStats');
-
-  if (heroTitle) heroTitle.textContent = passSnapshot.totalCount
-    ? t('questsReady', { count: passSnapshot.totalCount })
-    : t('noQuestsReady');
-  if (heroSubtitle) heroSubtitle.textContent = bestQuest
-    ? t('bestQuestSubtitle', { name: bestQuest.name, xp: bestQuest.xp || 0 })
-    : t('emptyQuestSubtitle');
-  if (heroNote) heroNote.textContent = passSnapshot.totalCount
-    ? t('progressNoteActive', { earned: Math.round(passSnapshot.earnedXP), total: passSnapshot.totalXP, daily: metaSnapshot.dailyCompleted })
-    : t('progressNoteEmpty');
-  if (heroFocus) heroFocus.textContent = bestQuest ? `${bestQuest.name} · ${bestQuest.xp || 0} XP` : t('addFirstQuest');
-  if (heroPass) heroPass.textContent = `${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP`;
-  if (heroGoals) heroGoals.textContent = t('dailyGoalsShort', { daily: metaSnapshot.dailyCompleted, week: metaSnapshot.weekPct });
-  if (heroAuthor) heroAuthor.textContent = t('authorRewardShort', { label: metaSnapshot.nextReward.label, hint: metaSnapshot.nextReward.hint });
   if (enterTitle) enterTitle.textContent = passSnapshot.totalCount ? t('enterLoop') : t('startLoop');
-  if (enterStats) {
-    enterStats.innerHTML = `
-      <div class="lobby-enter-stat"><span>${t('readyNow')}</span><strong>${passSnapshot.totalCount} ${pluralQuestRu(passSnapshot.totalCount)}</strong></div>
-      <div class="lobby-enter-stat"><span>${t('passProgress')}</span><strong>${Math.round(passSnapshot.earnedXP)} / ${passSnapshot.totalXP} XP</strong></div>
-      <div class="lobby-enter-stat"><span>${t('closestUnlock')}</span><strong>${metaSnapshot.nextReward.label}</strong></div>
-    `;
-  }
 }
 
 function isQuestActiveToday(q) {
@@ -4239,17 +4178,10 @@ function renderQuests() {
           // Пустой слот — принимает drop
           div.className = 'quest-empty';
           div.dataset.snakeIdx = globalSnakeIdx;
-          div.innerHTML = questClipboard
-            ? `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0.6;"><span style="font-size:14px;">📋</span><span style="font-size:9px;font-weight:700;">вставить</span></div>`
-            : `<span style="font-size:18px;opacity:0.3;">+</span>`;
           div.title = questClipboard ? 'Вставить квест' : 'Добавить квест';
-          const emptyTitle = questClipboard ? 'Paste quest' : 'Add quest';
-          const emptyMeta = questClipboard
-            ? "Drop the copied quest here to keep today's loop moving."
-            : 'Create the next task, collect XP, and unlock the next pass step.';
-          div.innerHTML = `<div class="quest-empty-copy"><span style="font-size:${questClipboard ? 14 : 18}px;opacity:${questClipboard ? 1 : 0.6};">${questClipboard ? 'рџ“‹' : '+'}</span><span class="quest-empty-title">${emptyTitle}</span><span class="quest-empty-meta">${emptyMeta}</span></div>`;
+          div.innerHTML = `<span style="font-size:${questClipboard ? 14 : 18}px;opacity:${questClipboard ? 1 : 0.6};">${questClipboard ? '📋' : '+'}</span>`;
           if (questClipboard) {
-            const iconEl = div.querySelector('.quest-empty-copy span');
+            const iconEl = div.querySelector('span');
             if (iconEl) iconEl.innerHTML = '&#128203;';
           }
           div.style.cursor = 'pointer';
