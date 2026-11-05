@@ -50,9 +50,13 @@ body {
 }
 .lobby-shell {
   width: 100%; height: 100%;
-  display: grid; grid-template-columns: minmax(390px, 1.08fr) minmax(760px, 1.95fr) minmax(300px, 0.95fr); gap: 32px;
+  display: grid; grid-template-columns: minmax(260px, 0.8fr) minmax(0, 2fr); gap: 28px;
   min-height: 0;
 }
+.loading-footer { position: fixed; left: 50%; bottom: 28px; width: min(720px, calc(100% - 48px)); transform: translateX(-50%); }
+.loading-caption { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 10px; color: var(--text2); font-size: 13px; font-weight: 700; }
+.loading-track { height: 10px; overflow: hidden; border-radius: 99px; background: var(--bar-bg); }
+.loading-fill { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--accent2), var(--accent)); box-shadow: 0 0 16px rgba(150,160,226,.45); transition: width .2s linear; }
 .lobby-col { min-width: 0; min-height: 0; display: flex; flex-direction: column; flex: 1; }
 .lobby-left { gap: 18px; }
 .lobby-title {
@@ -164,6 +168,7 @@ body {
   color: var(--text2); transition: color 0.18s ease, transform 0.18s ease;
 }
 .lobby-enter-card:hover .lobby-enter-arrow { color: var(--accent); transform: translateX(6px); }
+@media (max-width: 1100px) { .lobby-shell { grid-template-columns: minmax(220px, .7fr) minmax(0, 1.5fr); gap: 18px; } }
 .lobby-hero-card {
   margin-top: 20px;
   padding: 22px 24px;
@@ -256,8 +261,9 @@ body {
 }
 
 @media (max-width: 1200px) {
-  .lobby-shell { grid-template-columns: 1fr; overflow-y: auto; }
-  .lobby-enter-card { min-height: 150px; }
+  .lobby-overlay { overflow-y: auto; flex-direction: column; }
+  .lobby-shell { grid-template-columns: 1fr; overflow: visible; height: auto; min-height: 0; flex: 1; }
+  .loading-footer { position: relative; left: auto; bottom: auto; transform: none; width: min(720px, 100%); margin: 20px auto 8px; flex-shrink: 0; }
   .lobby-welcome { font-size: 38px; }
   .week-shop-card { min-height: 200px; flex-basis: 200px; }
   .lobby-hero-card { grid-template-columns: 1fr; }
@@ -1339,10 +1345,10 @@ body {
 </style>
 <body>
 
-<div class="lobby-overlay" id="lobbyOverlay">
+<div class="lobby-overlay" id="lobbyOverlay" aria-label="Экран загрузки">
   <div class="lobby-shell">
     <div class="lobby-col lobby-left">
-      <div class="lobby-title">Магазин недели</div>
+      <div class="lobby-title">Загрузка · Магазин недели</div>
       <div class="lobby-card week-shop-card">
         <div>
           <div class="week-shop-name" id="lobbyShopName">Ночная смена</div>
@@ -1356,7 +1362,7 @@ body {
         </div>
       </div>
       <div class="lobby-weekly-wrap">
-        <div class="lobby-title">Недельные авторские квесты</div>
+      <div class="lobby-title">Недельные авторские квесты</div>
         <div class="lobby-card lobby-weekly-card">
           <div class="lobby-weekly-meta">Авторский прогресс за неделю прямо из лобби</div>
           <div class="daily-quests-section lobby-weekly-grid" style="margin-top:12px;">
@@ -1404,12 +1410,10 @@ body {
       </div>
     </div>
 
-    <div class="lobby-col">
-      <div class="lobby-card lobby-enter-card" onclick="enterAppFromLobby()">
-        <div class="lobby-enter-text" id="lobbyEnterTitle">ВОЙТИ</div>
-        <div class="lobby-enter-arrow">→</div>
-      </div>
-    </div>
+  </div>
+  <div class="loading-footer" aria-live="polite">
+    <div class="loading-caption"><span>Подготавливаем твой пасс и задания…</span><span id="loadingPercent">0%</span></div>
+    <div class="loading-track" role="progressbar" aria-label="Загрузка приложения" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="loading-fill" id="loadingProgress"></div></div>
   </div>
 </div>
 
@@ -1438,7 +1442,6 @@ body {
     </div>
     <div class="header-title" id="headerTitle">Твой дневной пасс</div>
   </div>
-  <button class="header-btn" onclick="returnToLobby()" data-tooltip="Вернуться в лобби" id="lobbyBackBtn">↩</button>
   <button class="header-btn" onclick="toggleAuthorScreen()" data-tooltip="Авторский пасс" id="authorPassBtn" style="display:none;">🏆</button>
   <button class="header-btn" id="shopBtn" onclick="openShop()" data-tooltip="Обменять коины" style="display:none;">🛒</button>
   <button class="header-btn" id="achievementsBtn" onclick="openAchievements()" data-tooltip="Достижения">🎖️</button>
@@ -3403,6 +3406,27 @@ function setLobbyVisible(visible) {
   if (!overlay) return;
   overlay.classList.toggle('hidden', !visible);
 }
+let loadingStarted = false;
+function startLoadingScreen() {
+  if (loadingStarted) return;
+  loadingStarted = true;
+  renderLobby();
+  const startedAt = performance.now();
+  const duration = 5600;
+  const fill = document.getElementById('loadingProgress');
+  const label = document.getElementById('loadingPercent');
+  const track = document.querySelector('.loading-track');
+  const timer = setInterval(() => {
+    const progress = Math.min(100, Math.floor(((performance.now() - startedAt) / duration) * 100));
+    if (fill) fill.style.width = `${progress}%`;
+    if (label) label.textContent = `${progress}%`;
+    if (track) track.setAttribute('aria-valuenow', String(progress));
+    if (progress >= 100) {
+      clearInterval(timer);
+      setLobbyVisible(false);
+    }
+  }, 80);
+}
 function enterAppFromLobby() {
   setLobbyVisible(false);
 }
@@ -5122,7 +5146,7 @@ const ONBOARDING_STEPS = [
     emoji: '🏆',
     title: 'Мегаквесты — большие цели',
     text: 'Задачи которые не закроешь за день. Составляй список внутри, отслеживай метрику, и когда готово — завершай. Мегаквест уходит в архив, а опыт засчитывается в еженедельный прогресс.',
-    highlight: '.lobby-enter-card', pos: 'left', arrow: 'right',
+    highlight: '#loadingProgress', pos: 'left', arrow: 'right',
     action: ensureOnboardingLobby
   },
   {
@@ -8166,10 +8190,14 @@ firebase.auth().onAuthStateChanged(function(user) {
         scheduleRender();
         recoverMissingAchievementRewards(false);
       }
+      startLoadingScreen();
+    }).catch(function() {
+      scheduleRender();
+      startLoadingScreen();
     });
   } else {
     setProStatus(false);
-    renderLobby();
+    startLoadingScreen();
   }
 });
 
